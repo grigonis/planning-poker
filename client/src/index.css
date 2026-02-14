@@ -1,9 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-sans;
   }
+}
+
+@layer utilities {
+  .glass-card {
+    background: rgba(25, 25, 51, 0.65);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Ensure full height */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }

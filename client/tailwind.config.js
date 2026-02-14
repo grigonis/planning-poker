@@ -4,17 +4,27 @@ export default {
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
+    darkMode: "class",
     theme: {
         extend: {
             colors: {
                 primary: {
-                    light: '#eff6ff', // blue-50
-                    DEFAULT: '#3b82f6', // blue-500
-                    dark: '#1e40af', // blue-800
+                    DEFAULT: '#2b7cee', // Figma Primary Blue
+                    light: '#5ba4fc',
+                    dark: '#1a5bb8',
                 },
                 slate: {
-                    850: '#151f32', // custom dark
+                    850: '#151f32',
+                    900: '#0f172a', // Figma Dark Text
+                },
+                background: {
+                    light: '#f8fafc', // Figma Input BG
+                    dark: '#101022',
                 }
+            },
+            fontFamily: {
+                sans: ["Inter", "sans-serif"],
+                display: ["Poppins", "sans-serif"], // Figma Headers
             },
             animation: {
                 'flip-card': 'flip 0.6s preserve-3d',
