@@ -1,147 +1,91 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../context/SocketContext';
-import { User, Hash, ArrowRight, Code, Bug } from 'lucide-react';
+import ShufflingCards from '../components/ShufflingCards';
+import CreateSessionModal from '../components/CreateSessionModal';
+import JoinSessionModal from '../components/JoinSessionModal';
 
 const Landing = () => {
-    const [isJoinMode, setIsJoinMode] = useState(true);
-    const [name, setName] = useState('');
-    const [roomCode, setRoomCode] = useState('');
-    const [role, setRole] = useState('DEV');
-    const navigate = useNavigate();
-    const socket = useSocket();
-
-    const handleAction = () => {
-        if (!name) return alert("Jau cia gal netestuok... Nebent netycia pamirsai varda irasyti :)");
-
-        if (isJoinMode) {
-            if (!roomCode) return alert("Please enter room code");
-            socket.emit('join_room', { roomId: roomCode.toUpperCase(), name, role }, (response) => {
-                if (response.error) return alert(response.error);
-                navigate(`/room/${roomCode.toUpperCase()}`, { state: { name, role, userId: socket.id } });
-            });
-        } else {
-            socket.emit('create_room', (response) => {
-                navigate(`/room/${response.roomId}`, { state: { name, role: 'HOST', userId: response.userId } });
-            });
-        }
-    };
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center p-4 lg:p-0 bg-white md:bg-gray-50">
-            <div className="w-full max-w-[1000px] grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl overflow-hidden shadow-2xl">
+        <div className="min-h-screen w-full bg-slate-950 flex flex-col relative overflow-hidden font-sans text-white">
 
-                {/* Left: Static Image (4:5 Ratio Enforced via Aspect Class) */}
-                <div className="hidden lg:block relative w-full aspect-[4/5]">
-                    <img
-                        src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                        alt="Planning Poker"
-                        className="absolute inset-0 w-full h-full object-cover"
-                    />
+            {/* Background Gradients */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[120px] animate-blob"></div>
+                <div className="absolute top-[40%] -right-[10%] w-[40%] h-[40%] bg-violet-500/20 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
+            </div>
+
+            {/* Navbar */}
+            <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
+                        P
+                    </div>
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                        PlanPoint
+                    </span>
                 </div>
+            </nav>
 
-                {/* Right: Login Form */}
-                <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 h-full">
-                    <h1 className="text-3xl font-bold text-slate-900 font-display mb-8">
-                        {isJoinMode ? "Join a Planning Session" : "Create a New Room"}
-                    </h1>
+            {/* Main Content */}
+            <main className="flex-1 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
 
-                    <div className="space-y-6">
-
-                        {/* Display Name Input */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-600 block">Display Name</label>
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <User size={20} />
-                                </div>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                                    placeholder="e.g. Alex Rivera"
-                                />
-                            </div>
+                {/* Left Column: Text & Actions */}
+                <div className="flex flex-col gap-8 animate-in slide-in-from-left-10 duration-700 fade-in">
+                    <div className="space-y-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm w-fit">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span className="text-xs font-medium text-slate-300">Live Sync Enabled</span>
                         </div>
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                            Agile Estimation <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">
+                                Reimagined
+                            </span>
+                        </h1>
+                        <p className="text-lg text-slate-400 max-w-md leading-relaxed">
+                            Stop wasting time in planning meetings. Ensure accurate, unbiased estimations with our real-time planning poker tool.
+                        </p>
+                    </div>
 
-                        {isJoinMode && (
-                            <>
-                                {/* Room ID Input */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-slate-600 block">Room ID</label>
-                                    <div className="relative">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                                            <Hash size={18} />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={roomCode}
-                                            onChange={(e) => setRoomCode(e.target.value)}
-                                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                                            placeholder="Enter 5-char code"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Role Switcher */}
-                                <div className="space-y-3">
-                                    <label className="text-sm font-semibold text-slate-600 block">Select Your Role</label>
-                                    <div className="bg-slate-100 p-1 rounded-2xl flex relative">
-                                        {/* Animated Background Slider */}
-                                        <div
-                                            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-primary rounded-xl shadow-sm transition-all duration-300 ease-out ${role === 'QA' ? 'left-[calc(50%)]' : 'left-1'
-                                                }`}
-                                        ></div>
-
-                                        <button
-                                            onClick={() => setRole('DEV')}
-                                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl relative z-10 transition-colors duration-300 ${role === 'DEV' ? 'text-white' : 'text-slate-500 hover:text-slate-700'
-                                                }`}
-                                        >
-                                            <Code size={20} />
-                                            <span className="font-bold text-sm">Developer</span>
-                                        </button>
-
-                                        <button
-                                            onClick={() => setRole('QA')}
-                                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl relative z-10 transition-colors duration-300 ${role === 'QA' ? 'text-white' : 'text-primary hover:text-primary/80'
-                                                }`}
-                                        >
-                                            <Bug size={20} />
-                                            <span className="font-bold text-sm">Quality Assurance</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Action Button */}
+                    <div className="flex flex-col sm:flex-row gap-4">
                         <button
-                            onClick={handleAction}
-                            className="w-full bg-gradient-to-r from-primary to-[#a004fb] hover:opacity-90 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="px-8 py-4 bg-white text-slate-950 font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-xl shadow-white/5 active:scale-95"
                         >
-                            {isJoinMode ? "Join Session" : "Create Room"}
-                            <ArrowRight size={18} />
+                            Create New Session
                         </button>
-
-                        {/* Footer Toggle */}
-                        <div className="text-center mt-4">
-                            <p className="text-slate-500 text-sm">
-                                {isJoinMode ? "Are you a game master?" : "Need to join a team?"}
-                                <button
-                                    onClick={() => setIsJoinMode(!isJoinMode)}
-                                    className="text-primary hover:text-primary/80 font-semibold ml-2 transition-colors"
-                                >
-                                    {isJoinMode ? "Create a new room" : "Join existing room"}
-                                </button>
-                            </p>
-                        </div>
-
+                        <button
+                            onClick={() => setIsJoinModalOpen(true)}
+                            className="px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/10 transition-colors active:scale-95"
+                        >
+                            Join Session
+                        </button>
                     </div>
                 </div>
 
-            </div>
+                {/* Right Column: Visuals */}
+                <div className="h-[500px] w-full flex items-center justify-center animate-in slide-in-from-right-10 duration-1000 fade-in">
+                    <div className="relative w-full h-full max-w-md">
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent z-10 pointer-events-none lg:hidden"></div>
+                        <ShufflingCards />
+                    </div>
+                </div>
+
+            </main>
+
+            {/* Modals */}
+            <CreateSessionModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+            />
+            <JoinSessionModal
+                isOpen={isJoinModalOpen}
+                onClose={() => setIsJoinModalOpen(false)}
+            />
+
         </div>
     );
 };
