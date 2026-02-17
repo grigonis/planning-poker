@@ -8,30 +8,33 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: {
-                    DEFAULT: '#2b7cee', // Figma Primary Blue
-                    light: '#5ba4fc',
-                    dark: '#1a5bb8',
+                banana: {
+                    100: '#fffbea',
+                    200: '#fff1c2',
+                    300: '#ffe699',
+                    400: '#ffd24d',
+                    500: '#ffb800', // Primary
+                    600: '#e69900',
                 },
-                slate: {
-                    850: '#151f32',
-                    900: '#0f172a', // Figma Dark Text
+                orange: {
+                    500: '#ff5c00', // Secondary
                 },
-                background: {
-                    light: '#f8fafc', // Figma Input BG
-                    dark: '#101022',
+                dark: {
+                    900: '#0a0a0a', // Background
+                    800: '#151921', // Surface
+                },
+                gray: {
+                    400: '#94a3b8', // Text
                 }
             },
             fontFamily: {
                 sans: ["Inter", "sans-serif"],
-                display: ["Poppins", "sans-serif"], // Figma Headers
+                heading: ["Poppins", "sans-serif"],
             },
             animation: {
-                'flip-card': 'flip 0.6s preserve-3d',
                 'blob': 'blob 7s infinite',
-                'float-slow': 'float 6s ease-in-out infinite',
-                'expand-contract': 'expand-contract 4s ease-in-out infinite',
                 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'expand-contract': 'expand-contract 6s ease-in-out infinite',
             },
             keyframes: {
                 flip: {

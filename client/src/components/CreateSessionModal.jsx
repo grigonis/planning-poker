@@ -31,26 +31,26 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="relative w-full max-w-md bg-dark-800 border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200">
                 <button
                     onClick={onClose}
-                    className="absolute right-4 top-4 text-slate-500 hover:text-slate-300 transition-colors"
+                    className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
                 >
                     <X size={24} />
                 </button>
 
-                <h2 className="text-2xl font-bold text-white mb-2">Create New Session</h2>
-                <p className="text-slate-400 mb-6">Start a new planning poker room as the host.</p>
+                <h2 className="text-2xl font-bold font-heading text-white mb-2">Create New Session</h2>
+                <p className="text-gray-400 font-light mb-8">Start a new planning poker room as the host.</p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Your Name</label>
+                        <label className="text-sm font-bold font-heading text-gray-300">Your Name</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                            className="w-full px-4 py-3 bg-dark-900 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-banana-500 focus:ring-1 focus:ring-banana-500 transition-all font-heading"
                             placeholder="e.g. Scrum Master"
                             autoFocus
                         />
@@ -59,7 +59,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                     <button
                         type="submit"
                         disabled={!name.trim() || isLoading}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full bg-banana-500 hover:bg-banana-400 text-dark-900 font-bold font-heading py-3.5 rounded-xl shadow-lg shadow-banana-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {isLoading ? 'Creating...' : 'Start Session'}
                         {!isLoading && <ArrowRight size={18} />}

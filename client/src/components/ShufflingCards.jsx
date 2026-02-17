@@ -51,7 +51,7 @@ const ShufflingCards = () => {
             </div>
 
             {/* Optional: Central glow behind the stack */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-banana-500/20 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
         </div>
     );
 };
