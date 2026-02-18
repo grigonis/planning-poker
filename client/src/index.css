@@ -6,16 +6,16 @@
 
 @layer base {
   body {
-    @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-sans;
+    @apply bg-dark-900 text-gray-400 antialiased font-sans selection:bg-banana-500/30;
   }
 }
 
 @layer utilities {
   .glass-card {
-    background: rgba(25, 25, 51, 0.65);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(21, 25, 33, 0.7); /* dark-800 with opacity */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 }
 

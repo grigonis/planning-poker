@@ -9,7 +9,7 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
             className={twMerge(
                 clsx(
                     "relative w-16 h-24 md:w-20 md:h-32 rounded-lg shadow-md cursor-pointer transition-all duration-300 transform perspective-1000",
-                    selected ? "ring-4 ring-primary -translate-y-2" : "hover:-translate-y-1",
+                    selected ? "ring-4 ring-banana-500 -translate-y-2 shadow-[0_0_15px_rgba(255,184,0,0.5)]" : "hover:-translate-y-1",
                     className
                 )
             )}
@@ -20,8 +20,8 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
             )}>
                 {/* Front Face (Value) */}
                 {!faceDown && (
-                    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg flex items-center justify-center">
-                        <span className="text-xl md:text-3xl font-bold text-slate-800">
+                    <div className="w-full h-full bg-dark-800 border-2 border-banana-500/50 rounded-lg flex items-center justify-center shadow-lg shadow-banana-500/10">
+                        <span className="text-xl md:text-3xl font-bold font-heading text-white">
                             {value === 'COFFEE' ? '☕' : value}
                         </span>
                     </div>
@@ -29,8 +29,8 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
 
                 {/* Back Face (Pattern) */}
                 {faceDown && (
-                    <div className="w-full h-full bg-slate-800 rounded-lg flex items-center justify-center border-2 border-slate-700">
-                        <div className="w-8 h-8 md:w-10 md:h-10 border-4 border-slate-600 rounded-full opacity-50"></div>
+                    <div className="w-full h-full bg-linear-to-br from-banana-500 to-orange-500 rounded-lg flex items-center justify-center border-2 border-white/20 shadow-inner">
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full backdrop-blur-sm"></div>
                     </div>
                 )}
             </div>
