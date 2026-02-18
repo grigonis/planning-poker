@@ -6,7 +6,7 @@ import heroIllustration from '../../assets/banana-poker/hero-illustration.png';
 import HeroBackground from './HeroBackground';
 
 
-const Hero = ({ onCreateSession, onJoinSession }) => {
+const Hero = ({ onCreateSession }) => {
     return (
         <section className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10 py-12 pt-32 lg:py-20 lg:pt-40 overflow-visible">
 
@@ -50,14 +50,8 @@ const Hero = ({ onCreateSession, onJoinSession }) => {
                         onClick={onCreateSession}
                         className="px-8 py-4 bg-banana-500 rounded-xl flex items-center justify-center gap-2 text-dark-900 font-bold font-heading hover:bg-banana-400 transition-colors shadow-xl shadow-banana-500/20 active:scale-95"
                     >
-                        <span>Create Instant Room</span>
+                        <span>Create Room</span>
                         <img src={createRoomIcon} alt="NewRoomIcon" className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={onJoinSession}
-                        className="px-8 py-4 bg-[#151921] border border-banana-400/20 text-white font-semibold font-heading rounded-xl hover:bg-white/5 transition-colors active:scale-95"
-                    >
-                        Join a Session
                     </button>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import bananaLogo from '../../assets/banana-poker/banana-logo.svg';
 
-const Navbar = ({ onJoinSession, onCreateSession }) => {
+const Navbar = ({ onCreateSession }) => {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -46,14 +46,11 @@ const Navbar = ({ onJoinSession, onCreateSession }) => {
 
                 {/* Actions */}
                 <div className="flex items-center gap-4">
-                    <button className="hidden sm:block px-5 py-2.5 text-sm font-bold font-heading text-white hover:text-banana-300 transition-colors">
-                        Sign In
-                    </button>
                     <button
-                        onClick={onJoinSession}
+                        onClick={onCreateSession}
                         className="group relative px-6 py-2.5 bg-banana-500 rounded-full text-[#181818] text-sm font-bold font-heading hover:bg-banana-400 transition-all shadow-[0_10px_15px_-3px_rgba(238,173,43,0.2)]"
                     >
-                        <span className="relative z-10">Join a Session</span>
+                        <span className="relative z-10">Create Room</span>
                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-banana-500 to-[#ff5c00] opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </button>
                 </div>

@@ -9,22 +9,18 @@ const HowItWorks = () => {
             title: "Step 1: Peel a New Session",
             description: "Enter your display name, choose your card values, and pick your role. No complex backlog needed—just pure, continuous voting.",
             image: step1,
-            badge: "Start",
             gradient: "from-banana-500/20 to-banana-500/5",
         },
         {
             title: "Step 2: Gather the Bunch",
             description: "Invite your teammates and get the whole bunch together at the table in mere moments.",
             image: step2,
-            badge: "Invite", // Based on Figma, Step 2 has a badge too? or just Step 1? Figma shows badges on images in some versions.
-            // Looking at the Figma node 180:6, 180:23, 180:55.
             gradient: "from-banana-500/20 to-banana-500/5",
         },
         {
             title: "Step 3: Vote and Reveal",
             description: "Enjoy every aspect of our online Scrum planning poker—and have a bunch of fun while staying productive!",
             image: step3,
-            badge: null,
             gradient: "from-banana-500/20 to-banana-500/5",
         }
     ];

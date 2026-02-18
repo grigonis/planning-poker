@@ -18,7 +18,6 @@ const Landing = () => {
 
             {/* Navbar */}
             <Navbar
-                onJoinSession={() => setIsJoinModalOpen(true)}
                 onCreateSession={() => setIsCreateModalOpen(true)}
             />
 
@@ -26,7 +25,6 @@ const Landing = () => {
             <main className="flex-1 w-full relative z-10">
                 <Hero
                     onCreateSession={() => setIsCreateModalOpen(true)}
-                    onJoinSession={() => setIsJoinModalOpen(true)}
                 />
 
                 <HowItWorks />
