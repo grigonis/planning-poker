@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import VotingOverlay from '../components/Voting/VotingOverlay';
-import ResultsBoard from '../components/Results/ResultsBoard';
-import Card from '../components/Voting/Card';
+import PokerTable from '../components/Room/PokerTable';
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
-import { Users, Crown, Coffee } from 'lucide-react';
+import { Users, Crown } from 'lucide-react';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -235,7 +234,11 @@ const Room = () => {
     }
 
     return (
-        <div className="min-h-screen bg-dark-900 font-sans text-white selection:bg-banana-500/30 flex flex-col">
+        <div className="min-h-screen bg-dark-900 font-sans text-white selection:bg-banana-500/30 flex flex-col relative">
+
+            {/* Background Effects */}
+            <div className="absolute inset-0 aurora z-0" />
+            <div className="absolute inset-0 noise z-0" />
 
             {/* Unified Navbar with Invite Button */}
             <div className="sticky top-0 z-40 bg-dark-900/80 backdrop-blur-md border-b border-white/5">
@@ -273,7 +276,7 @@ const Room = () => {
 
 
             {/* Main Table Area */}
-            <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
 
                 {/* Guest Modal */}
                 <GuestJoinModal
@@ -284,35 +287,7 @@ const Room = () => {
 
                 {validUser && (
                     <>
-                        {/* Host Controls */}
-                        {isMeHost && (
-                            <div className="flex gap-4 justify-center mb-12 animate-in slide-in-from-top-4 duration-500">
-                                {phase === 'IDLE' && (
-                                    <button onClick={handleStartVote} className="bg-banana-500 text-dark-900 px-8 py-3 rounded-xl shadow-[0_4px_0_0_#e69900] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_#e69900] transition-all font-bold font-heading text-lg flex items-center gap-2">
-                                        <Crown size={20} />
-                                        Start Voting Round
-                                    </button>
-                                )}
-                                {(phase === 'VOTING' || phase.startsWith('PARTIAL')) && (
-                                    <button onClick={handleReveal} className="bg-dark-800 text-white border border-white/10 px-8 py-3 rounded-xl shadow-lg hover:bg-dark-800/80 font-bold font-heading text-lg">
-                                        Reveal Cards
-                                    </button>
-                                )}
-                                {phase === 'REVEALED' && (
-                                    <div className="text-gray-400 font-bold font-heading">Round Complete</div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Status Message */}
-                        {phase === 'VOTING' && (
-                            <div className="text-center mb-12">
-                                <p className="text-xl text-banana-400 animate-pulse font-heading font-bold">Voting in progress...</p>
-                            </div>
-                        )}
-
-
-                        {/* Voting Overlay (Bottom Fixed or Modal-like) */}
+                        {/* Voting Overlay */}
                         {showOverlay && !myVote && (
                             <VotingOverlay
                                 role={currentUser.role}
@@ -321,81 +296,21 @@ const Room = () => {
                             />
                         )}
 
-                        {/* Results Board */}
-                        {phase === 'REVEALED' && (
-                            <ResultsBoard
-                                averages={averages}
-                                users={users}
-                                votes={votes}
-                                isHost={isMeHost}
-                                onReset={handleReset}
-                                onRevotePartial={handleRevote}
-                            />
-                        )}
-
-                        {/* Users / Cards Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-                            {users
-                                .filter(u => u.role !== 'OBSERVER') // Hide Observers from Table
-                                .map((u) => {
-                                    const hasVoted = votes[u.id] !== undefined;
-                                    const voteVal = votes[u.id];
-                                    // Match by ID (UUID) now
-                                    const isMe = u.id === currentUser.id;
-
-                                    let cardValue = null;
-                                    let faceDown = true;
-
-                                    if (phase === 'REVEALED') {
-                                        cardValue = voteVal;
-                                        faceDown = false;
-                                    } else if (isMe && myVote) {
-                                        cardValue = myVote;
-                                        faceDown = false;
-                                    } else if (hasVoted) {
-                                        cardValue = '?';
-                                        faceDown = true;
-                                    }
-
-                                    // Determine Badge Style
-                                    let badgeStyle = '';
-                                    if (roomMode === 'STANDARD') {
-                                        badgeStyle = 'bg-gray-700/50 text-gray-300 border border-gray-600/50'; // Unify
-                                    } else {
-                                        badgeStyle = u.role === 'DEV'
-                                            ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                            : 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
-                                    }
-
-                                    return (
-                                        <div key={u.id} className={`flex flex-col items-center group ${!u.connected ? 'opacity-50 grayscale' : ''}`}>
-                                            <div className="mb-4 relative transition-transform duration-300 group-hover:-translate-y-2">
-                                                {/* Card Placeholder */}
-                                                {hasVoted || (isMe && myVote) ? (
-                                                    <Card value={cardValue} faceDown={faceDown} className="cursor-default shadow-2xl" />
-                                                ) : (
-                                                    <div className="w-24 h-36 border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center bg-white/5">
-                                                        <span className="text-xs text-gray-500 font-heading tracking-wider uppercase">Thinking</span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="flex flex-col items-center gap-1">
-                                                <span className="font-bold text-white font-heading flex items-center gap-2">
-                                                    {u.name}
-                                                    {u.isHost && <Crown size={12} className="text-yellow-500" />}
-                                                    {!u.connected && (
-                                                        <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-mono">OFFLINE</span>
-                                                    )}
-                                                </span>
-                                                <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ${badgeStyle}`}>
-                                                    {roomMode === 'STANDARD' ? 'Estimator' : u.role}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                        </div>
+                        {/* Glassmorphic Poker Table */}
+                        <PokerTable
+                            users={users}
+                            currentUser={currentUser}
+                            votes={votes}
+                            myVote={myVote}
+                            phase={phase}
+                            roomMode={roomMode}
+                            averages={averages}
+                            isHost={isMeHost}
+                            onStartVote={handleStartVote}
+                            onReveal={handleReveal}
+                            onReset={handleReset}
+                            onRevotePartial={handleRevote}
+                        />
                     </>
                 )}
             </main>
