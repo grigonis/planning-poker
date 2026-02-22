@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import VotingOverlay from '../components/Voting/VotingOverlay';
-import ResultsBoard from '../components/Results/ResultsBoard';
-import Card from '../components/Voting/Card';
+import PokerTable from '../components/Room/PokerTable';
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
-import { Users, Crown, Coffee } from 'lucide-react';
+import RoomSettingsModal from '../components/Room/RoomSettingsModal';
+import EmojiReactions from '../components/Room/EmojiReactions';
+import { Users, Crown, Settings } from 'lucide-react';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -22,9 +23,13 @@ const Room = () => {
     const [votes, setVotes] = useState({});
     const [myVote, setMyVote] = useState(null);
     const [averages, setAverages] = useState({});
+    const [activeReactions, setActiveReactions] = useState({});
     const [roomMode, setRoomMode] = useState(location.state?.gameMode || 'STANDARD');
+    const [funFeatures, setFunFeatures] = useState(location.state?.funFeatures || false);
+    const [autoReveal, setAutoReveal] = useState(location.state?.autoReveal || false);
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Guest / Session State
     const [currentUser, setCurrentUser] = useState(location.state || {});
@@ -54,6 +59,8 @@ const Room = () => {
                     setPhase(response.phase);
                     setUsers(response.users);
                     if (response.mode) setRoomMode(response.mode);
+                    if (response.funFeatures !== undefined) setFunFeatures(response.funFeatures);
+                    if (response.autoReveal !== undefined) setAutoReveal(response.autoReveal);
 
                     if (response.phase === 'REVEALED' && response.votes) {
                         const votesMap = {};
@@ -67,7 +74,8 @@ const Room = () => {
                         role: serverMe?.role || role,
                         id: response.userId,
                         isHost: serverMe?.isHost || false,
-                        gameMode: response.mode
+                        gameMode: response.mode,
+                        funFeatures: response.funFeatures
                     };
 
                     setCurrentUser(updatedUser);
@@ -122,14 +130,86 @@ const Room = () => {
 
         const onVoteUpdate = ({ userId, hasVoted }) => {
             setVotes(prev => ({ ...prev, [userId]: 'VOTED' }));
+
+            // Play a soft sound when someone votes (if funFeatures is enabled)
+            if (funFeatures) {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.05);
+                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                } catch (e) {
+                    console.log('Audio error:', e);
+                }
+            }
         };
 
         const onRevealed = ({ votes: revealedVotes, averages }) => {
             setPhase('REVEALED');
             setAverages(averages);
             const votesMap = {};
-            revealedVotes.forEach(([uid, val]) => votesMap[uid] = val);
+            revealedVotes.forEach(([uid, val]) => {
+                votesMap[uid] = val;
+            });
             setVotes(votesMap);
+
+            // Check for consensus if funFeatures is enabled
+            if (funFeatures && revealedVotes.length > 0) {
+                // Ignore "?" and "COFFEE" for consensus
+                const numericalVotes = revealedVotes
+                    .map(v => v[1])
+                    .filter(val => val !== '?' && val !== 'COFFEE' && val !== 'questionMark');
+
+                if (numericalVotes.length > 1) {
+                    const allSame = numericalVotes.every(val => val === numericalVotes[0]);
+                    if (allSame) {
+                        import('canvas-confetti').then((confetti) => {
+                            confetti.default({
+                                particleCount: 150,
+                                spread: 70,
+                                origin: { y: 0.6 },
+                                colors: ['#4b2bee', '#facc15', '#ffffff'] // Primary, Banana, White
+                            });
+                        });
+
+                        try {
+                            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4
+                            oscillator.frequency.setValueAtTime(554.37, audioContext.currentTime + 0.1); // C#5
+                            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.2); // E5
+
+                            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                            gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+                            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.5);
+                        } catch (e) {
+                            console.log('Audio error:', e);
+                        }
+                    }
+                }
+            }
         };
 
         const onReset = () => {
@@ -149,12 +229,41 @@ const Room = () => {
             }
         };
 
+        const onRoomSettingsUpdated = ({ settings }) => {
+            if (settings.funFeatures !== undefined) setFunFeatures(settings.funFeatures);
+            if (settings.autoReveal !== undefined) setAutoReveal(settings.autoReveal);
+        };
+
+        const onSessionEnded = () => {
+            alert('The host has ended this session.');
+            navigate('/');
+        };
+
+        const onShowReaction = ({ userId, emojiIcon }) => {
+            if (!funFeatures) return; // ignore if off
+            const reactId = Math.random().toString(36).substr(2, 9);
+            setActiveReactions(prev => ({ ...prev, [userId]: { icon: emojiIcon, id: reactId } }));
+            setTimeout(() => {
+                setActiveReactions(prev => {
+                    if (prev[userId]?.id === reactId) {
+                        const next = { ...prev };
+                        delete next[userId];
+                        return next;
+                    }
+                    return prev;
+                });
+            }, 6000); // Show for 6 seconds
+        };
+
         socket.on('user_joined', onUserJoined);
         socket.on('vote_started', onVoteStarted);
         socket.on('vote_update', onVoteUpdate);
         socket.on('revealed', onRevealed);
         socket.on('reset', onReset);
         socket.on('partial_revote', onPartialRevote);
+        socket.on('room_settings_updated', onRoomSettingsUpdated);
+        socket.on('session_ended', onSessionEnded);
+        socket.on('show_reaction', onShowReaction);
 
         return () => {
             socket.off('user_joined', onUserJoined);
@@ -163,11 +272,13 @@ const Room = () => {
             socket.off('revealed', onRevealed);
             socket.off('reset', onReset);
             socket.off('partial_revote', onPartialRevote);
+            socket.off('room_settings_updated', onRoomSettingsUpdated);
+            socket.off('session_ended', onSessionEnded);
+            socket.off('show_reaction', onShowReaction);
         };
-    }, [socket, currentUser.role, currentUser.id]);
+    }, [socket, currentUser.role, currentUser.id, funFeatures, autoReveal, navigate]);
 
 
-    // Handlers
     const handleGuestJoinSuccess = (user) => {
         setCurrentUser({
             name: user.name,
@@ -176,9 +287,30 @@ const Room = () => {
             isHost: false
         });
 
-        if (user.users) {
-            setUsers(user.users);
-        }
+        if (user.users) setUsers(user.users);
+        if (user.gameMode) setRoomMode(user.gameMode);
+        if (user.funFeatures !== undefined) setFunFeatures(user.funFeatures);
+        if (user.autoReveal !== undefined) setAutoReveal(user.autoReveal);
+
+        // Note: phase and votes are not passed by GuestJoinModal directly right now,
+        // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!
+        // Wait, tryJoin is not triggered again because it's only in an effect on mount. 
+        // Emitting 'join_room' again is safe and fetches the phase/votes natively.
+        socket.emit('join_room', {
+            roomId,
+            name: user.name,
+            role: user.role,
+            userId: user.userId
+        }, (response) => {
+            if (!response.error) {
+                setPhase(response.phase);
+                if (response.votes && response.phase === 'REVEALED') {
+                    const votesMap = {};
+                    response.votes.forEach(([uid, val]) => { votesMap[uid] = val; });
+                    setVotes(votesMap);
+                }
+            }
+        });
 
         setViewState('ROOM');
         // Persist
@@ -211,6 +343,14 @@ const Room = () => {
         socket.emit('revote_partial', { roomId, targetRole: role });
     };
 
+    const handleUpdateSettings = (settings) => {
+        socket.emit('update_room_settings', { roomId, settings });
+    };
+
+    const handleEndSession = () => {
+        socket.emit('end_session', { roomId });
+    };
+
     // Derived state
     const isMeHost = users.find(u => u.id === currentUser.id)?.isHost || false;
     const validUser = viewState === 'ROOM';
@@ -235,7 +375,11 @@ const Room = () => {
     }
 
     return (
-        <div className="min-h-screen bg-dark-900 font-sans text-white selection:bg-banana-500/30 flex flex-col">
+        <div className="min-h-screen bg-dark-900 font-sans text-white selection:bg-banana-500/30 flex flex-col relative">
+
+            {/* Background Effects */}
+            <div className="absolute inset-0 aurora z-0" />
+            <div className="absolute inset-0 modern-grid z-0" />
 
             {/* Unified Navbar with Invite Button */}
             <div className="sticky top-0 z-40 bg-dark-900/80 backdrop-blur-md border-b border-white/5">
@@ -253,7 +397,7 @@ const Room = () => {
                     {/* Actions */}
                     {validUser && (
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-dark-800 px-3 py-1.5 rounded-full border border-white/5">
+                            <div className="flex items-center gap-2 bg-dark-800 px-3 py-1.5 rounded-full border border-white/5 hide-on-mobile">
                                 <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                 <span className="text-sm text-gray-300 font-bold">{currentUser.name}</span>
                                 <span className="text-xs text-gray-500 border-l border-white/10 pl-2 ml-1">{currentUser.role}</span>
@@ -266,6 +410,15 @@ const Room = () => {
                                 <Users size={16} />
                                 Invite
                             </button>
+
+                            {isMeHost && (
+                                <button
+                                    onClick={() => setIsSettingsOpen(true)}
+                                    className="p-2 ml-1 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/5"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -273,7 +426,7 @@ const Room = () => {
 
 
             {/* Main Table Area */}
-            <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
 
                 {/* Guest Modal */}
                 <GuestJoinModal
@@ -284,35 +437,7 @@ const Room = () => {
 
                 {validUser && (
                     <>
-                        {/* Host Controls */}
-                        {isMeHost && (
-                            <div className="flex gap-4 justify-center mb-12 animate-in slide-in-from-top-4 duration-500">
-                                {phase === 'IDLE' && (
-                                    <button onClick={handleStartVote} className="bg-banana-500 text-dark-900 px-8 py-3 rounded-xl shadow-[0_4px_0_0_#e69900] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_#e69900] transition-all font-bold font-heading text-lg flex items-center gap-2">
-                                        <Crown size={20} />
-                                        Start Voting Round
-                                    </button>
-                                )}
-                                {(phase === 'VOTING' || phase.startsWith('PARTIAL')) && (
-                                    <button onClick={handleReveal} className="bg-dark-800 text-white border border-white/10 px-8 py-3 rounded-xl shadow-lg hover:bg-dark-800/80 font-bold font-heading text-lg">
-                                        Reveal Cards
-                                    </button>
-                                )}
-                                {phase === 'REVEALED' && (
-                                    <div className="text-gray-400 font-bold font-heading">Round Complete</div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Status Message */}
-                        {phase === 'VOTING' && (
-                            <div className="text-center mb-12">
-                                <p className="text-xl text-banana-400 animate-pulse font-heading font-bold">Voting in progress...</p>
-                            </div>
-                        )}
-
-
-                        {/* Voting Overlay (Bottom Fixed or Modal-like) */}
+                        {/* Voting Overlay */}
                         {showOverlay && !myVote && (
                             <VotingOverlay
                                 role={currentUser.role}
@@ -321,81 +446,33 @@ const Room = () => {
                             />
                         )}
 
-                        {/* Results Board */}
-                        {phase === 'REVEALED' && (
-                            <ResultsBoard
-                                averages={averages}
-                                users={users}
-                                votes={votes}
-                                isHost={isMeHost}
-                                onReset={handleReset}
-                                onRevotePartial={handleRevote}
+                        {/* Glassmorphic Poker Table */}
+                        <PokerTable
+                            users={users}
+                            currentUser={currentUser}
+                            votes={votes}
+                            myVote={myVote}
+                            phase={phase}
+                            roomMode={roomMode}
+                            averages={averages}
+                            activeReactions={activeReactions}
+                            isHost={isMeHost}
+                            funFeatures={funFeatures}
+                            autoReveal={autoReveal}
+                            onStartVote={handleStartVote}
+                            onReveal={handleReveal}
+                            onReset={handleReset}
+                            onRevotePartial={handleRevote}
+                            onUpdateSettings={handleUpdateSettings}
+                        />
+                        {/* Emoji Reactions System */}
+                        {funFeatures && (
+                            <EmojiReactions
+                                roomId={roomId}
+                                currentUserId={currentUser.id}
+                                phase={phase}
                             />
                         )}
-
-                        {/* Users / Cards Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-                            {users
-                                .filter(u => u.role !== 'OBSERVER') // Hide Observers from Table
-                                .map((u) => {
-                                    const hasVoted = votes[u.id] !== undefined;
-                                    const voteVal = votes[u.id];
-                                    // Match by ID (UUID) now
-                                    const isMe = u.id === currentUser.id;
-
-                                    let cardValue = null;
-                                    let faceDown = true;
-
-                                    if (phase === 'REVEALED') {
-                                        cardValue = voteVal;
-                                        faceDown = false;
-                                    } else if (isMe && myVote) {
-                                        cardValue = myVote;
-                                        faceDown = false;
-                                    } else if (hasVoted) {
-                                        cardValue = '?';
-                                        faceDown = true;
-                                    }
-
-                                    // Determine Badge Style
-                                    let badgeStyle = '';
-                                    if (roomMode === 'STANDARD') {
-                                        badgeStyle = 'bg-gray-700/50 text-gray-300 border border-gray-600/50'; // Unify
-                                    } else {
-                                        badgeStyle = u.role === 'DEV'
-                                            ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                            : 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
-                                    }
-
-                                    return (
-                                        <div key={u.id} className={`flex flex-col items-center group ${!u.connected ? 'opacity-50 grayscale' : ''}`}>
-                                            <div className="mb-4 relative transition-transform duration-300 group-hover:-translate-y-2">
-                                                {/* Card Placeholder */}
-                                                {hasVoted || (isMe && myVote) ? (
-                                                    <Card value={cardValue} faceDown={faceDown} className="cursor-default shadow-2xl" />
-                                                ) : (
-                                                    <div className="w-24 h-36 border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center bg-white/5">
-                                                        <span className="text-xs text-gray-500 font-heading tracking-wider uppercase">Thinking</span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="flex flex-col items-center gap-1">
-                                                <span className="font-bold text-white font-heading flex items-center gap-2">
-                                                    {u.name}
-                                                    {u.isHost && <Crown size={12} className="text-yellow-500" />}
-                                                    {!u.connected && (
-                                                        <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-mono">OFFLINE</span>
-                                                    )}
-                                                </span>
-                                                <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ${badgeStyle}`}>
-                                                    {roomMode === 'STANDARD' ? 'Estimator' : u.role}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                        </div>
                     </>
                 )}
             </main>
@@ -405,7 +482,14 @@ const Room = () => {
                 onClose={() => setIsInviteModalOpen(false)}
                 roomId={roomId}
             />
-
+            <RoomSettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                funFeatures={funFeatures}
+                autoReveal={autoReveal}
+                onUpdateSettings={handleUpdateSettings}
+                onEndSession={handleEndSession}
+            />
         </div>
     );
 };

@@ -48,15 +48,25 @@ module.exports = (io, socket) => {
             userId: userId,
             hasVoted: true
         });
+
+        // Auto-reveal logic
+        if (room.autoReveal) {
+            let eligibleVoters = 0;
+            room.users.forEach(u => {
+                if (u.role === 'OBSERVER') return;
+                if (!u.connected) return;
+                if (room.phase === 'PARTIAL_VOTE_DEV' && u.role !== 'DEV') return;
+                if (room.phase === 'PARTIAL_VOTE_QA' && u.role !== 'QA') return;
+                eligibleVoters++;
+            });
+
+            if (eligibleVoters > 0 && room.votes.size >= eligibleVoters) {
+                performReveal(room, roomId);
+            }
+        }
     };
 
-    const revealHandler = ({ roomId }) => {
-        const result = getUser(socket);
-        if (!result) return;
-        const { user, room } = result;
-
-        if (!user || !user.isHost) return;
-
+    const performReveal = (room, roomId) => {
         room.phase = 'REVEALED';
 
         // Calculate averages based on MODES
@@ -103,6 +113,16 @@ module.exports = (io, socket) => {
             votes: Array.from(room.votes.entries()),
             averages
         });
+    };
+
+    const revealHandler = ({ roomId }) => {
+        const result = getUser(socket);
+        if (!result) return;
+        const { user, room } = result;
+
+        if (!user || !user.isHost) return;
+
+        performReveal(room, roomId);
     };
 
     const resetHandler = ({ roomId }) => {

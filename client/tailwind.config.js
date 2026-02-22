@@ -35,6 +35,7 @@ export default {
                 'blob': 'blob 7s infinite',
                 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'expand-contract': 'expand-contract 6s ease-in-out infinite',
+                'float-up': 'float-up var(--tw-float-duration, 3s) ease-in forwards',
             },
             keyframes: {
                 flip: {
@@ -50,6 +51,12 @@ export default {
                 float: {
                     '0%, 100%': { transform: 'translateY(0)' },
                     '50%': { transform: 'translateY(-20px)' },
+                },
+                'float-up': {
+                    '0%': { transform: 'translateY(100vh) scale(0.5)', opacity: 0 },
+                    '10%': { opacity: 1, transform: 'translateY(80vh) scale(1.2)' },
+                    '90%': { opacity: 1 },
+                    '100%': { transform: 'translateY(-20vh) scale(1)', opacity: 0 },
                 },
                 'expand-contract': {
                     '0%, 100%': { transform: 'translate(0, 0) rotate(0deg)' },

@@ -36,12 +36,13 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
             if (response.error) {
                 setError(response.error);
             } else {
-                // Success!
                 onJoinSuccess({
                     name,
                     role, // Join handler might standardize this, but we pass current intent
                     userId: response.userId,
                     gameMode: response.mode,
+                    funFeatures: response.funFeatures,
+                    autoReveal: response.autoReveal,
                     users: response.users // Pass the initial user list
                 });
             }

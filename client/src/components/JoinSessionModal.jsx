@@ -51,8 +51,11 @@ const JoinSessionModal = ({ isOpen, onClose }) => {
                 state: {
                     name,
                     role,
-                    userId: socket.id,
-                    gameMode: roomMode
+                    userId: response.userId,
+                    gameMode: roomMode,
+                    funFeatures: response.funFeatures,
+                    autoReveal: response.autoReveal,
+                    users: response.users
                 }
             });
             onClose();

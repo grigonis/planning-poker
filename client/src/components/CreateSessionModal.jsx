@@ -48,6 +48,8 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                     role: finalRole,
                     userId: response.userId,
                     gameMode: response.mode,
+                    funFeatures: response.funFeatures,
+                    autoReveal: response.autoReveal,
                     users: response.users // Pass initial user list (just host)
                 }
             });
