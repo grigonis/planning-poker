@@ -21,6 +21,8 @@ module.exports = (io, socket) => {
             votes: new Map(), // Key: userId, Value: Vote
             phase: 'IDLE',
             gameMode: gameMode || 'STANDARD',
+            funFeatures: false, // Default to false
+            autoReveal: true, // Default to true
             averages: {}
         };
 
@@ -51,9 +53,21 @@ module.exports = (io, socket) => {
             roomId,
             userId,
             gameMode: room.gameMode,
+            funFeatures: room.funFeatures,
+            autoReveal: room.autoReveal,
             users: Array.from(room.users.values())
         });
         console.log(`Room created: ${roomId} by ${socket.id} (${name}) as ${hostRole} in ${room.gameMode} mode`);
+    };
+
+    const updateRoomSettingsHandler = ({ roomId, settings }) => {
+        const room = rooms.get(roomId);
+        if (room) {
+            if (settings.funFeatures !== undefined) room.funFeatures = settings.funFeatures;
+            if (settings.autoReveal !== undefined) room.autoReveal = settings.autoReveal;
+            io.to(roomId).emit('room_settings_updated', { settings });
+            console.log(`Room ${roomId} settings updated:`, settings);
+        }
     };
 
     const joinRoomHandler = ({ roomId, name, role, userId }, callback) => {
@@ -113,7 +127,9 @@ module.exports = (io, socket) => {
             votes: room.phase === 'REVEALED' ? votesList : [], // Hide votes if hidden
             // Send back their own userId so they can save it
             userId: user.id,
-            mode: room.gameMode
+            mode: room.gameMode,
+            funFeatures: room.funFeatures,
+            autoReveal: room.autoReveal
         });
 
         console.log(`${name} joined ${roomId} as ${user.role} (User ID: ${user.id})`);
@@ -138,8 +154,58 @@ module.exports = (io, socket) => {
         }
     };
 
+    const reactionHandler = ({ roomId, emojiId, emojiIcon }) => {
+        const userId = socket.data.userId;
+        const room = rooms.get(roomId);
+        if (room && userId) {
+            const user = room.users.get(userId);
+            if (user) {
+                io.to(roomId).emit('show_reaction', {
+                    emojiId,
+                    emojiIcon,
+                    userId,
+                    userName: user.name
+                });
+            }
+        }
+    };
+
+    const updateAvatarHandler = ({ roomId }) => {
+        const userId = socket.data.userId;
+        const room = rooms.get(roomId);
+        if (room && userId) {
+            const user = room.users.get(userId);
+            if (user) {
+                // Generate a random seed
+                user.avatarSeed = Math.random().toString(36).substring(7);
+                // Broadcast update
+                const usersList = Array.from(room.users.values());
+                io.to(roomId).emit('user_joined', usersList);
+            }
+        }
+    };
+
+    const endSessionHandler = ({ roomId }) => {
+        const userId = socket.data.userId;
+        const room = rooms.get(roomId);
+        if (room && userId) {
+            const user = room.users.get(userId);
+            if (user && user.isHost) {
+                io.to(roomId).emit('session_ended');
+                io.socketsLeave(roomId);
+                rooms.delete(roomId);
+                console.log(`Room ${roomId} ended by host ${user.name}`);
+            }
+        }
+    };
+
     socket.on("check_room", checkRoomHandler);
     socket.on("create_room", createRoomHandler);
     socket.on("join_room", joinRoomHandler);
     socket.on("disconnect", disconnectHandler);
+    socket.on("toggle_fun_features", updateRoomSettingsHandler); // keeping legacy name for backwards compatibility temporarily
+    socket.on("update_room_settings", updateRoomSettingsHandler);
+    socket.on("send_reaction", reactionHandler);
+    socket.on("update_avatar", updateAvatarHandler);
+    socket.on("end_session", endSessionHandler);
 };

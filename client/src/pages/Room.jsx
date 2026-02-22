@@ -5,7 +5,9 @@ import VotingOverlay from '../components/Voting/VotingOverlay';
 import PokerTable from '../components/Room/PokerTable';
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
-import { Users, Crown } from 'lucide-react';
+import RoomSettingsModal from '../components/Room/RoomSettingsModal';
+import EmojiReactions from '../components/Room/EmojiReactions';
+import { Users, Crown, Settings } from 'lucide-react';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -21,9 +23,13 @@ const Room = () => {
     const [votes, setVotes] = useState({});
     const [myVote, setMyVote] = useState(null);
     const [averages, setAverages] = useState({});
+    const [activeReactions, setActiveReactions] = useState({});
     const [roomMode, setRoomMode] = useState(location.state?.gameMode || 'STANDARD');
+    const [funFeatures, setFunFeatures] = useState(location.state?.funFeatures || false);
+    const [autoReveal, setAutoReveal] = useState(location.state?.autoReveal || false);
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Guest / Session State
     const [currentUser, setCurrentUser] = useState(location.state || {});
@@ -53,6 +59,8 @@ const Room = () => {
                     setPhase(response.phase);
                     setUsers(response.users);
                     if (response.mode) setRoomMode(response.mode);
+                    if (response.funFeatures !== undefined) setFunFeatures(response.funFeatures);
+                    if (response.autoReveal !== undefined) setAutoReveal(response.autoReveal);
 
                     if (response.phase === 'REVEALED' && response.votes) {
                         const votesMap = {};
@@ -66,7 +74,8 @@ const Room = () => {
                         role: serverMe?.role || role,
                         id: response.userId,
                         isHost: serverMe?.isHost || false,
-                        gameMode: response.mode
+                        gameMode: response.mode,
+                        funFeatures: response.funFeatures
                     };
 
                     setCurrentUser(updatedUser);
@@ -121,14 +130,86 @@ const Room = () => {
 
         const onVoteUpdate = ({ userId, hasVoted }) => {
             setVotes(prev => ({ ...prev, [userId]: 'VOTED' }));
+
+            // Play a soft sound when someone votes (if funFeatures is enabled)
+            if (funFeatures) {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.05);
+                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                } catch (e) {
+                    console.log('Audio error:', e);
+                }
+            }
         };
 
         const onRevealed = ({ votes: revealedVotes, averages }) => {
             setPhase('REVEALED');
             setAverages(averages);
             const votesMap = {};
-            revealedVotes.forEach(([uid, val]) => votesMap[uid] = val);
+            revealedVotes.forEach(([uid, val]) => {
+                votesMap[uid] = val;
+            });
             setVotes(votesMap);
+
+            // Check for consensus if funFeatures is enabled
+            if (funFeatures && revealedVotes.length > 0) {
+                // Ignore "?" and "COFFEE" for consensus
+                const numericalVotes = revealedVotes
+                    .map(v => v[1])
+                    .filter(val => val !== '?' && val !== 'COFFEE' && val !== 'questionMark');
+
+                if (numericalVotes.length > 1) {
+                    const allSame = numericalVotes.every(val => val === numericalVotes[0]);
+                    if (allSame) {
+                        import('canvas-confetti').then((confetti) => {
+                            confetti.default({
+                                particleCount: 150,
+                                spread: 70,
+                                origin: { y: 0.6 },
+                                colors: ['#4b2bee', '#facc15', '#ffffff'] // Primary, Banana, White
+                            });
+                        });
+
+                        try {
+                            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4
+                            oscillator.frequency.setValueAtTime(554.37, audioContext.currentTime + 0.1); // C#5
+                            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.2); // E5
+
+                            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                            gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+                            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.5);
+                        } catch (e) {
+                            console.log('Audio error:', e);
+                        }
+                    }
+                }
+            }
         };
 
         const onReset = () => {
@@ -148,12 +229,41 @@ const Room = () => {
             }
         };
 
+        const onRoomSettingsUpdated = ({ settings }) => {
+            if (settings.funFeatures !== undefined) setFunFeatures(settings.funFeatures);
+            if (settings.autoReveal !== undefined) setAutoReveal(settings.autoReveal);
+        };
+
+        const onSessionEnded = () => {
+            alert('The host has ended this session.');
+            navigate('/');
+        };
+
+        const onShowReaction = ({ userId, emojiIcon }) => {
+            if (!funFeatures) return; // ignore if off
+            const reactId = Math.random().toString(36).substr(2, 9);
+            setActiveReactions(prev => ({ ...prev, [userId]: { icon: emojiIcon, id: reactId } }));
+            setTimeout(() => {
+                setActiveReactions(prev => {
+                    if (prev[userId]?.id === reactId) {
+                        const next = { ...prev };
+                        delete next[userId];
+                        return next;
+                    }
+                    return prev;
+                });
+            }, 6000); // Show for 6 seconds
+        };
+
         socket.on('user_joined', onUserJoined);
         socket.on('vote_started', onVoteStarted);
         socket.on('vote_update', onVoteUpdate);
         socket.on('revealed', onRevealed);
         socket.on('reset', onReset);
         socket.on('partial_revote', onPartialRevote);
+        socket.on('room_settings_updated', onRoomSettingsUpdated);
+        socket.on('session_ended', onSessionEnded);
+        socket.on('show_reaction', onShowReaction);
 
         return () => {
             socket.off('user_joined', onUserJoined);
@@ -162,11 +272,13 @@ const Room = () => {
             socket.off('revealed', onRevealed);
             socket.off('reset', onReset);
             socket.off('partial_revote', onPartialRevote);
+            socket.off('room_settings_updated', onRoomSettingsUpdated);
+            socket.off('session_ended', onSessionEnded);
+            socket.off('show_reaction', onShowReaction);
         };
-    }, [socket, currentUser.role, currentUser.id]);
+    }, [socket, currentUser.role, currentUser.id, funFeatures, autoReveal, navigate]);
 
 
-    // Handlers
     const handleGuestJoinSuccess = (user) => {
         setCurrentUser({
             name: user.name,
@@ -175,9 +287,30 @@ const Room = () => {
             isHost: false
         });
 
-        if (user.users) {
-            setUsers(user.users);
-        }
+        if (user.users) setUsers(user.users);
+        if (user.gameMode) setRoomMode(user.gameMode);
+        if (user.funFeatures !== undefined) setFunFeatures(user.funFeatures);
+        if (user.autoReveal !== undefined) setAutoReveal(user.autoReveal);
+
+        // Note: phase and votes are not passed by GuestJoinModal directly right now,
+        // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!
+        // Wait, tryJoin is not triggered again because it's only in an effect on mount. 
+        // Emitting 'join_room' again is safe and fetches the phase/votes natively.
+        socket.emit('join_room', {
+            roomId,
+            name: user.name,
+            role: user.role,
+            userId: user.userId
+        }, (response) => {
+            if (!response.error) {
+                setPhase(response.phase);
+                if (response.votes && response.phase === 'REVEALED') {
+                    const votesMap = {};
+                    response.votes.forEach(([uid, val]) => { votesMap[uid] = val; });
+                    setVotes(votesMap);
+                }
+            }
+        });
 
         setViewState('ROOM');
         // Persist
@@ -210,6 +343,14 @@ const Room = () => {
         socket.emit('revote_partial', { roomId, targetRole: role });
     };
 
+    const handleUpdateSettings = (settings) => {
+        socket.emit('update_room_settings', { roomId, settings });
+    };
+
+    const handleEndSession = () => {
+        socket.emit('end_session', { roomId });
+    };
+
     // Derived state
     const isMeHost = users.find(u => u.id === currentUser.id)?.isHost || false;
     const validUser = viewState === 'ROOM';
@@ -238,7 +379,7 @@ const Room = () => {
 
             {/* Background Effects */}
             <div className="absolute inset-0 aurora z-0" />
-            <div className="absolute inset-0 noise z-0" />
+            <div className="absolute inset-0 modern-grid z-0" />
 
             {/* Unified Navbar with Invite Button */}
             <div className="sticky top-0 z-40 bg-dark-900/80 backdrop-blur-md border-b border-white/5">
@@ -256,7 +397,7 @@ const Room = () => {
                     {/* Actions */}
                     {validUser && (
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-dark-800 px-3 py-1.5 rounded-full border border-white/5">
+                            <div className="flex items-center gap-2 bg-dark-800 px-3 py-1.5 rounded-full border border-white/5 hide-on-mobile">
                                 <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                 <span className="text-sm text-gray-300 font-bold">{currentUser.name}</span>
                                 <span className="text-xs text-gray-500 border-l border-white/10 pl-2 ml-1">{currentUser.role}</span>
@@ -269,6 +410,15 @@ const Room = () => {
                                 <Users size={16} />
                                 Invite
                             </button>
+
+                            {isMeHost && (
+                                <button
+                                    onClick={() => setIsSettingsOpen(true)}
+                                    className="p-2 ml-1 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/5"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -305,12 +455,24 @@ const Room = () => {
                             phase={phase}
                             roomMode={roomMode}
                             averages={averages}
+                            activeReactions={activeReactions}
                             isHost={isMeHost}
+                            funFeatures={funFeatures}
+                            autoReveal={autoReveal}
                             onStartVote={handleStartVote}
                             onReveal={handleReveal}
                             onReset={handleReset}
                             onRevotePartial={handleRevote}
+                            onUpdateSettings={handleUpdateSettings}
                         />
+                        {/* Emoji Reactions System */}
+                        {funFeatures && (
+                            <EmojiReactions
+                                roomId={roomId}
+                                currentUserId={currentUser.id}
+                                phase={phase}
+                            />
+                        )}
                     </>
                 )}
             </main>
@@ -320,7 +482,14 @@ const Room = () => {
                 onClose={() => setIsInviteModalOpen(false)}
                 roomId={roomId}
             />
-
+            <RoomSettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                funFeatures={funFeatures}
+                autoReveal={autoReveal}
+                onUpdateSettings={handleUpdateSettings}
+                onEndSession={handleEndSession}
+            />
         </div>
     );
 };
