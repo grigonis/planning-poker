@@ -5,6 +5,9 @@ import HowItWorks from '../components/home/HowItWorks';
 import Footer from '../components/home/Footer';
 import CreateSessionModal from '../components/CreateSessionModal';
 import JoinSessionModal from '../components/JoinSessionModal';
+import Features from '../components/home/Features';
+import FAQ from '../components/home/FAQ';
+import Pricing from '../components/home/Pricing';
 
 const Landing = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -27,7 +30,13 @@ const Landing = () => {
                     onCreateSession={() => setIsCreateModalOpen(true)}
                 />
 
+                <Features />
+
                 <HowItWorks />
+
+                <FAQ />
+
+                <Pricing />
             </main>
 
             {/* Footer */}
