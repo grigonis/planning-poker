@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
     return (
-        <div className="border border-white/10 rounded-2xl bg-white/5 backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-banana-500/50">
+        <div className="border border-gray-200 dark:border-white/10 rounded-2xl bg-white dark:bg-white/5 backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-banana-500/50">
             <button
-                className="w-full text-left px-6 py-4 flex justify-between items-center text-white focus:outline-none"
+                className="w-full text-left px-6 py-4 flex justify-between items-center text-gray-900 dark:text-white focus:outline-none"
                 onClick={onClick}
                 aria-expanded={isOpen}
             >
@@ -17,7 +17,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
                 className={`transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
             >
-                <div className="px-6 pb-6 text-gray-400 font-light font-heading leading-relaxed">
+                <div className="px-6 pb-6 text-gray-500 dark:text-gray-400 font-light font-heading leading-relaxed">
                     {answer}
                 </div>
             </div>
@@ -26,10 +26,8 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
 };
 
 const FAQ = () => {
-    const [openIndex, setOpenIndex] = useState(0); // Initialize first open
+    const [openIndex, setOpenIndex] = useState(0);
 
-    // These QA help SEO due to their relevance + explicit terms.
-    // If you plan to add FAQ Schema later, wrap these in structured data tags.
     const faqs = [
         {
             question: "What is Planning Poker?",
@@ -52,10 +50,10 @@ const FAQ = () => {
     return (
         <section className="w-full max-w-4xl mx-auto px-6 py-20 relative z-10" id="faq">
             <div className="mb-12 text-center">
-                <h2 className="text-4xl md:text-5xl font-bold font-heading text-white tracking-tight mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-4">
                     Frequently Asked <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Questions.</span>
                 </h2>
-                <p className="text-lg text-gray-400 font-light font-heading">
+                <p className="text-lg text-gray-500 dark:text-gray-400 font-light font-heading">
                     Clear answers for your agile curiosity.
                 </p>
             </div>

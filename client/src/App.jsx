@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SocketProvider } from './context/SocketContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Landing from './pages/Landing';
 import Room from './pages/Room';
 
 function App() {
   return (
+    <ThemeProvider>
     <SocketProvider>
       <BrowserRouter>
         <Routes>
@@ -15,6 +17,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </SocketProvider>
+    </ThemeProvider>
   );
 }
 

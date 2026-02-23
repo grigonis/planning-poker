@@ -14,10 +14,7 @@ const Landing = () => {
     const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
     return (
-        <div className="min-h-screen w-full bg-dark-900 flex flex-col relative overflow-hidden font-sans text-white selection:bg-banana-500/30">
-
-            {/* Background Gradients */}
-            {/* Background handled in Hero section */}
+        <div className="min-h-screen w-full bg-gray-50 dark:bg-dark-900 flex flex-col relative overflow-hidden font-sans text-gray-900 dark:text-white selection:bg-banana-500/30 transition-colors duration-300">
 
             {/* Navbar */}
             <Navbar

@@ -32,7 +32,7 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                     className={`rounded-full overflow-hidden border-2 bg-slate-800 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.5)] ${isOnline
                         ? 'border-white/10 ring-4 ring-white/5 group-hover:ring-white/10'
                         : 'border-white/20 opacity-50 grayscale'
-                        } ${isCurrentUser ? 'cursor-pointer hover:scale-105 hover:border-banana-400' : ''}`}
+                        } ${isCurrentUser ? 'cursor-pointer hover:scale-105 hover:border-orange-400 dark:hover:border-banana-400' : ''}`}
                     style={{ width: size, height: size }}
                 >
                     <img
@@ -63,9 +63,9 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
             </div>
 
             {/* Name + Host badge */}
-            <span className="font-bold font-heading text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
+            <span className="font-bold font-heading text-gray-900 dark:text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
                 {user.name}
-                {user.isHost && <Crown size={12} className="text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
+                {user.isHost && <Crown size={12} className="text-orange-500 dark:text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(255,92,0,0.5)] dark:drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
             </span>
 
             {/* Role badge */}

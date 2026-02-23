@@ -8,19 +8,19 @@ const Pricing = () => {
                 <div className="w-[400px] h-[400px] bg-radial-gradient from-banana-500/10 to-transparent blur-3xl rounded-full opacity-50"></div>
             </div>
 
-            <div className="p-12 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl relative overflow-hidden group">
+            <div className="p-12 rounded-3xl bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-lg dark:shadow-2xl relative overflow-hidden group transition-colors duration-300">
                 {/* Decorative top border */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-banana-500 to-transparent"></div>
 
-                <h2 className="text-4xl md:text-5xl font-bold font-heading text-white tracking-tight mb-6">
+                <h2 className="text-4xl md:text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-6">
                     Completely <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Free to Use.</span>
                 </h2>
 
-                <p className="text-xl text-gray-400 font-light font-heading leading-relaxed mb-6">
+                <p className="text-xl text-gray-500 dark:text-gray-400 font-light font-heading leading-relaxed mb-6">
                     Banana Poker is completely free of use. We don't collect, sell, or use any of your user data. The estimation table is yours.
                 </p>
 
-                <p className="text-lg text-gray-400 font-light font-heading leading-relaxed mb-10">
+                <p className="text-lg text-gray-500 dark:text-gray-400 font-light font-heading leading-relaxed mb-10">
                     However, for the monkeys running our servers, we would highly appreciate some bananas as tips! 🐒🍌
                 </p>
 

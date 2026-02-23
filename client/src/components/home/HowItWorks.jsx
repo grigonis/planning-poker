@@ -29,10 +29,10 @@ const HowItWorks = () => {
         <section className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
             {/* Header */}
             <div className="mb-16">
-                <h2 className="text-5xl font-bold font-heading text-white tracking-tight mb-6">
+                <h2 className="text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-6">
                     How to <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Peel Your Sprint.</span>
                 </h2>
-                <p className="text-xl text-gray-400 font-light font-heading max-w-3xl leading-relaxed">
+                <p className="text-xl text-gray-500 dark:text-gray-400 font-light font-heading max-w-3xl leading-relaxed">
                     A fresh take on Scrum planning. Simple, collaborative, and <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500 font-bold italic">un-peel-ievably</span> fun—even for a tired development team on a Friday afternoon.
                 </p>
             </div>
@@ -40,11 +40,11 @@ const HowItWorks = () => {
             {/* Steps Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {steps.map((step, index) => (
-                    <div key={index} className="group relative rounded-3xl p-[1px] bg-gradient-to-b from-white/10 to-transparent hover:from-banana-500/50 transition-colors duration-500">
-                        <div className="relative h-full bg-[#151921]/40 backdrop-blur-xl rounded-3xl overflow-hidden flex flex-col">
+                    <div key={index} className="group relative rounded-3xl p-[1px] bg-gradient-to-b from-gray-200 dark:from-white/10 to-transparent hover:from-banana-500/50 transition-colors duration-500">
+                        <div className="relative h-full bg-white/80 dark:bg-[#151921]/40 backdrop-blur-xl rounded-3xl overflow-hidden flex flex-col transition-colors duration-300">
 
                             {/* Image Container */}
-                            <div className="h-64 relative bg-gradient-to-br from-white/5 to-transparent overflow-hidden">
+                            <div className="h-64 relative bg-gradient-to-br from-gray-100 dark:from-white/5 to-transparent overflow-hidden">
                                 <div className="absolute inset-0 bg-radial-gradient from-banana-500/10 to-transparent opacity-50"></div>
                                 <img src={step.image} alt={step.title} className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-700" />
 
@@ -58,8 +58,8 @@ const HowItWorks = () => {
 
                             {/* Content */}
                             <div className="p-8 flex flex-col gap-4 flex-1">
-                                <h3 className="text-xl font-bold font-heading text-white">{step.title}</h3>
-                                <p className="text-gray-400 font-light font-heading leading-relaxed">
+                                <h3 className="text-xl font-bold font-heading text-gray-900 dark:text-white">{step.title}</h3>
+                                <p className="text-gray-500 dark:text-gray-400 font-light font-heading leading-relaxed">
                                     {step.description}
                                 </p>
                             </div>

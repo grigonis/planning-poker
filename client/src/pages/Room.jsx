@@ -8,6 +8,7 @@ import GuestJoinModal from '../components/GuestJoinModal';
 import RoomSettingsModal from '../components/Room/RoomSettingsModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
 import { Users, Crown, Settings } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -363,9 +364,9 @@ const Room = () => {
     // Show Loading Detection - Now correctly placed after hooks
     if (viewState === 'LOADING') {
         return (
-            <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center transition-colors duration-300">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-8 h-8 border-2 border-banana-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-2 border-orange-500 dark:border-banana-500 border-t-transparent rounded-full animate-spin"></div>
                     <p className="text-gray-400 font-heading">
                         {!socket ? 'Initializing Socket...' : !isConnected ? 'Connecting to Server...' : 'Joining Room...'}
                     </p>
@@ -375,37 +376,39 @@ const Room = () => {
     }
 
     return (
-        <div className="min-h-screen bg-dark-900 font-sans text-white selection:bg-banana-500/30 flex flex-col relative">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 font-sans text-gray-900 dark:text-white selection:bg-banana-500/30 flex flex-col relative transition-colors duration-300">
 
             {/* Background Effects */}
             <div className="absolute inset-0 aurora z-0" />
             <div className="absolute inset-0 modern-grid z-0" />
 
             {/* Unified Navbar with Invite Button */}
-            <div className="sticky top-0 z-40 bg-dark-900/80 backdrop-blur-md border-b border-white/5">
+            <div className="sticky top-0 z-40 bg-gray-50/80 dark:bg-dark-900/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 transition-colors duration-300">
                 <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     {/* Logo/Room Info */}
                     <div className="flex flex-col">
-                        <h1 className="text-xl font-bold font-heading text-banana-500 leading-none">BananaPoker</h1>
-                        <span className="text-xs text-gray-400 font-mono mt-1">Room: {roomId}</span>
+                        <h1 className="text-xl font-bold font-heading text-orange-500 dark:text-banana-500 leading-none">BananaPoker</h1>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">Room: {roomId}</span>
                     </div>
                     {/* Game Mode Badge */}
-                    <div className="bg-white/5 px-2 py-0.5 rounded text-[10px] text-gray-400 font-heading uppercase tracking-wider border border-white/5">
+                    <div className="bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded text-[10px] text-gray-500 dark:text-gray-400 font-heading uppercase tracking-wider border border-gray-200 dark:border-white/5 transition-colors duration-300">
                         {roomMode} Mode
                     </div>
 
                     {/* Actions */}
                     {validUser && (
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-dark-800 px-3 py-1.5 rounded-full border border-white/5 hide-on-mobile">
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 bg-white dark:bg-dark-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/5 hide-on-mobile transition-colors duration-300">
                                 <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                <span className="text-sm text-gray-300 font-bold">{currentUser.name}</span>
-                                <span className="text-xs text-gray-500 border-l border-white/10 pl-2 ml-1">{currentUser.role}</span>
+                                <span className="text-sm text-gray-700 dark:text-gray-300 font-bold">{currentUser.name}</span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500 border-l border-gray-200 dark:border-white/10 pl-2 ml-1">{currentUser.role}</span>
                             </div>
+
+                            <ThemeToggle />
 
                             <button
                                 onClick={() => setIsInviteModalOpen(true)}
-                                className="bg-white/10 hover:bg-white/20 text-white text-sm font-bold font-heading px-4 py-2 rounded-full transition-colors border border-white/5 flex items-center gap-2"
+                                className="bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-white text-sm font-bold font-heading px-4 py-2 rounded-full transition-colors border border-gray-200 dark:border-white/5 flex items-center gap-2"
                             >
                                 <Users size={16} />
                                 Invite
@@ -414,7 +417,7 @@ const Room = () => {
                             {isMeHost && (
                                 <button
                                     onClick={() => setIsSettingsOpen(true)}
-                                    className="p-2 ml-1 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/5"
+                                    className="p-2 rounded-full bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors border border-gray-200 dark:border-white/5"
                                 >
                                     <Settings className="w-5 h-5" />
                                 </button>
