@@ -1,5 +1,5 @@
 import React from 'react';
-import ShufflingCards from '../ShufflingCards';
+import HeroPokerTable from './HeroPokerTable';
 import productHuntCat from '../../assets/banana-poker/product-hunt-cat.svg';
 import createRoomIcon from '../../assets/banana-poker/create-room-icon.svg';
 import heroIllustration from '../../assets/banana-poker/hero-illustration.png';
@@ -57,8 +57,8 @@ const Hero = ({ onCreateSession }) => {
             </div>
 
             {/* Right Visuals */}
-            <div className="h-[500px] w-full flex items-center justify-center animate-in slide-in-from-right-10 duration-1000 fade-in relative">
-                <ShufflingCards />
+            <div className="w-full flex items-center justify-center animate-in slide-in-from-right-10 duration-1000 fade-in relative mt-12 lg:mt-0">
+                <HeroPokerTable />
             </div>
         </section>
     );

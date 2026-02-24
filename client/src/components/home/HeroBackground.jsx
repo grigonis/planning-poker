@@ -1,7 +1,9 @@
 import React, { useRef, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 
 const HeroBackground = () => {
     const canvasRef = useRef(null);
+    const { isDark } = useTheme();
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -82,7 +84,7 @@ const HeroBackground = () => {
 
                     ctx.beginPath();
                     ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                    ctx.fillStyle = `rgba(${isDark ? '255, 255, 255' : '0, 0, 0'}, ${opacity})`;
                     ctx.fill();
                 }
             }
@@ -103,7 +105,7 @@ const HeroBackground = () => {
             window.removeEventListener('resize', resizeCanvas);
             cancelAnimationFrame(animationFrameId);
         };
-    }, []);
+    }, [isDark]);
 
     return (
         <canvas
