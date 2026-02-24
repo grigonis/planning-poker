@@ -1,5 +1,5 @@
 import React from 'react';
-import ShufflingCards from '../ShufflingCards';
+import HeroPokerTable from './HeroPokerTable';
 import productHuntCat from '../../assets/banana-poker/product-hunt-cat.svg';
 import createRoomIcon from '../../assets/banana-poker/create-room-icon.svg';
 import heroIllustration from '../../assets/banana-poker/hero-illustration.png';
@@ -13,7 +13,7 @@ const Hero = ({ onCreateSession }) => {
             {/* Background Effects (Localized to Hero) */}
             <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
                 {/* Single Large Gradient Behind Cards */}
-                <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-radial-gradient from-banana-500/20 to-transparent blur-3xl opacity-60"></div>
+                <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-radial-gradient from-banana-500/20 to-transparent blur-3xl opacity-60 dark:opacity-60 opacity-30"></div>
 
                 {/* Animated Dotted Pattern Canvas */}
                 <HeroBackground />
@@ -30,7 +30,7 @@ const Hero = ({ onCreateSession }) => {
                 </div>
 
                 {/* Heading */}
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold font-heading text-white leading-[1.1] tracking-tight">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold font-heading text-gray-900 dark:text-white leading-[1.1] tracking-tight">
                     Sprints are better when they are
                     <img
                         src={heroIllustration}
@@ -40,7 +40,7 @@ const Hero = ({ onCreateSession }) => {
                 </h1>
 
                 {/* Subtext */}
-                <p className="text-lg md:text-xl text-gray-400 font-light font-heading max-w-lg leading-relaxed">
+                <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-light font-heading max-w-lg leading-relaxed">
                     Peel back the complexity of agile estimation. Banana Poker is the high-fidelity, bias-free planning tool designed to help remote teams align faster and build better.
                 </p>
 
@@ -57,9 +57,8 @@ const Hero = ({ onCreateSession }) => {
             </div>
 
             {/* Right Visuals */}
-            <div className="h-[500px] w-full flex items-center justify-center animate-in slide-in-from-right-10 duration-1000 fade-in relative">
-                {/* Removed local glow since we have the main gradient now */}
-                <ShufflingCards />
+            <div className="w-full flex items-center justify-center animate-in slide-in-from-right-10 duration-1000 fade-in relative mt-12 lg:mt-0">
+                <HeroPokerTable />
             </div>
         </section>
     );
