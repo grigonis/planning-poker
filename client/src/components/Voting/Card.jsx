@@ -8,7 +8,7 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
             onClick={onClick}
             className={twMerge(
                 clsx(
-                    "relative w-[50px] h-[70px] md:w-[70px] md:h-[98px] rounded-lg shadow-md cursor-pointer transition-all duration-300 transform perspective-1000",
+                    "relative w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg shadow-md cursor-pointer transition-all duration-300 transform perspective-1000",
                     selected ? "ring-4 ring-orange-500 dark:ring-banana-500 -translate-y-2 shadow-[0_0_15px_rgba(255,92,0,0.4)] dark:shadow-[0_0_15px_rgba(255,184,0,0.5)]" : "hover:-translate-y-1",
                     className
                 )
@@ -21,7 +21,7 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
                 {/* Front Face (Value) */}
                 {!faceDown && (
                     <div className="w-full h-full bg-white dark:bg-dark-800 border-2 border-banana-500/50 rounded-lg flex items-center justify-center shadow-lg shadow-banana-500/10">
-                        <span className="text-xl md:text-3xl font-bold font-heading text-gray-900 dark:text-white">
+                        <span className="text-lg sm:text-xl md:text-3xl font-bold font-heading text-gray-900 dark:text-white">
                             {value === 'COFFEE' ? '☕' : value}
                         </span>
                     </div>
@@ -30,7 +30,7 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
                 {/* Back Face (Pattern) */}
                 {faceDown && (
                     <div className="w-full h-full bg-linear-to-br from-banana-500 to-orange-500 rounded-lg flex items-center justify-center border-2 border-white/20 shadow-inner">
-                        <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full backdrop-blur-sm"></div>
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-white/20 rounded-full backdrop-blur-sm"></div>
                     </div>
                 )}
             </div>

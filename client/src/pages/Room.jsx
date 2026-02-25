@@ -357,7 +357,7 @@ const Room = () => {
     const validUser = viewState === 'ROOM';
     const needsGuestJoin = viewState === 'GUEST_INPUT';
 
-    const showOverlay = (phase === 'VOTING' && currentUser.role !== 'OBSERVER') ||
+    const showOverlay = (phase === 'VOTING' && currentUser.role !== 'SPECTATOR') ||
         (phase === 'PARTIAL_VOTE_DEV' && currentUser.role === 'DEV') ||
         (phase === 'PARTIAL_VOTE_QA' && currentUser.role === 'QA');
 

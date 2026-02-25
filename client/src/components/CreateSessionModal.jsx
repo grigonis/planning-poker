@@ -19,7 +19,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
 
         let finalRole = role;
         if (gameMode === 'STANDARD') {
-            finalRole = role === 'OBSERVER' ? 'OBSERVER' : 'DEV';
+            finalRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV';
         }
 
         socket.emit('create_room', { name, role: finalRole, gameMode }, (response) => {
@@ -144,10 +144,10 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
 
                             <button
                                 type="button"
-                                onClick={() => setRole('OBSERVER')}
-                                className={`py-2 rounded-lg text-xs font-bold font-heading transition-all ${role === 'OBSERVER' ? 'bg-gray-600 dark:bg-gray-700 text-white shadow-md' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                                onClick={() => setRole('SPECTATOR')}
+                                className={`py-2 rounded-lg text-xs font-bold font-heading transition-all ${role === 'SPECTATOR' ? 'bg-gray-600 dark:bg-gray-700 text-white shadow-md' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
                             >
-                                Observer
+                                Spectator
                             </button>
                         </div>
                     </div>

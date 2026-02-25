@@ -34,8 +34,8 @@ module.exports = (io, socket) => {
         if (!result) return;
         const { user, room, userId } = result;
 
-        // Observer cannot vote
-        if (user.role === 'OBSERVER') return;
+        // Spectator cannot vote
+        if (user.role === 'SPECTATOR') return;
 
         if (room.phase === 'PARTIAL_VOTE_DEV' && user.role !== 'DEV') return;
         if (room.phase === 'PARTIAL_VOTE_QA' && user.role !== 'QA') return;
@@ -53,7 +53,7 @@ module.exports = (io, socket) => {
         if (room.autoReveal) {
             let eligibleVoters = 0;
             room.users.forEach(u => {
-                if (u.role === 'OBSERVER') return;
+                if (u.role === 'SPECTATOR') return;
                 if (!u.connected) return;
                 if (room.phase === 'PARTIAL_VOTE_DEV' && u.role !== 'DEV') return;
                 if (room.phase === 'PARTIAL_VOTE_QA' && u.role !== 'QA') return;
@@ -96,8 +96,8 @@ module.exports = (io, socket) => {
             let sum = 0, count = 0;
             room.votes.forEach((val, userId) => {
                 const u = room.users.get(userId);
-                // Observers shouldn't have votes, but check anyway
-                if (u && u.role !== 'OBSERVER') {
+                // Spectators shouldn't have votes, but check anyway
+                if (u && u.role !== 'SPECTATOR') {
                     const num = parseFloat(val);
                     if (!isNaN(num)) {
                         sum += num; count++;

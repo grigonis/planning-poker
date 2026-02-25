@@ -71,14 +71,15 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
             {/* Role badge */}
             <span className={`
                 text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm
-                ${roomMode === 'STANDARD'
-                    ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200 border border-gray-500/50'
-                    : user.role === 'DEV'
-                        ? 'bg-gradient-to-r from-indigo-600/40 to-indigo-500/40 text-indigo-200 border border-indigo-500/50'
-                        : 'bg-gradient-to-r from-rose-600/40 to-rose-500/40 text-rose-200 border border-rose-500/50'
-                }
-            `}>
-                {roomMode === 'STANDARD' ? 'Estimator' : user.role}
+                ${user.role === 'SPECTATOR'
+                    ? 'bg-gradient-to-r from-gray-800/80 to-gray-700/80 text-gray-400 border border-gray-600/50'
+                    : roomMode === 'STANDARD'
+                        ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200 border border-gray-500/50'
+                        : user.role === 'DEV'
+                            ? 'bg-gradient-to-r from-indigo-600/40 to-indigo-500/40 text-indigo-200 border border-indigo-500/50'
+                            : 'bg-gradient-to-r from-rose-600/40 to-rose-500/40 text-rose-200 border border-rose-500/50'
+                }            `}>
+                {user.role === 'SPECTATOR' ? 'Spectator' : (roomMode === 'STANDARD' ? 'Estimator' : user.role)}
             </span>
         </div>
     );
