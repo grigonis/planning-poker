@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70" width="100%" height="100%">
+  <!-- Base card with solid dashed border, maybe representing back pattern -->
+  <rect x="0" y="0" width="50" height="70" rx="4" fill="#eed24d" opacity="0.1"/>
+  <rect x="2" y="2" width="46" height="66" rx="3" fill="transparent" stroke="#ff5c00" stroke-width="1.5" opacity="0.8"/>
+  <rect x="6" y="6" width="38" height="58" rx="2" fill="transparent" stroke="#ff5c00" stroke-width="1" opacity="0.4" stroke-dasharray="2, 2"/>
+  <circle cx="25" cy="35" r="8" fill="#ff5c00" opacity="0.15" />
+</svg>
