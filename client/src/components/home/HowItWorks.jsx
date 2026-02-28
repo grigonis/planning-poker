@@ -63,7 +63,7 @@ const HowItWorks = () => {
     ];
 
     return (
-        <section className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
+        <section id="how-it-works" className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
             <div className="mb-16">
                 <h2 className="text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-6">
                     How to <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Peel Your Sprint.</span>

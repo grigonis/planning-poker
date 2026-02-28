@@ -105,7 +105,7 @@ const BentoCard = ({ feature }) => {
 
 const Features = () => {
     return (
-        <section className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
+        <section id="features" className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
             <div className="mb-12">
                 <h2 className="text-4xl md:text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-4">
                     The <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Perfect Hand</span> of Features.

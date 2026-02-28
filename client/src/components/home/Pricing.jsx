@@ -2,7 +2,7 @@ import React from 'react';
 
 const Pricing = () => {
     return (
-        <section className="w-full max-w-4xl mx-auto px-6 py-20 relative z-10 text-center">
+        <section id="pricing" className="w-full max-w-4xl mx-auto px-6 py-20 relative z-10 text-center">
             {/* Background elements */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
                 <div className="w-[400px] h-[400px] bg-radial-gradient from-banana-500/10 to-transparent blur-3xl rounded-full opacity-50"></div>
