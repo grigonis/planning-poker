@@ -27,7 +27,7 @@ module.exports = (io, socket) => {
         };
 
         // Validate role or default to HOST (which acts as DEV usually)
-        // If user explicitly selected OBSERVER, we respect that.
+        // If user explicitly selected SPECTATOR, we respect that.
         // If they selected DEV/QA, we respect that.
         // If nothing, 'HOST' (legacy) or 'DEV'.
         const hostRole = role || 'DEV';
@@ -95,7 +95,7 @@ module.exports = (io, socket) => {
             // Standardize role based on mode
             let finalRole = role;
             if (room.gameMode === 'STANDARD') {
-                finalRole = role === 'OBSERVER' ? 'OBSERVER' : 'DEV'; // Map Estimator to DEV
+                finalRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV'; // Map Estimator to DEV
             }
 
             user = {

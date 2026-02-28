@@ -5,30 +5,12 @@ import { Crown, Eye, RotateCcw, Play } from 'lucide-react';
 
 import playerFaceDownSVG from '../../assets/TBD_face_down_player.svg';
 
-/**
- * Calculates the exact relative [x, y] position for an avatar along an elliptical perimeter.
- * index: Current player index (0 to total-1)
- * total: Total number of players
- * rx: horizontal radius (0-50 percentage)
- * ry: vertical radius (0-50 percentage)
- */
-const getEllipsePosition = (index, total, rx = 45, ry = 42) => {
-    // Start from the bottom (pi/2) and go clockwise
-    const t = (index / total) * 2 * Math.PI + Math.PI / 2;
-    // Warp the angle to cluster players more towards the top and bottom flat edges
-    // A warpRatio > 1 pushes angles towards 90 and 270 (top and bottom)
-    const warpRatio = 1.6;
-    const angle = Math.atan2(Math.sin(t) * warpRatio, Math.cos(t));
-
-    const x = 50 + rx * Math.cos(angle);
-    const y = 50 + ry * Math.sin(angle);
-    return { x, y };
-};
+const SIDE_ASSIGNMENTS = ['TOP', 'BOT', 'LEFT', 'RIGHT', 'BOT', 'TOP', 'BOT', 'TOP', 'LEFT', 'RIGHT', 'BOT', 'TOP', 'LEFT', 'RIGHT', 'BOT', 'TOP'];
 
 const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
     // 1. Spectators do not show any card slot
-    if (user.role === 'OBSERVER') {
-        return <div className="w-[45px] h-[63px] md:w-[70px] md:h-[98px]" />;
+    if (user.role === 'SPECTATOR') {
+        return null;
     }
 
     const isMe = user.id === currentUserId;
@@ -37,7 +19,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
 
     // 2. Voting Finished: Show actual face-up card
     if (phase === 'REVEALED' && voteVal !== undefined) {
-        return <Card value={voteVal} className="w-[45px] h-[63px] md:w-[70px] md:h-[98px] text-xs md:text-sm" />;
+        return <Card value={voteVal} className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] text-xs md:text-sm" />;
     }
 
     const isVotingPhase = phase === 'VOTING' || phase.startsWith('PARTIAL');
@@ -46,7 +28,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
     if (phase === 'PARTIAL_VOTE_QA' && user.role !== 'QA') isParticipating = false;
 
     if (!isParticipating && phase !== 'IDLE') {
-        return <div className="w-[45px] h-[63px] md:w-[70px] md:h-[98px]" />;
+        return <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px]" />;
     }
 
     // 3. Voting Started
@@ -54,12 +36,12 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
         if (hasVoted) {
             // Player has voted: Face-down player card
             return (
-                <img src={playerFaceDownSVG} alt="Voted" className="w-[45px] h-[63px] md:w-[70px] md:h-[98px] rounded-lg animate-in zoom-in duration-300 drop-shadow-[0_0_15px_rgba(255,184,0,0.3)]" />
+                <img src={playerFaceDownSVG} alt="Voted" className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg animate-in zoom-in duration-300 drop-shadow-[0_0_15px_rgba(255,184,0,0.3)]" />
             );
         } else {
             // Player is deciding: Card dashed placeholder
             return (
-                <div className="w-[45px] h-[63px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-orange-500/40 dark:border-white/20 flex flex-col items-center justify-center bg-orange-500/5 dark:bg-white/5 opacity-80 shadow-inner">
+                <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-orange-500/40 dark:border-white/20 flex flex-col items-center justify-center bg-orange-500/5 dark:bg-white/5 opacity-80 shadow-inner">
                     <div className="flex space-x-1">
                         <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-orange-400 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                         <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-orange-400 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -72,16 +54,15 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
 
     // 4. Voting Not Started (IDLE): Empty card dashed placeholder
     return (
-        <div className="w-[45px] h-[63px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-gray-400/30 dark:border-white/10 flex items-center justify-center opacity-50 bg-gray-500/5">
+        <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-gray-400/30 dark:border-white/10 flex items-center justify-center opacity-50 bg-gray-500/5">
         </div>
     );
 };
 
 const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50 }) => {
     // Determine dynamic layout direction based on coordinates to point cards towards center of table
-    const dx = 50 - x;
-    const dy = 50 - y;
-    const isSide = Math.abs(dx) > Math.abs(dy) * 1.2;
+    // Extreme left/right edges (x <= 15 or x >= 85) are considered "side" seats
+    const isSide = x <= 15 || x >= 85;
 
     let flexClass = 'flex-col';
     if (isSide) {
@@ -134,7 +115,7 @@ const PokerTable = ({
 
     if (isVotingPhase) {
         users.forEach(u => {
-            if (u.role === 'OBSERVER') return;
+            if (u.role === 'SPECTATOR') return;
             let isParticipating = true;
             if (phase === 'PARTIAL_VOTE_DEV' && u.role !== 'DEV') isParticipating = false;
             if (phase === 'PARTIAL_VOTE_QA' && u.role !== 'QA') isParticipating = false;
@@ -152,27 +133,13 @@ const PokerTable = ({
     return (
         <div className="relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center py-6 md:py-12 transition-all duration-700">
 
-            {/* Dynamic Progress Bar */}
-            {isVotingPhase && eligibleVotersCount > 0 && (
-                <div className="absolute top-0 md:-top-2 left-1/2 -translate-x-1/2 w-64 md:w-80 animate-in fade-in slide-in-from-top-4 duration-500 z-30">
-                    <div className="flex justify-between items-end mb-1.5 px-1">
-                        <span className="text-[10px] font-bold font-heading uppercase text-orange-500 dark:text-banana-500/80 tracking-widest">Estimating</span>
-                        <span className="text-[10px] font-bold text-gray-700 dark:text-white bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-full border border-gray-200 dark:border-white/5">{currentVotesCount} / {eligibleVotersCount} Voted</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200 dark:border-white/5 shadow-inner">
-                        <div
-                            className="h-full bg-orange-500 dark:bg-banana-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(255,92,0,0.4)] dark:shadow-[0_0_10px_rgba(238,173,43,0.5)]"
-                            style={{ width: `${voteProgress}%` }}
-                        />
-                    </div>
-                </div>
-            )}
+
 
             {/* Elliptical Table Geometry Container */}
             <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] md:aspect-[2.2/1] lg:aspect-[2.4/1] flex items-center justify-center mt-12 md:mt-16">
 
                 {/* Table Surface (Realistic Glassmorphism per Figma) */}
-                <div className="absolute inset-0 m-auto w-[60%] h-[55%] sm:w-[70%] sm:h-[60%] md:w-[75%] md:h-[65%] rounded-[60px] md:rounded-[120px] bg-white/5 dark:bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[2px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center justify-center z-10 p-6 md:p-12 transition-all duration-700">
+                <div className="absolute inset-0 m-auto w-[60%] h-[55%] sm:w-[70%] sm:h-[60%] md:w-[75%] md:h-[65%] rounded-[60px] md:rounded-[120px] bg-white/10 dark:bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center justify-center z-10 p-6 md:p-12 transition-all duration-700">
                     {/* Center Glow */}
                     <div className="absolute bg-orange-500/10 dark:bg-[rgba(255,210,77,0.05)] blur-[30px] rounded-[9999px] w-[80%] h-[70%] pointer-events-none transition-all duration-700" />
                     {/* Inner Edge Border Glow */}
@@ -205,17 +172,28 @@ const PokerTable = ({
                             <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold font-heading tracking-[0.2em] uppercase opacity-70">
                                 Current Estimation
                             </span>
-                            <p className="text-lg md:text-2xl font-extrabold text-gray-900 dark:text-white font-heading animate-pulse">
+                            <p className="text-lg md:text-2xl font-extrabold text-gray-900 dark:text-white font-heading animate-pulse mb-0 md:mb-1">
                                 Voting in progress...
                             </p>
-                            <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400 text-xs md:text-sm bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full border border-gray-200 dark:border-white/5">
-                                <div className="flex space-x-1">
-                                    <div className="w-1.5 h-1.5 bg-orange-500 dark:bg-banana-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                    <div className="w-1.5 h-1.5 bg-orange-500 dark:bg-banana-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                    <div className="w-1.5 h-1.5 bg-orange-500 dark:bg-banana-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+
+                            {/* Dynamic Progress Bar inline */}
+                            {eligibleVotersCount > 0 && (
+                                <div className="flex items-center justify-center gap-3 w-[200px] sm:w-[240px] md:w-[280px] mt-1 animate-in fade-in zoom-in-95 duration-500">
+                                    <div className="flex-1 h-2 bg-gray-200/50 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200/50 dark:border-white/5 shadow-inner backdrop-blur-sm relative">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-orange-500 via-banana-400 to-orange-500 dark:from-banana-500 dark:via-orange-400 dark:to-banana-500 transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(255,184,0,0.6)] dark:shadow-[0_0_12px_rgba(255,184,0,0.6)] relative"
+                                            style={{ width: `${voteProgress}%` }}
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent"></div>
+                                            <div className="absolute top-0 right-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-white/30 animate-pulse"></div>
+                                        </div>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-gray-700 dark:text-white bg-white/80 dark:bg-dark-800/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-gray-200/50 dark:border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.1)] uppercase tracking-wider whitespace-nowrap">
+                                        {currentVotesCount} / {eligibleVotersCount} Voted
+                                    </span>
                                 </div>
-                                <span className="ml-1 text-[11px] uppercase tracking-wider font-bold">Waiting for votes</span>
-                            </div>
+                            )}
+
                             {isHost && (
                                 <button
                                     onClick={onReveal}
@@ -288,31 +266,64 @@ const PokerTable = ({
                     }
                 </div>
 
-                {/* Elliptical Seats Loop */}
-                {allTableUsers.map((u, i) => {
-                    // Determine responsive radii based loosely on pure CSS math, or predefined
-                    // Let's use 45% x 45% (which means they push close directly to the edge of the 100% container)
-                    // Adjusting rx, ry down pushes them towards center. 
-                    // A value of 46% x 46% ensures cards almost touch the table's edge visually.
-                    const { x, y } = getEllipsePosition(i, allTableUsers.length, 45, 45);
+                {/* Dynamic Seats Loop */}
+                {(() => {
+                    const sides = { TOP: [], BOT: [], LEFT: [], RIGHT: [] };
 
-                    return (
-                        <PlayerSlot
-                            key={u.id}
-                            user={u}
-                            votes={votes}
-                            myVote={myVote}
-                            phase={phase}
-                            currentUserId={currentUser.id}
-                            roomMode={roomMode}
-                            style={{ left: `${x}%`, top: `${y}%` }}
-                            x={x}
-                            y={y}
-                            avatarSize={avatarSize}
-                            activeReaction={activeReactions[u.id]}
-                        />
-                    );
-                })}
+                    allTableUsers.forEach((u, i) => {
+                        const sideName = SIDE_ASSIGNMENTS[i % SIDE_ASSIGNMENTS.length];
+                        sides[sideName].push(u);
+                    });
+
+                    const getPositionsForSide = (sideName, numPlayers) => {
+                        const positions = [];
+                        // We use up to 80% of the available width/height to distribute players
+                        const spread = Math.min(60 + (numPlayers - 1) * 10, 85);
+                        const spacing = spread / numPlayers;
+                        const start = (100 - spread) / 2 + spacing / 2;
+
+                        for (let i = 0; i < numPlayers; i++) {
+                            const offset = start + (i * spacing);
+                            if (sideName === 'TOP') positions.push({ x: offset, y: 5 });
+                            else if (sideName === 'BOT') positions.push({ x: offset, y: 95 });
+                            else if (sideName === 'LEFT') positions.push({ x: 5, y: offset });
+                            else if (sideName === 'RIGHT') positions.push({ x: 95, y: offset });
+                        }
+                        return positions;
+                    };
+
+                    const sideToPositions = {
+                        TOP: getPositionsForSide('TOP', sides.TOP.length),
+                        BOT: getPositionsForSide('BOT', sides.BOT.length),
+                        LEFT: getPositionsForSide('LEFT', sides.LEFT.length),
+                        RIGHT: getPositionsForSide('RIGHT', sides.RIGHT.length)
+                    };
+
+                    const sideCounters = { TOP: 0, BOT: 0, LEFT: 0, RIGHT: 0 };
+
+                    return allTableUsers.map((u, i) => {
+                        const sideName = SIDE_ASSIGNMENTS[i % SIDE_ASSIGNMENTS.length];
+                        const posIndex = sideCounters[sideName]++;
+                        let { x, y } = sideToPositions[sideName][posIndex];
+
+                        return (
+                            <PlayerSlot
+                                key={u.id}
+                                user={u}
+                                votes={votes}
+                                myVote={myVote}
+                                phase={phase}
+                                currentUserId={currentUser.id}
+                                roomMode={roomMode}
+                                style={{ left: `${x}%`, top: `${y}%` }}
+                                x={x}
+                                y={y}
+                                avatarSize={avatarSize}
+                                activeReaction={activeReactions[u.id]}
+                            />
+                        );
+                    });
+                })()}
 
             </div> {/* Close Geometry Container */}
         </div>

@@ -115,13 +115,13 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setRole('OBSERVER')}
-                                                className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden group ${role === 'OBSERVER'
+                                                onClick={() => setRole('SPECTATOR')}
+                                                className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden group ${role === 'SPECTATOR'
                                                     ? 'bg-purple-500 text-white border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
                                                     : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                                                     }`}
                                             >
-                                                <div className="font-bold font-heading relative z-10">Observer</div>
+                                                <div className="font-bold font-heading relative z-10">Spectator</div>
                                                 <div className="text-xs opacity-80 relative z-10">View only</div>
                                             </button>
                                         </>
@@ -151,13 +151,13 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                             </div>
                                             <button
                                                 type="button"
-                                                onClick={() => setRole('OBSERVER')}
-                                                className={`p-3 rounded-xl border text-left transition-all ${role === 'OBSERVER'
+                                                onClick={() => setRole('SPECTATOR')}
+                                                className={`p-3 rounded-xl border text-left transition-all ${role === 'SPECTATOR'
                                                     ? 'bg-purple-500 text-white border-purple-500'
                                                     : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                                                     }`}
                                             >
-                                                <div className="font-bold font-heading">Observer</div>
+                                                <div className="font-bold font-heading">Spectator</div>
                                             </button>
                                         </div>
                                     )}

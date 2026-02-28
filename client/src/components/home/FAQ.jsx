@@ -2,23 +2,28 @@ import React, { useState } from 'react';
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
     return (
-        <div className="border border-gray-200 dark:border-white/10 rounded-2xl bg-white dark:bg-white/5 backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-banana-500/50">
+        <div className={`transition-colors duration-300 rounded-2xl ${isOpen ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-transparent'}`}>
             <button
-                className="w-full text-left px-6 py-4 flex justify-between items-center text-gray-900 dark:text-white focus:outline-none"
+                className="w-full text-left px-6 py-5 flex justify-between items-center text-gray-900 dark:text-white focus:outline-none"
                 onClick={onClick}
                 aria-expanded={isOpen}
             >
-                <h3 className="text-xl font-bold font-heading pr-8">{question}</h3>
-                <span className={`transform transition-transform duration-300 text-banana-500 font-bold ${isOpen ? 'rotate-45' : ''}`}>
-                    +
+                <h3 className="text-lg font-medium pr-8">{question}</h3>
+                <span className={`text-gray-500 dark:text-neutral-400 flex-shrink-0 ml-4 transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-45' : 'rotate-0'}`}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
                 </span>
             </button>
             <div
-                className={`transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                     }`}
             >
-                <div className="px-6 pb-6 text-gray-500 dark:text-gray-400 font-light font-heading leading-relaxed">
-                    {answer}
+                <div className="overflow-hidden">
+                    <div className="px-6 pb-6 text-gray-600 dark:text-neutral-400 text-base leading-relaxed">
+                        {answer}
+                    </div>
                 </div>
             </div>
         </div>
@@ -26,7 +31,14 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
 };
 
 const FAQ = () => {
-    const [openIndex, setOpenIndex] = useState(0);
+    // Array to hold indices of open items
+    const [openIndices, setOpenIndices] = useState([0]);
+
+    const toggleFAQ = (index) => {
+        setOpenIndices(prev =>
+            prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+        );
+    };
 
     const faqs = [
         {
@@ -48,26 +60,40 @@ const FAQ = () => {
     ];
 
     return (
-        <section className="w-full max-w-4xl mx-auto px-6 py-20 relative z-10" id="faq">
-            <div className="mb-12 text-center">
-                <h2 className="text-4xl md:text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-4">
-                    Frequently Asked <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Questions.</span>
-                </h2>
-                <p className="text-lg text-gray-500 dark:text-gray-400 font-light font-heading">
-                    Clear answers for your agile curiosity.
-                </p>
-            </div>
+        <section className="w-full max-w-7xl mx-auto px-6 py-24 relative z-10" id="faq">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
+                {/* Left Column */}
+                <div className="lg:col-span-5 flex flex-col items-start">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900/50 mb-6 font-heading">
+                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                        <span className="text-xs text-gray-600 dark:text-neutral-400 font-medium">Frequently Asked Questions</span>
+                    </div>
 
-            <div className="flex flex-col gap-4">
-                {faqs.map((faq, index) => (
-                    <FAQItem
-                        key={index}
-                        question={faq.question}
-                        answer={faq.answer}
-                        isOpen={openIndex === index}
-                        onClick={() => setOpenIndex(index === openIndex ? -1 : index)}
-                    />
-                ))}
+                    <h2 className="text-3xl sm:text-4xl xl:text-5xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-900 dark:from-white dark:to-gray-500 mb-4 tracking-tight font-heading whitespace-nowrap">
+                        Questions & Answer
+                    </h2>
+
+                    <p className="text-gray-500 dark:text-neutral-400 text-lg mb-8 font-heading">
+                        Can't find what you're looking for?
+                    </p>
+
+                    <a href="mailto:support@bananapoker.com" className="inline-block px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-[#1C1C1E] dark:hover:bg-[#2C2C2E] border border-transparent dark:border-white/5 text-gray-900 dark:text-white text-sm font-medium rounded-lg transition-colors font-heading">
+                        Contact Us
+                    </a>
+                </div>
+
+                {/* Right Column */}
+                <div className="lg:col-span-7 flex flex-col gap-2 font-heading">
+                    {faqs.map((faq, index) => (
+                        <FAQItem
+                            key={index}
+                            question={faq.question}
+                            answer={faq.answer}
+                            isOpen={openIndices.includes(index)}
+                            onClick={() => toggleFAQ(index)}
+                        />
+                    ))}
+                </div>
             </div>
         </section>
     );
