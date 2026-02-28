@@ -4,26 +4,33 @@ import step2 from '../../assets/banana-poker/step2-gather.avif';
 import step3 from '../../assets/banana-poker/step3-vote.avif';
 
 const StepCard = ({ image, title, description }) => (
-    <div
-        className="group relative aspect-[4/5] rounded-3xl overflow-hidden cursor-default isolate"
+    <div className="bento-noise relative aspect-[4/5] overflow-hidden rounded-3xl
+        bg-white dark:bg-[#101010]
+        border border-gray-200 dark:border-white/5
+        backdrop-blur-xl
+        hover:shadow-xl dark:hover:shadow-[0_0_20px_rgba(255,165,0,0.1)]
+        transition-all duration-500 ease-out
+        group cursor-default isolate"
         style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
     >
+        {/* Animated hover beam */}
+        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20" />
 
         {/* Full-cover image */}
         <img
             src={image}
             alt={title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] z-0"
         />
 
         {/* Subtle background highlight on hover */}
-        <div className="absolute inset-0 bg-banana-500/0 group-hover:bg-banana-500/10 transition-colors duration-500" />
+        <div className="absolute inset-0 bg-banana-500/0 group-hover:bg-banana-500/10 transition-colors duration-500 z-10" />
 
         {/* Gradient only behind the text */}
-        <div className="absolute inset-x-0 bottom-0 h-[50%] bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10" />
 
         {/* Text */}
-        <div className="absolute inset-x-0 bottom-0 p-7">
+        <div className="absolute inset-x-0 bottom-0 p-7 z-20">
             <h3 className="font-heading font-bold text-white text-xl leading-snug transition-transform duration-500 ease-out group-hover:-translate-y-1">
                 {title}
             </h3>

@@ -8,9 +8,9 @@ const Pricing = () => {
                 <div className="w-[400px] h-[400px] bg-radial-gradient from-banana-500/10 to-transparent blur-3xl rounded-full opacity-50"></div>
             </div>
 
-            <div className="p-12 rounded-3xl bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-lg dark:shadow-2xl relative overflow-hidden group transition-colors duration-300">
-                {/* Decorative top border */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-banana-500 to-transparent"></div>
+            <div className="bento-noise p-12 rounded-3xl bg-white dark:bg-[#101010] backdrop-blur-xl border border-gray-200 dark:border-white/5 shadow-lg dark:shadow-2xl relative overflow-hidden group transition-all duration-500 ease-out hover:shadow-xl dark:hover:shadow-[0_0_20px_rgba(255,165,0,0.1)]">
+                {/* Animated hover beam */}
+                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <h2 className="text-4xl md:text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-6">
                     Completely <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Free to Use.</span>

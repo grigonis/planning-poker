@@ -51,18 +51,17 @@ const BentoCard = ({ feature }) => {
     const isWide = feature.colSpan === 'md:col-span-2';
 
     return (
-        <div className={`bento-noise relative overflow-hidden rounded-2xl p-5
-            bg-white dark:bg-white/5
-            border border-gray-200 dark:border-white/10
-            backdrop-blur-md
-            hover:border-banana-500/40 dark:hover:border-banana-500/30
-            hover:shadow-sm
-            transition-all duration-300
-            group flex flex-col gap-4
+        <div className={`bento-noise relative overflow-hidden rounded-3xl p-6
+            bg-white dark:bg-[#101010]
+            border border-gray-200 dark:border-white/5
+            backdrop-blur-xl
+            hover:shadow-xl dark:hover:shadow-[0_0_20px_rgba(255,165,0,0.1)]
+            transition-all duration-500 ease-out
+            group flex flex-col gap-5
             ${feature.colSpan}`}
         >
-            {/* Subtle banana glow line at top — matches Pricing card pattern */}
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-banana-500/40 to-transparent" />
+            {/* Animated hover beam */}
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             {/* Text content */}
             <div className="flex flex-col gap-3">
