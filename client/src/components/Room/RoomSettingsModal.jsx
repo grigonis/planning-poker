@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { X, Settings, Sparkles, Zap, Power } from 'lucide-react';
+import { X, Settings, Sparkles, Zap, Power, EyeOff } from 'lucide-react';
 
-const RoomSettingsModal = ({ isOpen, onClose, funFeatures, autoReveal, onUpdateSettings, onEndSession }) => {
+const RoomSettingsModal = ({ isOpen, onClose, funFeatures, autoReveal, anonymousMode, onUpdateSettings, onEndSession }) => {
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="w-full max-w-md bg-white dark:bg-[#151921]/95 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-300 transition-colors duration-300">
+            <div className="w-full max-w-md bg-white dark:bg-[#101010] backdrop-blur-2xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-300">
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-white/5">
@@ -62,6 +62,27 @@ const RoomSettingsModal = ({ isOpen, onClose, funFeatures, autoReveal, onUpdateS
                             className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${autoReveal ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}
                         >
                             <div className={`absolute top-1 w-4 h-4 rounded-full transition-all bg-white ${autoReveal ? 'left-6' : 'left-1'}`}></div>
+                        </button>
+                    </div>
+
+                    <div className="h-px w-full bg-gray-100 dark:bg-white/5"></div>
+
+                    {/* Setting: Anonymous Mode */}
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                            <div className={`p-2.5 rounded-lg shrink-0 ${anonymousMode ? 'bg-purple-500/10 text-purple-500' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
+                                <EyeOff className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="text-gray-900 dark:text-white font-medium mb-1">Anonymous Mode</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug">Hide team members' identities during estimation to prevent anchoring bias and encourage independent story pointing. Spectators remain visible.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => onUpdateSettings({ anonymousMode: !anonymousMode })}
+                            className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${anonymousMode ? 'bg-purple-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+                        >
+                            <div className={`absolute top-1 w-4 h-4 rounded-full transition-all bg-white ${anonymousMode ? 'left-6' : 'left-1'}`}></div>
                         </button>
                     </div>
 

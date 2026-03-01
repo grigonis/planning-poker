@@ -47,7 +47,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="relative w-full max-w-md bg-white dark:bg-dark-800 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-300 transition-colors duration-300">
+            <div className="relative w-full max-w-md bg-white dark:bg-[#101010] backdrop-blur-2xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-300">
                 <button
                     onClick={onClose}
                     className="absolute right-4 top-4 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
@@ -70,7 +70,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-banana-500 focus:ring-1 focus:ring-banana-500 transition-all "
+                                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-banana-500 focus:ring-1 focus:ring-banana-500 transition-all "
                                 placeholder="e.g. Scrum Master"
                                 autoFocus
                             />
@@ -86,7 +86,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                                 onClick={() => { setGameMode('STANDARD'); setRole('DEV'); }}
                                 className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${gameMode === 'STANDARD'
                                     ? 'bg-banana-500/10 border-banana-500 text-banana-500'
-                                    : 'bg-gray-50 dark:bg-dark-900 border-gray-200 dark:border-white/5 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/10'
+                                    : 'bg-gray-50 dark:bg-white/[0.07] border-gray-200 dark:border-white/5 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/10'
                                     }`}
                             >
                                 <Users size={24} />
@@ -97,7 +97,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                                 onClick={() => { setGameMode('SPLIT'); setRole('DEV'); }}
                                 className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${gameMode === 'SPLIT'
                                     ? 'bg-banana-500/10 border-banana-500 text-banana-500'
-                                    : 'bg-gray-50 dark:bg-dark-900 border-gray-200 dark:border-white/5 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/10'
+                                    : 'bg-gray-50 dark:bg-white/[0.07] border-gray-200 dark:border-white/5 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/10'
                                     }`}
                             >
                                 <Split size={24} />
@@ -114,20 +114,20 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                     {/* Role Selection */}
                     <div className="space-y-2">
                         <label className="text-sm font-bold  text-gray-600 dark:text-gray-300">Your Role</label>
-                        <div className="grid grid-cols-3 gap-2 p-1 bg-gray-50 dark:bg-dark-900 rounded-xl border border-gray-200 dark:border-white/5">
+                        <div className={`grid gap-2 p-1 bg-gray-50 dark:bg-white/[0.07] rounded-xl border border-gray-200 dark:border-white/5 ${gameMode === 'SPLIT' ? 'grid-cols-3' : 'grid-cols-2'}`}>
                             {gameMode === 'SPLIT' ? (
                                 <>
                                     <button
                                         type="button"
                                         onClick={() => setRole('DEV')}
-                                        className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'DEV' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                                        className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'DEV' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
                                     >
                                         Developer
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setRole('QA')}
-                                        className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'QA' ? 'bg-rose-600 text-white shadow-md' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                                        className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'QA' ? 'bg-rose-600 text-white shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
                                     >
                                         QA
                                     </button>
@@ -136,7 +136,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                                 <button
                                     type="button"
                                     onClick={() => setRole('DEV')}
-                                    className={`col-span-2 py-2 rounded-lg text-xs font-bold  transition-all ${role === 'DEV' ? 'bg-banana-500 text-dark-900 shadow-md' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                                    className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'DEV' ? 'bg-banana-500 text-dark-900 shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
                                 >
                                     Estimator
                                 </button>
@@ -145,7 +145,7 @@ const CreateSessionModal = ({ isOpen, onClose }) => {
                             <button
                                 type="button"
                                 onClick={() => setRole('SPECTATOR')}
-                                className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'SPECTATOR' ? 'bg-gray-600 dark:bg-gray-700 text-white shadow-md' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                                className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'SPECTATOR' ? 'bg-gray-600 dark:bg-gray-700 text-white shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
                             >
                                 Spectator
                             </button>

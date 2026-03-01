@@ -41,6 +41,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                     gameMode: response.mode,
                     funFeatures: response.funFeatures,
                     autoReveal: response.autoReveal,
+                    anonymousMode: response.anonymousMode,
                     users: response.users
                 });
             }
@@ -51,7 +52,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-white/10 rounded-2xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-300 transition-colors duration-300">
+            <div className="bg-white dark:bg-[#101010] backdrop-blur-2xl border border-gray-200 dark:border-white/5 rounded-2xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-300">
 
                 {loading ? (
                     <div className="text-center py-8">
@@ -89,7 +90,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="e.g., Alex"
-                                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-banana-500/50 focus:ring-1 focus:ring-banana-500/50 transition-all font-bold"
+                                    className="w-full bg-gray-50 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-banana-500/50 focus:ring-1 focus:ring-banana-500/50 transition-all font-bold"
                                     autoFocus
                                     required
                                 />

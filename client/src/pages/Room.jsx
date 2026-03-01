@@ -28,6 +28,7 @@ const Room = () => {
     const [roomMode, setRoomMode] = useState(location.state?.gameMode || 'STANDARD');
     const [funFeatures, setFunFeatures] = useState(location.state?.funFeatures || false);
     const [autoReveal, setAutoReveal] = useState(location.state?.autoReveal || false);
+    const [anonymousMode, setAnonymousMode] = useState(location.state?.anonymousMode || false);
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -62,6 +63,7 @@ const Room = () => {
                     if (response.mode) setRoomMode(response.mode);
                     if (response.funFeatures !== undefined) setFunFeatures(response.funFeatures);
                     if (response.autoReveal !== undefined) setAutoReveal(response.autoReveal);
+                    if (response.anonymousMode !== undefined) setAnonymousMode(response.anonymousMode);
 
                     if (response.phase === 'REVEALED' && response.votes) {
                         const votesMap = {};
@@ -233,6 +235,7 @@ const Room = () => {
         const onRoomSettingsUpdated = ({ settings }) => {
             if (settings.funFeatures !== undefined) setFunFeatures(settings.funFeatures);
             if (settings.autoReveal !== undefined) setAutoReveal(settings.autoReveal);
+            if (settings.anonymousMode !== undefined) setAnonymousMode(settings.anonymousMode);
         };
 
         const onSessionEnded = () => {
@@ -292,6 +295,7 @@ const Room = () => {
         if (user.gameMode) setRoomMode(user.gameMode);
         if (user.funFeatures !== undefined) setFunFeatures(user.funFeatures);
         if (user.autoReveal !== undefined) setAutoReveal(user.autoReveal);
+        if (user.anonymousMode !== undefined) setAnonymousMode(user.anonymousMode);
 
         // Note: phase and votes are not passed by GuestJoinModal directly right now,
         // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!
@@ -462,6 +466,7 @@ const Room = () => {
                             isHost={isMeHost}
                             funFeatures={funFeatures}
                             autoReveal={autoReveal}
+                            anonymousMode={anonymousMode}
                             onStartVote={handleStartVote}
                             onReveal={handleReveal}
                             onReset={handleReset}
@@ -490,6 +495,7 @@ const Room = () => {
                 onClose={() => setIsSettingsOpen(false)}
                 funFeatures={funFeatures}
                 autoReveal={autoReveal}
+                anonymousMode={anonymousMode}
                 onUpdateSettings={handleUpdateSettings}
                 onEndSession={handleEndSession}
             />

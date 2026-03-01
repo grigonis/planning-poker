@@ -3,17 +3,36 @@ import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 import { Crown, RefreshCw } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
+import anonymousMonkeySvg from '../../assets/banana-poker/anonymous-monkey.svg';
 
-const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction }) => {
+const MONKEY_ALIASES = [
+    'Bonobo', 'Macaque', 'Tamarin', 'Capuchin', 'Gibbon',
+    'Mandrill', 'Baboon', 'Marmoset', 'Langur', 'Colobus',
+    'Howler', 'Spider', 'Squirrel', 'Proboscis', 'Tarsier'
+];
+
+function getMonkeyAlias(userId) {
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+        hash = (hash * 31 + userId.charCodeAt(i)) % MONKEY_ALIASES.length;
+    }
+    return MONKEY_ALIASES[Math.abs(hash)];
+}
+
+const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction, anonymousMode = false, voteHighlight = null }) => {
     const { socket } = useSocket();
+    const isAnon = anonymousMode && !isCurrentUser && user.role !== 'SPECTATOR';
+    const displayName = isAnon ? getMonkeyAlias(user.id) : user.name;
+
     const avatarSvg = useMemo(() => {
+        if (isAnon) return null;
         const avatar = createAvatar(avataaars, {
             seed: user.avatarSeed || user.name || user.id,
             size,
             backgroundColor: ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'],
         });
         return avatar.toDataUri();
-    }, [user.avatarSeed, user.name, user.id, size]);
+    }, [user.avatarSeed, user.name, user.id, size, isAnon]);
 
     const isOnline = user.connected !== false;
 
@@ -27,6 +46,13 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
         <div className="flex flex-col items-center gap-2 min-w-0">
             {/* Avatar with presence dot */}
             <div className="relative flex-shrink-0 group">
+                {voteHighlight && (
+                    <div className={`absolute inset-[-4px] rounded-full animate-pulse pointer-events-none z-0 ${
+                        voteHighlight === 'highest'
+                            ? 'bg-red-500/20 shadow-[0_0_14px_5px_rgba(239,68,68,0.45)]'
+                            : 'bg-green-500/20 shadow-[0_0_14px_5px_rgba(34,197,94,0.45)]'
+                    }`} />
+                )}
                 <div
                     onClick={handleAvatarClick}
                     className={`rounded-full overflow-hidden border-2 bg-slate-800 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.5)] ${isOnline
@@ -36,8 +62,8 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                     style={{ width: size, height: size }}
                 >
                     <img
-                        src={avatarSvg}
-                        alt={user.name}
+                        src={isAnon ? anonymousMonkeySvg : avatarSvg}
+                        alt={isAnon ? 'Anonymous' : user.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
                     />
@@ -64,8 +90,8 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
 
             {/* Name + Host badge */}
             <span className="font-bold  text-gray-900 dark:text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
-                {user.name}
-                {user.isHost && <Crown size={12} className="text-orange-500 dark:text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(255,92,0,0.5)] dark:drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
+                {displayName}
+                {user.isHost && !isAnon && <Crown size={12} className="text-orange-500 dark:text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(255,92,0,0.5)] dark:drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
             </span>
 
             {/* Role badge */}

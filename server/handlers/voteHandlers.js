@@ -73,38 +73,37 @@ module.exports = (io, socket) => {
         let averages = {};
 
         if (room.gameMode === 'SPLIT') {
-            // Calculate averages
-            let devSum = 0, devCount = 0;
-            let qaSum = 0, qaCount = 0;
+            let devMax = null, qaMax = null;
 
             room.votes.forEach((val, userId) => {
                 const u = room.users.get(userId);
                 if (u) {
                     const num = parseFloat(val);
                     if (!isNaN(num)) {
-                        if (u.role === 'DEV' || u.role === 'HOST') { devSum += num; devCount++; }
-                        if (u.role === 'QA') { qaSum += num; qaCount++; }
+                        if (u.role === 'DEV' || u.role === 'HOST') {
+                            if (devMax === null || num > devMax) devMax = num;
+                        }
+                        if (u.role === 'QA') {
+                            if (qaMax === null || num > qaMax) qaMax = num;
+                        }
                     }
                 }
             });
 
-            averages.dev = devCount ? (devSum / devCount).toFixed(1) : 0;
-            averages.qa = qaCount ? (qaSum / qaCount).toFixed(1) : 0;
+            averages.dev = devMax !== null ? devMax : 0;
+            averages.qa = qaMax !== null ? qaMax : 0;
 
         } else {
-            // STANDARD MODE - Single average
-            let sum = 0, count = 0;
+            // STANDARD MODE — highest vote wins
+            let max = null;
             room.votes.forEach((val, userId) => {
                 const u = room.users.get(userId);
-                // Spectators shouldn't have votes, but check anyway
                 if (u && u.role !== 'SPECTATOR') {
                     const num = parseFloat(val);
-                    if (!isNaN(num)) {
-                        sum += num; count++;
-                    }
+                    if (!isNaN(num) && (max === null || num > max)) max = num;
                 }
             });
-            averages.total = count ? (sum / count).toFixed(1) : 0;
+            averages.total = max !== null ? max : 0;
         }
 
         room.averages = averages;
