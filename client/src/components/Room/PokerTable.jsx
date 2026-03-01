@@ -59,7 +59,32 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
     );
 };
 
-const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true }) => {
+const CARD_SCALE = [0, 0.5, 1, 2, 3, 4, 5];
+
+function computeGroupStats(groupUsers, votes) {
+    const numeric = groupUsers
+        .map(u => ({ user: u, num: parseFloat(votes[u.id]) }))
+        .filter(v => !isNaN(v.num) && votes[v.user.id] !== undefined);
+    if (numeric.length < 2) return { highVoters: [], lowVoters: [], isExact: false, isAdjacent: false };
+    const nums = numeric.map(v => v.num);
+    const highest = Math.max(...nums);
+    const lowest = Math.min(...nums);
+    if (highest === lowest) {
+        const uniqueNums = [...new Set(nums)];
+        return { highVoters: [], lowVoters: [], isExact: uniqueNums.length === 1, isAdjacent: false };
+    }
+    const uniqueNums = [...new Set(nums)];
+    const indices = uniqueNums.map(n => CARD_SCALE.indexOf(n));
+    const isAdjacent = indices.every(i => i !== -1) && Math.max(...indices) - Math.min(...indices) <= 1;
+    return {
+        highVoters: numeric.filter(v => v.num === highest).map(v => v.user),
+        lowVoters: numeric.filter(v => v.num === lowest).map(v => v.user),
+        isExact: false,
+        isAdjacent
+    };
+}
+
+const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true, voteHighlight = null }) => {
     // Determine dynamic layout direction based on coordinates to point cards towards center of table
     // Extreme left/right edges (x <= 15 or x >= 85) are considered "side" seats
     const isSide = x <= 15 || x >= 85;
@@ -107,7 +132,7 @@ const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style
                     >💨</span>
                 </div>
             )}
-            <PlayerAvatar user={user} roomMode={roomMode} size={avatarSize} isCurrentUser={currentUserId === user.id} activeReaction={activeReaction} anonymousMode={anonymousMode} />
+            <PlayerAvatar user={user} roomMode={roomMode} size={avatarSize} isCurrentUser={currentUserId === user.id} activeReaction={activeReaction} anonymousMode={anonymousMode} voteHighlight={voteHighlight} />
             <VoteChip user={user} votes={votes} myVote={myVote} phase={phase} currentUserId={currentUserId} />
         </div>
     );
@@ -195,6 +220,38 @@ const PokerTable = ({
 
     const isSmallTable = allTableUsers.length <= 6;
     const avatarSize = isSmallTable ? 56 : 48;
+
+    // Compute vote highlights and outlier info for REVEALED phase
+    const voteHighlights = {};
+    let stdHighVoters = [], stdLowVoters = [], stdIsExact = false, stdIsAdjacent = false;
+    let devHighVoters = [], devLowVoters = [], devIsExact = false, devIsAdjacent = false;
+    let qaHighVoters = [], qaLowVoters = [], qaIsExact = false, qaIsAdjacent = false;
+
+    if (phase === 'REVEALED') {
+        if (roomMode === 'SPLIT') {
+            const devUsers = users.filter(u => (u.role === 'DEV' || u.role === 'HOST') && votes[u.id] !== undefined);
+            const qaUsers = users.filter(u => u.role === 'QA' && votes[u.id] !== undefined);
+            ({ highVoters: devHighVoters, lowVoters: devLowVoters, isExact: devIsExact, isAdjacent: devIsAdjacent } = computeGroupStats(devUsers, votes));
+            ({ highVoters: qaHighVoters, lowVoters: qaLowVoters, isExact: qaIsExact, isAdjacent: qaIsAdjacent } = computeGroupStats(qaUsers, votes));
+            // Only glow when no consensus for that group
+            if (!devIsExact && !devIsAdjacent) {
+                devHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
+                devLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
+            }
+            if (!qaIsExact && !qaIsAdjacent) {
+                qaHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
+                qaLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
+            }
+        } else {
+            const voterUsers = users.filter(u => u.role !== 'SPECTATOR' && votes[u.id] !== undefined);
+            ({ highVoters: stdHighVoters, lowVoters: stdLowVoters, isExact: stdIsExact, isAdjacent: stdIsAdjacent } = computeGroupStats(voterUsers, votes));
+            // Only glow when no consensus
+            if (!stdIsExact && !stdIsAdjacent) {
+                stdHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
+                stdLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
+            }
+        }
+    }
 
     const isVotingPhase = phase === 'VOTING' || phase.startsWith('PARTIAL');
     let eligibleVotersCount = 0;
@@ -293,64 +350,112 @@ const PokerTable = ({
                         </div>
                     )}
 
-                    {
-                        phase === 'REVEALED' && (() => {
-                            const isStandard = averages.total !== undefined;
+                    {phase === 'REVEALED' && (() => {
+                        const isStandard = averages.total !== undefined;
+                        const OutlierLine = ({ highV, lowV }) => {
+                            if (highV.length === 0 && lowV.length === 0) return null;
                             return (
-                                <div className="relative z-10 flex flex-col items-center gap-3 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
-                                    <span className="text-orange-500 dark:text-banana-500 text-[10px] font-bold  tracking-[0.2em] uppercase opacity-70">
-                                        Voting Results
-                                    </span>
-
-                                    {isStandard ? (
-                                        <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
-                                            <p className="text-[10px] font-bold  text-orange-500 dark:text-banana-500/70 uppercase tracking-widest mb-0.5">Team Average</p>
-                                            <div className="text-3xl md:text-4xl font-extrabold text-orange-500 dark:text-banana-400 leading-none">{averages.total || '—'}</div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex gap-2 w-full">
-                                            <div className="glass rounded-xl px-3 py-2 text-center flex-1 border border-indigo-500/20">
-                                                <p className="text-[9px] font-bold  text-indigo-400/70 uppercase tracking-widest mb-0.5">Dev</p>
-                                                <div className="text-2xl font-extrabold text-indigo-400 leading-none">{averages.dev || '—'}</div>
-                                            </div>
-                                            <div className="glass rounded-xl px-3 py-2 text-center flex-1 border border-rose-500/20">
-                                                <p className="text-[9px] font-bold  text-rose-400/70 uppercase tracking-widest mb-0.5">QA</p>
-                                                <div className="text-2xl font-extrabold text-rose-400 leading-none">{averages.qa || '—'}</div>
-                                            </div>
-                                        </div>
+                                <div className="flex items-center justify-center gap-2 text-[9px] text-gray-500 w-full truncate">
+                                    {highV.length > 0 && (
+                                        <span><span className="text-red-400 font-bold">↑</span> {highV.map(u => u.name).join(', ')}</span>
                                     )}
-
-                                    {isHost && (
-                                        <div className="flex flex-col items-center gap-2 w-full pt-1">
-                                            <button
-                                                onClick={onReset}
-                                                className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-bold  flex items-center gap-2 transition-all active:scale-95 w-full justify-center text-sm"
-                                            >
-                                                <RotateCcw size={15} />
-                                                New Round
-                                            </button>
-                                            {!isStandard && (
-                                                <div className="flex gap-2 w-full">
-                                                    <button
-                                                        onClick={() => onRevotePartial('DEV')}
-                                                        className="flex-1 px-3 py-2 rounded-lg font-bold  border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs"
-                                                    >
-                                                        Re-vote DEV
-                                                    </button>
-                                                    <button
-                                                        onClick={() => onRevotePartial('QA')}
-                                                        className="flex-1 px-3 py-2 rounded-lg font-bold  border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition-colors text-xs"
-                                                    >
-                                                        Re-vote QA
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
+                                    {highV.length > 0 && lowV.length > 0 && <span className="text-gray-600">·</span>}
+                                    {lowV.length > 0 && (
+                                        <span><span className="text-green-400 font-bold">↓</span> {lowV.map(u => u.name).join(', ')}</span>
                                     )}
                                 </div>
                             );
-                        })()
-                    }
+                        };
+                        return (
+                            <div className="relative z-10 flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
+                                <span className="text-orange-500 dark:text-banana-500 text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
+                                    Voting Results
+                                </span>
+
+                                {isStandard ? (
+                                    <>
+                                        {stdIsExact ? (
+                                            <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">
+                                                ✓ Consensus
+                                            </div>
+                                        ) : stdIsAdjacent ? (
+                                            <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">
+                                                ≈ Near Consensus
+                                            </div>
+                                        ) : (stdHighVoters.length > 0 || stdLowVoters.length > 0) ? (
+                                            <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">
+                                                No Consensus — Re-vote recommended
+                                            </div>
+                                        ) : null}
+                                        <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
+                                            <p className="text-[10px] font-bold text-orange-500 dark:text-banana-500/70 uppercase tracking-widest mb-0.5">Result</p>
+                                            <div className="text-3xl md:text-4xl font-extrabold text-orange-500 dark:text-banana-400 leading-none">{averages.total || '—'}</div>
+                                        </div>
+                                        <OutlierLine highV={stdHighVoters} lowV={stdLowVoters} />
+                                    </>
+                                ) : (
+                                    <div className="flex gap-2 w-full">
+                                        <div className="flex-1 flex flex-col gap-1 items-center">
+                                            {devIsExact ? (
+                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">✓ Consensus</div>
+                                            ) : devIsAdjacent ? (
+                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">≈ Near</div>
+                                            ) : (devHighVoters.length > 0 || devLowVoters.length > 0) ? (
+                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">No Consensus</div>
+                                            ) : null}
+                                            <div className="glass rounded-xl px-3 py-2 text-center w-full border border-indigo-500/20">
+                                                <p className="text-[9px] font-bold text-indigo-400/70 uppercase tracking-widest mb-0.5">Dev</p>
+                                                <div className="text-2xl font-extrabold text-indigo-400 leading-none">{averages.dev || '—'}</div>
+                                            </div>
+                                            <OutlierLine highV={devHighVoters} lowV={devLowVoters} />
+                                        </div>
+                                        <div className="flex-1 flex flex-col gap-1 items-center">
+                                            {qaIsExact ? (
+                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">✓ Consensus</div>
+                                            ) : qaIsAdjacent ? (
+                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">≈ Near</div>
+                                            ) : (qaHighVoters.length > 0 || qaLowVoters.length > 0) ? (
+                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">No Consensus</div>
+                                            ) : null}
+                                            <div className="glass rounded-xl px-3 py-2 text-center w-full border border-rose-500/20">
+                                                <p className="text-[9px] font-bold text-rose-400/70 uppercase tracking-widest mb-0.5">QA</p>
+                                                <div className="text-2xl font-extrabold text-rose-400 leading-none">{averages.qa || '—'}</div>
+                                            </div>
+                                            <OutlierLine highV={qaHighVoters} lowV={qaLowVoters} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {isHost && (
+                                    <div className="flex flex-col items-center gap-2 w-full pt-1">
+                                        <button
+                                            onClick={onReset}
+                                            className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95 w-full justify-center text-sm"
+                                        >
+                                            <RotateCcw size={15} />
+                                            New Round
+                                        </button>
+                                        {!isStandard && (
+                                            <div className="flex gap-2 w-full">
+                                                <button
+                                                    onClick={() => onRevotePartial('DEV')}
+                                                    className="flex-1 px-3 py-2 rounded-lg font-bold border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs"
+                                                >
+                                                    Re-vote DEV
+                                                </button>
+                                                <button
+                                                    onClick={() => onRevotePartial('QA')}
+                                                    className="flex-1 px-3 py-2 rounded-lg font-bold border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition-colors text-xs"
+                                                >
+                                                    Re-vote QA
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Dynamic Seats Loop */}
@@ -410,6 +515,7 @@ const PokerTable = ({
                                 anonymousMode={anonymousMode}
                                 shuffleState={shuffleState}
                                 isRevealed={i < revealedCount}
+                                voteHighlight={voteHighlights[u.id] || null}
                             />
                         );
                     });
