@@ -21,7 +21,7 @@ const CARDS = [
 
 const VotingOverlay = ({ onVote, currentVote, role }) => {
     return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 min-h-screen overflow-y-auto font-sans bg-black/50 dark:bg-black/50 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 min-h-screen overflow-y-auto font-sans bg-black/50 dark:bg-black/50 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300">
 
             {/* Soft Central Glow */}
             <div className="pointer-events-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[800px] md:h-[800px] rounded-full bg-white/5 blur-[120px]"></div>
@@ -32,9 +32,9 @@ const VotingOverlay = ({ onVote, currentVote, role }) => {
                 <div className="mb-12 md:mb-16 text-center animate-in slide-in-from-bottom-4 fade-in duration-500">
                     <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 border border-white/20 mb-6">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]"></span>
-                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/90 font-heading">Active Estimation</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/90 ">Active Estimation</span>
                     </div>
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight text-white font-heading leading-tight max-w-4xl mx-auto drop-shadow-lg">
+                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight text-white  leading-tight max-w-4xl mx-auto drop-shadow-lg">
                         {role === 'DEV' ? 'Development Complexity' : 'Testing Effort'}
                     </h1>
                     <p className="mt-4 text-base md:text-lg text-white/70 font-medium tracking-wide">Select a card to reach team consensus</p>

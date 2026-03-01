@@ -69,7 +69,7 @@ const BentoCard = ({ feature }) => {
                     <Icon size={18} />
                 </div>
                 <div>
-                    <h3 className="text-base font-semibold font-heading text-gray-900 dark:text-white mb-1.5 leading-snug">
+                    <h3 className="text-base font-semibold  text-gray-900 dark:text-white mb-1.5 leading-snug">
                         {feature.title}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-light">
@@ -107,10 +107,10 @@ const Features = () => {
     return (
         <section id="features" className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
             <div className="mb-12">
-                <h2 className="text-4xl md:text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight mb-4">
                     The <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Perfect Hand</span> of Features.
                 </h2>
-                <p className="text-lg text-gray-500 dark:text-gray-400 font-light font-heading max-w-xl leading-relaxed">
+                <p className="text-lg text-gray-500 dark:text-gray-400 font-light  max-w-xl leading-relaxed">
                     Designed to fix everything you hate about agile estimation meetings.
                 </p>
             </div>

@@ -6,7 +6,7 @@ import githubIcon from '../../assets/banana-poker/social-github.svg';
 
 const Footer = () => {
     return (
-        <footer className="w-full bg-gray-100 dark:bg-[#0a0a0a] border-t border-gray-200 dark:border-white/5 py-16 text-sm font-heading transition-colors duration-300">
+        <footer className="w-full bg-gray-100 dark:bg-[#0a0a0a] border-t border-gray-200 dark:border-white/5 py-16 text-sm  transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                     {/* Brand */}
@@ -15,7 +15,7 @@ const Footer = () => {
                             <div className="w-6 h-6 rounded bg-banana-500/40 flex items-center justify-center">
                                 <img src={footerLogo} alt="Logo" className="w-3 h-3" />
                             </div>
-                            <span className="text-lg font-bold text-gray-500 dark:text-white/60">AgilePlan</span>
+                            <span className="text-lg font-bold text-gray-500 dark:text-white/60">Scrumky</span>
                         </div>
                         <p className="text-gray-500 dark:text-gray-400 leading-relaxed max-w-xs">
                             The ultimate planning poker tool for modern engineering teams. Built with precision for remote collaboration.
@@ -54,7 +54,7 @@ const Footer = () => {
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-gray-200 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-gray-400 text-xs">
-                        © 2024 AgilePlan Inc. All rights reserved.
+                        © 2026 Scrumky Inc. All rights reserved.
                     </p>
                     <div className="flex items-center gap-6">
                         <a href="#" className="opacity-60 hover:opacity-100 transition-opacity">

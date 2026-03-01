@@ -24,7 +24,7 @@ const EmojiReactions = ({ roomId, phase }) => {
 
     return (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white/90 dark:bg-dark-800/80 backdrop-blur-md border border-gray-200 dark:border-white/10 px-4 py-2 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-8 duration-500">
-            <span className="text-[10px] font-bold font-heading uppercase tracking-widest text-gray-400 dark:text-slate-400 border-r border-gray-200 dark:border-white/10 pr-4">React</span>
+            <span className="text-[10px] font-bold  uppercase tracking-widest text-gray-400 dark:text-slate-400 border-r border-gray-200 dark:border-white/10 pr-4">React</span>
             <div className="flex gap-2">
                 {EMOJIS.map(emoji => (
                     <button

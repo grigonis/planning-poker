@@ -8,21 +8,21 @@ const WhatIsScrumPoker = () => {
                 {/* Text Content */}
                 <article className="flex-1 space-y-8 animate-in slide-in-from-left-10 duration-700 fade-in">
                     <div>
-                        <h2 className="text-4xl md:text-5xl font-bold font-heading text-white tracking-tight mb-4">
+                        <h2 className="text-4xl md:text-5xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight mb-4">
                             What is <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Scrum Poker?</span>
                         </h2>
-                        <p className="text-lg text-gray-400 font-light font-heading leading-relaxed">
+                        <p className="text-lg text-gray-400 font-light  leading-relaxed">
                             Scrum Poker (or Planning Poker) is a consensus-based, gamified technique for estimating the effort or relative size of development goals. By using a modified Fibonacci sequence, teams avoid cognitive biases like anchoring and groupthink. Everyone plays their cards face down, and reveals them simultaneously.
                         </p>
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="text-2xl font-bold font-heading text-white">So... Why Bananas? 🍌</h3>
-                        <p className="text-lg text-gray-400 font-light font-heading leading-relaxed">
+                        <h3 className="text-2xl font-bold text-neutral-800 dark:text-neutral-200">So... Why Bananas? 🍌</h3>
+                        <p className="text-lg text-gray-400 font-light  leading-relaxed">
                             Let's be honest: estimating software development can feel like herding cats in a room full of monkeys. Requirements change, bugs appear out of nowhere, and timelines slip. Sometimes, agile estimation goes completely <em className="text-banana-500 font-bold not-italic">bananas</em>.
                         </p>
-                        <p className="text-lg text-gray-400 font-light font-heading leading-relaxed">
-                            Banana Poker leans into this chaos. It acknowledges the myths of "perfect estimation" by wrapping industry-standard agile methodologies in a playful, low-stress environment. By dropping the corporate stiffness, your engineering team can focus on what matters: honest communication and building great products.
+                        <p className="text-lg text-gray-400 font-light  leading-relaxed">
+                            Scrumky leans into this chaos. It acknowledges the myths of "perfect estimation" by wrapping industry-standard agile methodologies in a playful, low-stress environment. By dropping the corporate stiffness, your engineering team can focus on what matters: honest communication and building great products.
                         </p>
                     </div>
                 </article>
@@ -36,7 +36,7 @@ const WhatIsScrumPoker = () => {
                     <div className="relative z-10 p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl skew-y-3 hover:skew-y-0 transition-transform duration-500">
                         <div className="text-center space-y-4">
                             <span className="text-6xl block">🎭</span>
-                            <div className="text-2xl font-bold font-heading text-white">The Agile Paradox</div>
+                            <div className="text-2xl font-bold  text-white">The Agile Paradox</div>
                             <p className="text-gray-400 font-light">
                                 "Measurements are objective. Estimates are just guesses dressed up in business casual."
                             </p>

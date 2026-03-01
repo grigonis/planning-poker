@@ -367,7 +367,7 @@ const Room = () => {
             <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center transition-colors duration-300">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-8 h-8 border-2 border-orange-500 dark:border-banana-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-gray-400 font-heading">
+                    <p className="text-gray-400 ">
                         {!socket ? 'Initializing Socket...' : !isConnected ? 'Connecting to Server...' : 'Joining Room...'}
                     </p>
                 </div>
@@ -387,11 +387,11 @@ const Room = () => {
                 <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     {/* Logo/Room Info */}
                     <div className="flex flex-col">
-                        <h1 className="text-xl font-bold font-heading text-orange-500 dark:text-banana-500 leading-none">BananaPoker</h1>
+                        <h1 className="text-xl font-bold  text-orange-500 dark:text-banana-500 leading-none">BananaPoker</h1>
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">Room: {roomId}</span>
                     </div>
                     {/* Game Mode Badge */}
-                    <div className="bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded text-[10px] text-gray-500 dark:text-gray-400 font-heading uppercase tracking-wider border border-gray-200 dark:border-white/5 transition-colors duration-300">
+                    <div className="bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded text-[10px] text-gray-500 dark:text-gray-400  uppercase tracking-wider border border-gray-200 dark:border-white/5 transition-colors duration-300">
                         {roomMode} Mode
                     </div>
 
@@ -408,7 +408,7 @@ const Room = () => {
 
                             <button
                                 onClick={() => setIsInviteModalOpen(true)}
-                                className="bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-white text-sm font-bold font-heading px-4 py-2 rounded-full transition-colors border border-gray-200 dark:border-white/5 flex items-center gap-2"
+                                className="bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-white text-sm font-bold  px-4 py-2 rounded-full transition-colors border border-gray-200 dark:border-white/5 flex items-center gap-2"
                             >
                                 <Users size={16} />
                                 Invite

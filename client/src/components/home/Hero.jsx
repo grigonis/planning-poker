@@ -24,13 +24,13 @@ const Hero = ({ onCreateSession }) => {
                 {/* Product Hunt Badge */}
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-banana-500/10 border border-banana-500/20 w-fit">
                     <img src={productHuntCat} alt="Product Hunt" className="w-4 h-4" />
-                    <span className="text-[10px] font-bold font-heading text-banana-500 tracking-widest uppercase">
+                    <span className="text-[10px] font-bold  text-banana-500 tracking-widest uppercase">
                         Now LIVE ON PRODUCT HUNT
                     </span>
                 </div>
 
                 {/* Heading */}
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold font-heading text-gray-900 dark:text-white leading-[1.1] tracking-tight">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-neutral-800 dark:text-neutral-200 leading-[1.1] tracking-tight">
                     Sprints are better when they are
                     <img
                         src={heroIllustration}
@@ -40,15 +40,15 @@ const Hero = ({ onCreateSession }) => {
                 </h1>
 
                 {/* Subtext */}
-                <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-light font-heading max-w-lg leading-relaxed">
-                    Peel back the complexity of agile estimation. Banana Poker is the high-fidelity, bias-free planning tool designed to help remote teams align faster and build better.
+                <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-light  max-w-lg leading-relaxed">
+                    Peel back the complexity of agile estimation. Scrumky is the high-fidelity, bias-free planning tool designed to help remote teams align faster and build better.
                 </p>
 
                 {/* Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                     <button
                         onClick={onCreateSession}
-                        className="px-8 py-4 bg-banana-500 rounded-xl flex items-center justify-center gap-2 text-dark-900 font-bold font-heading hover:bg-banana-400 transition-colors shadow-xl shadow-banana-500/20 active:scale-95"
+                        className="px-8 py-4 bg-banana-500 rounded-xl flex items-center justify-center gap-2 text-dark-900 font-bold  hover:bg-banana-400 transition-colors shadow-xl shadow-banana-500/20 active:scale-95"
                     >
                         <span>Create Room</span>
                         <img src={createRoomIcon} alt="NewRoomIcon" className="w-4 h-4" />

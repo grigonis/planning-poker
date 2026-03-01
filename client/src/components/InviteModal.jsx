@@ -14,8 +14,8 @@ const InviteModal = ({ isOpen, onClose, roomId }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="relative w-full max-w-sm bg-white dark:bg-dark-800 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200 transition-colors duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="relative w-full max-w-sm bg-white dark:bg-dark-800 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-300 transition-colors duration-300">
                 <button
                     onClick={onClose}
                     className="absolute right-4 top-4 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
@@ -28,7 +28,7 @@ const InviteModal = ({ isOpen, onClose, roomId }) => {
                         <Link size={24} />
                     </div>
 
-                    <h2 className="text-xl font-bold font-heading text-gray-900 dark:text-white">Invite Team</h2>
+                    <h2 className="text-xl font-bold  text-gray-900 dark:text-white">Invite Team</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         Share this link with your team to let them join this session.
                     </p>
