@@ -15,7 +15,7 @@ const InviteModal = ({ isOpen, onClose, roomId }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="relative w-full max-w-sm bg-white dark:bg-dark-800 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-300 transition-colors duration-300">
+            <div className="relative w-full max-w-sm bg-white dark:bg-[#101010] backdrop-blur-2xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-300">
                 <button
                     onClick={onClose}
                     className="absolute right-4 top-4 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
@@ -33,7 +33,7 @@ const InviteModal = ({ isOpen, onClose, roomId }) => {
                         Share this link with your team to let them join this session.
                     </p>
 
-                    <div className="w-full flex items-center gap-2 mt-2 p-1.5 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-white/10 rounded-xl">
+                    <div className="w-full flex items-center gap-2 mt-2 p-1.5 bg-gray-50 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 rounded-xl">
                         <div className="flex-1 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 truncate font-mono bg-transparent">
                             {inviteLink}
                         </div>

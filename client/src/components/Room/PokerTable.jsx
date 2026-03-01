@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PlayerAvatar from './PlayerAvatar';
 import Card from '../Voting/Card';
 import { Crown, Eye, RotateCcw, Play } from 'lucide-react';
@@ -59,7 +59,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
     );
 };
 
-const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50 }) => {
+const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true }) => {
     // Determine dynamic layout direction based on coordinates to point cards towards center of table
     // Extreme left/right edges (x <= 15 or x >= 85) are considered "side" seats
     const isSide = x <= 15 || x >= 85;
@@ -71,16 +71,43 @@ const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style
         flexClass = y < 50 ? 'flex-col' : 'flex-col-reverse';
     }
 
+    let visualClass = '';
+    let transitionClass = '';
+    let zIndex = 20;
+
+    if (shuffleState === 'poof-out') {
+        visualClass = 'opacity-0 scale-125 blur-sm';
+        transitionClass = 'transition-all duration-[400ms] ease-in';
+    } else if (shuffleState === 'hidden' || (shuffleState === 'poof-in' && !isRevealed)) {
+        visualClass = 'opacity-0 scale-50 blur-none';
+        transitionClass = 'transition-none';
+    } else if (shuffleState === 'poof-in' && isRevealed) {
+        visualClass = 'opacity-100 scale-100 blur-0';
+        transitionClass = 'transition-all duration-[500ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]';
+        zIndex = 30; // Bring to front when appearing
+    } else if (shuffleState === 'idle') {
+        visualClass = 'opacity-100 scale-100 blur-0';
+        transitionClass = 'transition-all duration-700 ease-in-out';
+    }
+
     return (
         <div
-            className={`absolute flex items-center gap-2 sm:gap-3 transition-all duration-700 animate-in zoom-in-90 fade-in ${flexClass}`}
+            className={`absolute flex items-center gap-2 sm:gap-3 ${transitionClass} ${visualClass} ${flexClass}`}
             style={{
                 ...style,
-                transform: 'translate(-50%, -50%)',
-                zIndex: 20
+                transform: `translate(-50%, -50%)`,
+                zIndex: zIndex
             }}
         >
-            <PlayerAvatar user={user} roomMode={roomMode} size={avatarSize} isCurrentUser={currentUserId === user.id} activeReaction={activeReaction} />
+            {shuffleState === 'poof-out' && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 mix-blend-screen dark:mix-blend-color-dodge">
+                    <span
+                        className="text-5xl drop-shadow-[0_0_15px_rgba(200,200,200,0.8)] animate-[ping_0.5s_cubic-bezier(0,0,0.2,1)_forwards] opacity-80"
+                        style={{ animationDelay: `${Math.random() * 0.1}s` }}
+                    >💨</span>
+                </div>
+            )}
+            <PlayerAvatar user={user} roomMode={roomMode} size={avatarSize} isCurrentUser={currentUserId === user.id} activeReaction={activeReaction} anonymousMode={anonymousMode} />
             <VoteChip user={user} votes={votes} myVote={myVote} phase={phase} currentUserId={currentUserId} />
         </div>
     );
@@ -98,13 +125,73 @@ const PokerTable = ({
     isHost,
     funFeatures,
     autoReveal,
+    anonymousMode = false,
     onStartVote,
     onReveal,
     onReset,
     onRevotePartial
 }) => {
-    // All users sit at the table dynamically (including observers, per Figma logic "Seat logic separated from Voting logic")
-    const allTableUsers = users;
+    // Seat shuffle for anonymous mode
+    const [displayUsers, setDisplayUsers] = useState(users);
+    const [shuffleState, setShuffleState] = useState('idle');
+    const [revealedCount, setRevealedCount] = useState(0);
+    const prevAnon = useRef(false);
+
+    useEffect(() => {
+        const turningOn = anonymousMode && !prevAnon.current;
+        const turningOff = !anonymousMode && prevAnon.current;
+
+        if (turningOn || turningOff) {
+            prevAnon.current = anonymousMode;
+            setShuffleState('poof-out');
+
+            setTimeout(() => {
+                setShuffleState('hidden');
+                setDisplayUsers(turningOn
+                    ? [...users].sort(() => Math.random() - 0.5)
+                    : [...users]);
+                setRevealedCount(0);
+
+                setTimeout(() => {
+                    setShuffleState('poof-in');
+                }, 150);
+            }, 400); // Wait for poof out
+        }
+    }, [anonymousMode, users]);
+
+    useEffect(() => {
+        if (shuffleState === 'poof-in') {
+            if (revealedCount < displayUsers.length) {
+                const timer = setTimeout(() => {
+                    setRevealedCount(prev => prev + 1);
+                }, 100); // Speed up appearance slightly
+                return () => clearTimeout(timer);
+            } else {
+                const timer = setTimeout(() => {
+                    setShuffleState('idle');
+                }, 500);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [shuffleState, revealedCount, displayUsers.length]);
+
+    // Sync when users join/leave without reshuffling
+    useEffect(() => {
+        if (shuffleState !== 'idle') return; // Don't sync during animation
+        if (!anonymousMode) {
+            setDisplayUsers(users);
+        } else {
+            setDisplayUsers(prev => {
+                const updated = prev
+                    .filter(p => users.some(u => u.id === p.id))
+                    .map(p => users.find(u => u.id === p.id));
+                const newUsers = users.filter(u => !prev.some(p => p.id === u.id));
+                return [...updated, ...newUsers];
+            });
+        }
+    }, [users, anonymousMode, shuffleState]);
+
+    const allTableUsers = displayUsers;
 
     const isSmallTable = allTableUsers.length <= 6;
     const avatarSize = isSmallTable ? 56 : 48;
@@ -320,6 +407,9 @@ const PokerTable = ({
                                 y={y}
                                 avatarSize={avatarSize}
                                 activeReaction={activeReactions[u.id]}
+                                anonymousMode={anonymousMode}
+                                shuffleState={shuffleState}
+                                isRevealed={i < revealedCount}
                             />
                         );
                     });

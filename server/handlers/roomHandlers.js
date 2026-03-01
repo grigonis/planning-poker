@@ -21,8 +21,9 @@ module.exports = (io, socket) => {
             votes: new Map(), // Key: userId, Value: Vote
             phase: 'IDLE',
             gameMode: gameMode || 'STANDARD',
-            funFeatures: false, // Default to false
-            autoReveal: true, // Default to true
+            funFeatures: false,
+            autoReveal: true,
+            anonymousMode: false,
             averages: {}
         };
 
@@ -55,6 +56,7 @@ module.exports = (io, socket) => {
             gameMode: room.gameMode,
             funFeatures: room.funFeatures,
             autoReveal: room.autoReveal,
+            anonymousMode: room.anonymousMode,
             users: Array.from(room.users.values())
         });
         console.log(`Room created: ${roomId} by ${socket.id} (${name}) as ${hostRole} in ${room.gameMode} mode`);
@@ -65,6 +67,7 @@ module.exports = (io, socket) => {
         if (room) {
             if (settings.funFeatures !== undefined) room.funFeatures = settings.funFeatures;
             if (settings.autoReveal !== undefined) room.autoReveal = settings.autoReveal;
+            if (settings.anonymousMode !== undefined) room.anonymousMode = settings.anonymousMode;
             io.to(roomId).emit('room_settings_updated', { settings });
             console.log(`Room ${roomId} settings updated:`, settings);
         }
@@ -129,7 +132,8 @@ module.exports = (io, socket) => {
             userId: user.id,
             mode: room.gameMode,
             funFeatures: room.funFeatures,
-            autoReveal: room.autoReveal
+            autoReveal: room.autoReveal,
+            anonymousMode: room.anonymousMode
         });
 
         console.log(`${name} joined ${roomId} as ${user.role} (User ID: ${user.id})`);
