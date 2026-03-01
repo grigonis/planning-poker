@@ -56,16 +56,16 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                 {loading ? (
                     <div className="text-center py-8">
                         <div className="w-8 h-8 border-2 border-banana-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-gray-500 dark:text-gray-400 font-heading">Checking Room...</p>
+                        <p className="text-gray-500 dark:text-gray-400 ">Checking Room...</p>
                     </div>
                 ) : error ? (
                     <div className="text-center py-8">
                         <div className="bg-red-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
                             <AlertCircle size={32} className="text-red-500" />
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 font-heading">Unable to Join</h2>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 ">Unable to Join</h2>
                         <p className="text-gray-500 dark:text-gray-400 mb-6">{error}</p>
-                        <a href="/" className="text-orange-500 dark:text-banana-500 hover:text-banana-400 font-bold font-heading hover:underline">
+                        <a href="/" className="text-orange-500 dark:text-banana-500 hover:text-banana-400 font-bold  hover:underline">
                             Return to Home
                         </a>
                     </div>
@@ -75,13 +75,13 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                             <div className="bg-orange-500/10 dark:bg-banana-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20 dark:border-banana-500/20">
                                 <Users size={32} className="text-orange-500 dark:text-banana-500" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 font-heading">Join {gameMode === 'STANDARD' ? 'Planning' : 'Split'} Session</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 ">Join {gameMode === 'STANDARD' ? 'Planning' : 'Split'} Session</h2>
                             <p className="text-gray-500 dark:text-gray-400 text-sm">Room: <span className="font-mono text-orange-500 dark:text-banana-500">{roomId}</span></p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 font-heading">
+                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ">
                                     Your Display Name
                                 </label>
                                 <input
@@ -96,7 +96,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 font-heading">
+                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ">
                                     Join As
                                 </label>
                                 <div className="grid gap-3">
@@ -110,7 +110,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                                     : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                                                     }`}
                                             >
-                                                <div className="font-bold font-heading relative z-10">Estimator</div>
+                                                <div className="font-bold  relative z-10">Estimator</div>
                                                 <div className="text-xs opacity-80 relative z-10">Vote on stories</div>
                                             </button>
                                             <button
@@ -121,7 +121,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                                     : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                                                     }`}
                                             >
-                                                <div className="font-bold font-heading relative z-10">Spectator</div>
+                                                <div className="font-bold  relative z-10">Spectator</div>
                                                 <div className="text-xs opacity-80 relative z-10">View only</div>
                                             </button>
                                         </>
@@ -136,7 +136,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                                         : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                                                         }`}
                                                 >
-                                                    <div className="font-bold font-heading">Developer</div>
+                                                    <div className="font-bold ">Developer</div>
                                                 </button>
                                                 <button
                                                     type="button"
@@ -146,7 +146,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                                         : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                                                         }`}
                                                 >
-                                                    <div className="font-bold font-heading">QA</div>
+                                                    <div className="font-bold ">QA</div>
                                                 </button>
                                             </div>
                                             <button
@@ -157,7 +157,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                                     : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                                                     }`}
                                             >
-                                                <div className="font-bold font-heading">Spectator</div>
+                                                <div className="font-bold ">Spectator</div>
                                             </button>
                                         </div>
                                     )}
@@ -166,7 +166,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
 
                             <button
                                 type="submit"
-                                className="w-full bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 font-bold font-heading py-4 rounded-xl shadow-[0_4px_0_0_#cc4a00] dark:shadow-[0_4px_0_0_#e69900] hover:shadow-[0_2px_0_0_#cc4a00] dark:hover:shadow-[0_2px_0_0_#e69900] hover:translate-y-[2px] transition-all"
+                                className="w-full bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 font-bold  py-4 rounded-xl shadow-[0_4px_0_0_#cc4a00] dark:shadow-[0_4px_0_0_#e69900] hover:shadow-[0_2px_0_0_#cc4a00] dark:hover:shadow-[0_2px_0_0_#e69900] hover:translate-y-[2px] transition-all"
                             >
                                 Join Session
                             </button>

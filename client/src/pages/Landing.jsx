@@ -27,9 +27,9 @@ const Landing = () => {
                     onCreateSession={() => setIsCreateModalOpen(true)}
                 />
 
-                <Features />
-
                 <HowItWorks />
+
+                <Features />
 
                 <FAQ />
 

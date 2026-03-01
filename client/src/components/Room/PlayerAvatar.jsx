@@ -63,7 +63,7 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
             </div>
 
             {/* Name + Host badge */}
-            <span className="font-bold font-heading text-gray-900 dark:text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
+            <span className="font-bold  text-gray-900 dark:text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
                 {user.name}
                 {user.isHost && <Crown size={12} className="text-orange-500 dark:text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(255,92,0,0.5)] dark:drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
             </span>

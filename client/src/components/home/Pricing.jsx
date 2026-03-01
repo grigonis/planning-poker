@@ -12,15 +12,15 @@ const Pricing = () => {
                 {/* Animated hover beam */}
                 <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                <h2 className="text-4xl md:text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-6">
+                <h2 className="text-4xl md:text-5xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight mb-6">
                     Completely <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Free to Use.</span>
                 </h2>
 
-                <p className="text-xl text-gray-500 dark:text-gray-400 font-light font-heading leading-relaxed mb-6">
-                    Banana Poker is completely free of use. We don't collect, sell, or use any of your user data. The estimation table is yours.
+                <p className="text-xl text-gray-500 dark:text-gray-400 font-light  leading-relaxed mb-6">
+                    Scrumky is completely free of use. We don't collect, sell, or use any of your user data. The estimation table is yours.
                 </p>
 
-                <p className="text-lg text-gray-500 dark:text-gray-400 font-light font-heading leading-relaxed mb-10">
+                <p className="text-lg text-gray-500 dark:text-gray-400 font-light  leading-relaxed mb-10">
                     However, for the monkeys running our servers, we would highly appreciate some bananas as tips! 🐒🍌
                 </p>
 

@@ -31,7 +31,7 @@ const StepCard = ({ image, title, description }) => (
 
         {/* Text */}
         <div className="absolute inset-x-0 bottom-0 p-7 z-20">
-            <h3 className="font-heading font-bold text-white text-xl leading-snug transition-transform duration-500 ease-out group-hover:-translate-y-1">
+            <h3 className=" font-bold text-white text-xl leading-snug transition-transform duration-500 ease-out group-hover:-translate-y-1">
                 {title}
             </h3>
             <div className="overflow-hidden">
@@ -65,10 +65,10 @@ const HowItWorks = () => {
     return (
         <section id="how-it-works" className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
             <div className="mb-16">
-                <h2 className="text-5xl font-bold font-heading text-gray-900 dark:text-white tracking-tight mb-6">
+                <h2 className="text-5xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight mb-6">
                     How to <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Peel Your Sprint.</span>
                 </h2>
-                <p className="text-xl text-gray-500 dark:text-gray-400 font-light font-heading max-w-3xl leading-relaxed">
+                <p className="text-xl text-gray-500 dark:text-gray-400 font-light  max-w-3xl leading-relaxed">
                     A fresh take on Scrum planning. Simple, collaborative, and{' '}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500 font-bold italic">un-peel-ievably</span> fun—even for a tired development team on a Friday afternoon.
                 </p>

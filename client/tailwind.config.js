@@ -28,9 +28,7 @@ export default {
                 }
             },
             fontFamily: {
-                sans: ["Inter", "sans-serif"],
-                heading: ["Poppins", "sans-serif"],
-                golden: ["Golden", "sans-serif"],
+                sans: ["Poppins", "sans-serif"],
             },
             animation: {
                 'blob': 'blob 7s infinite',

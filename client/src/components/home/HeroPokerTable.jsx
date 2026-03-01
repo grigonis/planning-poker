@@ -31,7 +31,7 @@ const FakeAvatar = ({ name, role, seed, bgColors }) => {
             </div>
 
             {/* Name */}
-            <span className="font-bold font-heading text-gray-900 dark:text-gray-200 text-xs md:text-xs leading-tight text-center truncate max-w-[80px]">
+            <span className="font-bold  text-gray-900 dark:text-gray-200 text-xs md:text-xs leading-tight text-center truncate max-w-[80px]">
                 {name}
             </span>
 

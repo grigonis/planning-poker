@@ -148,17 +148,17 @@ const PokerTable = ({
                     {/* Phase-aware center content */}
                     {phase === 'IDLE' && (
                         <div className="relative z-10 flex flex-col items-center gap-4">
-                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold font-heading tracking-[0.2em] uppercase opacity-70">
+                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold  tracking-[0.2em] uppercase opacity-70">
                                 Planning Poker
                             </span>
-                            <p className="text-gray-400 dark:text-white/40 text-sm md:text-base font-heading">
+                            <p className="text-gray-400 dark:text-white/40 text-sm md:text-base ">
                                 Waiting for host to start voting...
                             </p>
                             {isHost && (
                                 <div className="flex flex-col items-center gap-4 mt-2">
                                     <button
                                         onClick={onStartVote}
-                                        className="bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold font-heading flex items-center gap-2 transition-all shadow-[0_0_30px_rgba(255,92,0,0.25)] dark:shadow-[0_0_30px_rgba(238,173,43,0.3)] active:scale-95"
+                                        className="bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold  flex items-center gap-2 transition-all shadow-[0_0_30px_rgba(255,92,0,0.25)] dark:shadow-[0_0_30px_rgba(238,173,43,0.3)] active:scale-95"
                                     >
                                         <Play size={18} />
                                         Start Voting Round
@@ -169,10 +169,10 @@ const PokerTable = ({
                     )}
                     {isVotingPhase && (
                         <div className="relative z-10 flex flex-col items-center gap-4">
-                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold font-heading tracking-[0.2em] uppercase opacity-70">
+                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold  tracking-[0.2em] uppercase opacity-70">
                                 Current Estimation
                             </span>
-                            <p className="text-lg md:text-2xl font-extrabold text-gray-900 dark:text-white font-heading animate-pulse mb-0 md:mb-1">
+                            <p className="text-lg md:text-2xl font-extrabold text-gray-900 dark:text-white  animate-pulse mb-0 md:mb-1">
                                 Voting in progress...
                             </p>
 
@@ -197,7 +197,7 @@ const PokerTable = ({
                             {isHost && (
                                 <button
                                     onClick={onReveal}
-                                    className="mt-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 px-6 py-2 rounded-lg font-bold font-heading flex items-center gap-2 transition-all active:scale-95 text-xs uppercase tracking-wider"
+                                    className="mt-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 px-6 py-2 rounded-lg font-bold  flex items-center gap-2 transition-all active:scale-95 text-xs uppercase tracking-wider"
                                 >
                                     <Eye size={14} />
                                     Force Reveal
@@ -211,23 +211,23 @@ const PokerTable = ({
                             const isStandard = averages.total !== undefined;
                             return (
                                 <div className="relative z-10 flex flex-col items-center gap-3 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
-                                    <span className="text-orange-500 dark:text-banana-500 text-[10px] font-bold font-heading tracking-[0.2em] uppercase opacity-70">
+                                    <span className="text-orange-500 dark:text-banana-500 text-[10px] font-bold  tracking-[0.2em] uppercase opacity-70">
                                         Voting Results
                                     </span>
 
                                     {isStandard ? (
                                         <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
-                                            <p className="text-[10px] font-bold font-heading text-orange-500 dark:text-banana-500/70 uppercase tracking-widest mb-0.5">Team Average</p>
+                                            <p className="text-[10px] font-bold  text-orange-500 dark:text-banana-500/70 uppercase tracking-widest mb-0.5">Team Average</p>
                                             <div className="text-3xl md:text-4xl font-extrabold text-orange-500 dark:text-banana-400 leading-none">{averages.total || '—'}</div>
                                         </div>
                                     ) : (
                                         <div className="flex gap-2 w-full">
                                             <div className="glass rounded-xl px-3 py-2 text-center flex-1 border border-indigo-500/20">
-                                                <p className="text-[9px] font-bold font-heading text-indigo-400/70 uppercase tracking-widest mb-0.5">Dev</p>
+                                                <p className="text-[9px] font-bold  text-indigo-400/70 uppercase tracking-widest mb-0.5">Dev</p>
                                                 <div className="text-2xl font-extrabold text-indigo-400 leading-none">{averages.dev || '—'}</div>
                                             </div>
                                             <div className="glass rounded-xl px-3 py-2 text-center flex-1 border border-rose-500/20">
-                                                <p className="text-[9px] font-bold font-heading text-rose-400/70 uppercase tracking-widest mb-0.5">QA</p>
+                                                <p className="text-[9px] font-bold  text-rose-400/70 uppercase tracking-widest mb-0.5">QA</p>
                                                 <div className="text-2xl font-extrabold text-rose-400 leading-none">{averages.qa || '—'}</div>
                                             </div>
                                         </div>
@@ -237,7 +237,7 @@ const PokerTable = ({
                                         <div className="flex flex-col items-center gap-2 w-full pt-1">
                                             <button
                                                 onClick={onReset}
-                                                className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-bold font-heading flex items-center gap-2 transition-all active:scale-95 w-full justify-center text-sm"
+                                                className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-bold  flex items-center gap-2 transition-all active:scale-95 w-full justify-center text-sm"
                                             >
                                                 <RotateCcw size={15} />
                                                 New Round
@@ -246,13 +246,13 @@ const PokerTable = ({
                                                 <div className="flex gap-2 w-full">
                                                     <button
                                                         onClick={() => onRevotePartial('DEV')}
-                                                        className="flex-1 px-3 py-2 rounded-lg font-bold font-heading border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs"
+                                                        className="flex-1 px-3 py-2 rounded-lg font-bold  border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs"
                                                     >
                                                         Re-vote DEV
                                                     </button>
                                                     <button
                                                         onClick={() => onRevotePartial('QA')}
-                                                        className="flex-1 px-3 py-2 rounded-lg font-bold font-heading border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition-colors text-xs"
+                                                        className="flex-1 px-3 py-2 rounded-lg font-bold  border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition-colors text-xs"
                                                     >
                                                         Re-vote QA
                                                     </button>

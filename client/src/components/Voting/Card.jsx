@@ -21,7 +21,7 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
                 {/* Front Face (Value) */}
                 {!faceDown && (
                     <div className="w-full h-full bg-white dark:bg-dark-800 border-2 border-banana-500/50 rounded-lg flex items-center justify-center shadow-lg shadow-banana-500/10">
-                        <span className="text-lg sm:text-xl md:text-3xl font-bold font-heading text-gray-900 dark:text-white">
+                        <span className="text-lg sm:text-xl md:text-3xl font-bold  text-gray-900 dark:text-white">
                             {value === 'COFFEE' ? '☕' : value}
                         </span>
                     </div>
