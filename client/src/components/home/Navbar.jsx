@@ -27,7 +27,7 @@ const Navbar = ({ onCreateSession }) => {
                     </div>
                     <div className="flex flex-col leading-none">
                         <span className="text-2xl font-medium tracking-tight text-neutral-800 dark:text-neutral-200 transition-colors duration-300">
-                            Scrumky
+                            Scrumkey
                         </span>
                         <span className="text-[10px] uppercase tracking-widest text-neutral-800/60 dark:text-neutral-200/60 font-medium mt-0.5 transition-colors duration-300">
                             Online planning poker
