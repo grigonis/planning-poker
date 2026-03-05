@@ -1,5 +1,4 @@
-import React from 'react';
-import HeroPokerTable from './HeroPokerTable';
+import HeroCards from './HeroCards';
 import productHuntCat from '../../assets/banana-poker/product-hunt-cat.svg';
 import createRoomIcon from '../../assets/banana-poker/create-room-icon.svg';
 import heroIllustration from '../../assets/banana-poker/hero-illustration.png';
@@ -56,9 +55,9 @@ const Hero = ({ onCreateSession }) => {
                 </div>
             </div>
 
-            {/* Right Visuals */}
-            <div className="w-full flex items-center justify-center animate-in slide-in-from-right-10 duration-1000 fade-in relative mt-12 lg:mt-0">
-                <HeroPokerTable />
+            {/* Right Visuals — hidden on screens narrower than lg */}
+            <div className="hidden lg:flex w-full items-center justify-center animate-in slide-in-from-right-10 duration-1000 fade-in relative">
+                <HeroCards />
             </div>
         </section>
     );
