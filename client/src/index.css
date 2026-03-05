@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-gray-50 dark:bg-dark-900 text-gray-700 dark:text-gray-400 antialiased font-sans selection:bg-banana-500/30;
+    @apply bg-slate-50 dark:bg-carbon-950 text-slate-700 dark:text-silver-300 antialiased font-sans selection:bg-silver-400/20;
     transition: background-color 300ms ease-in-out, color 300ms ease-in-out, border-color 300ms ease-in-out;
   }
 
@@ -42,53 +42,75 @@
   }
 
   .dark .glass-card {
-    background: rgba(21, 25, 33, 0.7);
+    background: rgba(15, 17, 23, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 }
 
-/* Glassmorphism — Stitch Design System */
+/* Glassmorphism — Carbon Silver Design System */
 .glass {
   background: rgba(0, 0, 0, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.07);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .dark .glass {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.glass-gold {
-  background: linear-gradient(135deg, rgba(238, 173, 43, 0.1), rgba(238, 173, 43, 0.05));
+/* Silver accent glass — replaces glass-gold */
+.glass-silver {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.08), rgba(148, 163, 184, 0.04));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(238, 173, 43, 0.3);
-  box-shadow: 0 0 20px rgba(238, 173, 43, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 0 24px rgba(148, 163, 184, 0.08);
 }
 
-/* Background Effects */
+.dark .glass-silver {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.06), rgba(148, 163, 184, 0.02));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: 0 0 24px rgba(148, 163, 184, 0.06);
+}
+
+/* Keep glass-gold as alias for backwards compat */
+.glass-gold {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.08), rgba(148, 163, 184, 0.04));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 0 24px rgba(148, 163, 184, 0.08);
+}
+
+.dark .glass-gold {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.06), rgba(148, 163, 184, 0.02));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: 0 0 24px rgba(148, 163, 184, 0.06);
+}
+
+/* Background Effects — Silver/Carbon */
 .aurora {
   background:
-    radial-gradient(100% 100% at 50% 0%, rgba(238, 173, 43, 0.04) 0%, transparent 60%),
-    radial-gradient(100% 100% at 80% 100%, rgba(238, 173, 43, 0.02) 0%, transparent 60%),
-    radial-gradient(100% 100% at 0% 100%, rgba(238, 173, 43, 0.015) 0%, transparent 60%);
+    radial-gradient(100% 100% at 50% 0%, rgba(148, 163, 184, 0.04) 0%, transparent 60%),
+    radial-gradient(100% 100% at 80% 100%, rgba(100, 116, 139, 0.02) 0%, transparent 60%),
+    radial-gradient(100% 100% at 0% 100%, rgba(148, 163, 184, 0.015) 0%, transparent 60%);
   transition: background 0.3s ease;
 }
 
 .dark .aurora {
   background:
-    radial-gradient(100% 100% at 50% 0%, rgba(238, 173, 43, 0.08) 0%, transparent 60%),
-    radial-gradient(100% 100% at 80% 100%, rgba(238, 173, 43, 0.04) 0%, transparent 60%),
-    radial-gradient(100% 100% at 0% 100%, rgba(238, 173, 43, 0.03) 0%, transparent 60%);
+    radial-gradient(100% 100% at 50% 0%, rgba(148, 163, 184, 0.07) 0%, transparent 60%),
+    radial-gradient(100% 100% at 80% 100%, rgba(100, 116, 139, 0.04) 0%, transparent 60%),
+    radial-gradient(100% 100% at 0% 100%, rgba(148, 163, 184, 0.03) 0%, transparent 60%);
 }
 
 .modern-grid {
   background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
   background-size: 3rem 3rem;
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
@@ -97,8 +119,8 @@
 
 .dark .modern-grid {
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
 }
 
 /* Presence Indicators */
@@ -114,7 +136,7 @@
 }
 
 .dark .presence-dot {
-  border-color: #151921;
+  border-color: #0F1117;
 }
 
 .presence-dot--online {
@@ -187,6 +209,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -195,6 +218,54 @@
 
 /* ── Hero card idle float ──────────────────────────────────── */
 @keyframes cardFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ── Global Cinematic Grain Overlay ───────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  top: -100px;
+  left: -100px;
+  width: calc(100vw + 200px);
+  height: calc(100vh + 200px);
+  z-index: -50;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.045;
+  animation: cinematic-grain 0.6s steps(4) infinite;
+}
+
+.dark body::before {
+  opacity: 0.025;
+}
+
+@keyframes cinematic-grain {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-20px, 15px);
+  }
+
+  50% {
+    transform: translate(15px, -20px);
+  }
+
+  75% {
+    transform: translate(-15px, -15px);
+  }
+
+  100% {
+    transform: translate(20px, 20px);
+  }
 }

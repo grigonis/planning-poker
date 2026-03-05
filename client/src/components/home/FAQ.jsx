@@ -65,7 +65,7 @@ const FAQ = () => {
                 {/* Left Column */}
                 <div className="lg:col-span-5 flex flex-col items-start">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900/50 mb-6 ">
-                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-silver-400"></span>
                         <span className="text-xs text-gray-600 dark:text-neutral-200 font-medium">Frequently Asked Questions</span>
                     </div>
 
