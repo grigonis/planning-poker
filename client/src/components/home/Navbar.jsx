@@ -1,22 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import ScrumkyLogo from '../ScrumkyLogo';
 import ThemeToggle from '../ThemeToggle';
 
 const Navbar = ({ onCreateSession }) => {
-    const [scrolled, setScrolled] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const isScrolled = window.scrollY > 20;
-            if (isScrolled !== scrolled) {
-                setScrolled(isScrolled);
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [scrolled]);
-
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 py-2.5 bg-gray-50/80 dark:bg-dark-900/80 backdrop-blur-md shadow-lg shadow-black/5 border-b border-gray-200 dark:border-white/5 transition-colors duration-300">
             <div className="w-full max-w-7xl mx-auto px-6 flex items-center justify-between">

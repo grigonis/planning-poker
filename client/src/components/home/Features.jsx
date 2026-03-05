@@ -1,4 +1,3 @@
-import React from 'react';
 import { Eye, Zap, Link2, EyeOff, Crown, Users, ImageIcon } from 'lucide-react';
 
 const features = [

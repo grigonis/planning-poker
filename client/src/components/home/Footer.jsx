@@ -1,4 +1,3 @@
-import React from 'react';
 import footerLogo from '../../assets/banana-poker/footer-logo.svg';
 import twitterIcon from '../../assets/banana-poker/social-twitter.svg';
 import linkedinIcon from '../../assets/banana-poker/social-linkedin.svg';

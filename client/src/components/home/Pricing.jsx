@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Pricing = () => {
     return (
         <section id="pricing" className="w-full max-w-4xl mx-auto px-6 py-20 relative z-10 text-center">

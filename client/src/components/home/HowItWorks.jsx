@@ -1,4 +1,3 @@
-import React from 'react';
 import step1 from '../../assets/banana-poker/step1-peel.avif';
 import step2 from '../../assets/banana-poker/step2-gather.avif';
 import step3 from '../../assets/banana-poker/step3-vote.avif';
