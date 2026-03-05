@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
 
 import card1 from '../../assets/card1.svg';
@@ -25,28 +25,28 @@ const CARD_FRONTS = {
 const CARDS = [
     {
         value: '0',
-        title: 'Awesome, PMs will love this!',
-        desc: "A story which will come for almost free? That's going to make PM happy!",
+        title: 'Already Done or Not Needed',
+        desc: "This story brings no additional effort. It’s either completed, duplicated, or no longer relevant. In Scrum terms: we save time by not building what doesn’t create value.",
     },
     {
-        value: '1',
-        title: 'Quick win!',
-        desc: "A tiny task, done before lunch. Feels good to ship fast.",
-    },
-    {
-        value: '2',
-        title: 'Small but mighty!',
-        desc: "Crisp scope, clean code. This one goes straight to done.",
+        value: '0.5',
+        title: 'Almost Free',
+        desc: "A micro-task. Minimal complexity, minimal risk, clear scope. Perfect for quick momentum and early sprint wins - the kind that keeps velocity healthy and morale high.",
     },
     {
         value: '3',
-        title: 'Just right.',
-        desc: "Not too big, not too small. The Goldilocks of your sprint.",
+        title: 'Well Understood',
+        desc: "Clear acceptance criteria, manageable effort, limited uncertainty. A balanced story that fits comfortably within a sprint without surprises hiding in the backlog.",
     },
     {
         value: '5',
-        title: 'Worth the effort.',
-        desc: "A solid story with real substance. Let's break it down together.",
+        title: 'Solid Investment',
+        desc: "Meaningful effort with tangible impact. Requires coordination, thoughtful implementation, and possibly a short breakdown discussion. The kind of story that moves the product forward.",
+    },
+    {
+        value: '13',
+        title: 'Let’s Split This',
+        desc: "High complexity or significant unknowns detected. In Scrum practice, this is usually a signal to refine, clarify, or divide the story before committing it to a sprint.",
     },
 ];
 
@@ -55,10 +55,14 @@ const FAN_ROTATIONS = [-12, -6, 0, 6, 12];
 // Float animation delay stagger per card (seconds)
 const FLOAT_DELAYS = [0, 0.7, 1.4, 0.35, 1.05];
 
+const FLIP_DURATION = 620; // slightly over the 0.6s CSS transition
+
 const HeroCards = () => {
     const [visibleCount, setVisibleCount] = useState(0);
     const [selected, setSelected] = useState(null);
     const [hovered, setHovered] = useState(null);
+    const [flipping, setFlipping] = useState(null); // index of card currently flipping
+    const flipTimerRef = useRef(null);
 
     useEffect(() => {
         const timers = CARDS.map((_, i) =>
@@ -66,6 +70,15 @@ const HeroCards = () => {
         );
         return () => timers.forEach(clearTimeout);
     }, []);
+
+    const handleCardClick = (i) => {
+        setSelected(prev => prev === i ? null : i);
+        setFlipping(i);
+        clearTimeout(flipTimerRef.current);
+        flipTimerRef.current = setTimeout(() => setFlipping(null), FLIP_DURATION);
+    };
+
+    useEffect(() => () => clearTimeout(flipTimerRef.current), []);
 
     // Outer wrapper: handles fan rotation + pop-in entrance only
     const getFanTransform = (i) => {
@@ -82,26 +95,25 @@ const HeroCards = () => {
     return (
         <div className="flex flex-col items-center w-full select-none" style={{ gap: 0 }}>
 
-            {/* ── Description — above cards ──────────────────── */}
-            <div className="w-full text-center px-4 mb-6" style={{ minHeight: '90px' }}>
-                {selected !== null ? (
+            {/* ── Description — fixed height, content pinned to bottom ── */}
+            <div
+                className="w-full flex flex-col justify-end text-center px-4 mb-10"
+                style={{ height: '150px' }}
+            >
+                {selected !== null && (
                     <div key={selected} className="flex flex-col items-center gap-2">
                         <p
                             className="text-xl lg:text-2xl font-heading font-bold text-banana-500 leading-tight"
-                            style={{ animation: 'heroTextSlide 0.42s cubic-bezier(0.22, 1, 0.36, 1) both' }}
+                            style={{ animation: 'heroTextRise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both' }}
                         >
                             {CARDS[selected].title}
                         </p>
                         <p
                             className="text-sm text-gray-400 leading-relaxed max-w-xs"
-                            style={{ animation: 'heroTextSlide 0.42s cubic-bezier(0.22, 1, 0.36, 1) 75ms both' }}
+                            style={{ animation: 'heroTextRise 0.4s cubic-bezier(0.22, 1, 0.36, 1) 70ms both' }}
                         >
                             {CARDS[selected].desc}
                         </p>
-                    </div>
-                ) : (
-                    <div className="flex items-end justify-center" style={{ minHeight: '90px' }}>
-                        <p className="text-xs text-gray-500 pb-1">Pick a card to estimate your story</p>
                     </div>
                 )}
             </div>
@@ -112,6 +124,7 @@ const HeroCards = () => {
                     const isVisible = i < visibleCount;
                     const isSelected = selected === i;
                     const isHovered = hovered === i;
+                    const isFlipping = flipping === i;
                     const isFloating = isVisible && !isSelected;
 
                     return (
@@ -125,7 +138,7 @@ const HeroCards = () => {
                                 transition: 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease',
                                 zIndex: isSelected ? 10 : i,
                             }}
-                            onClick={() => setSelected(prev => prev === i ? null : i)}
+                            onClick={() => handleCardClick(i)}
                             onMouseEnter={() => setHovered(i)}
                             onMouseLeave={() => setHovered(null)}
                         >
@@ -141,9 +154,9 @@ const HeroCards = () => {
                                     animation: isFloating
                                         ? `cardFloat 3.8s ease-in-out ${FLOAT_DELAYS[i]}s infinite`
                                         : 'none',
-                                    boxShadow: isHovered && !isSelected
-                                        ? '0 18px 32px rgba(255,184,0,0.38), 0 28px 56px rgba(255,184,0,0.16)'
-                                        : '0 6px 24px rgba(0,0,0,0.35)',
+                                    boxShadow: isHovered && !isSelected && !isFlipping
+                                        ? '0 14px 20px -4px rgba(255,184,0,0.22)'
+                                        : '0 6px 16px rgba(0,0,0,0.3)',
                                     transition: 'box-shadow 0.35s ease',
                                 }}
                             >
