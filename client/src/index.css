@@ -181,11 +181,11 @@
   transform: rotateY(180deg);
 }
 
-/* ── Hero card description slide-in ───────────────────────── */
-@keyframes heroTextSlide {
+/* ── Hero card description rise-in ────────────────────────── */
+@keyframes heroTextRise {
   from {
     opacity: 0;
-    transform: translateY(-18px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;

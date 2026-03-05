@@ -12,6 +12,7 @@
   "dependencies": {
     "@dicebear/collection": "^9.3.2",
     "@dicebear/core": "^9.3.2",
+    "@paper-design/shaders-react": "^0.0.71",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",

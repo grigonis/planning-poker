@@ -3,6 +3,14 @@ import productHuntCat from '../../assets/banana-poker/product-hunt-cat.svg';
 import createRoomIcon from '../../assets/banana-poker/create-room-icon.svg';
 import heroIllustration from '../../assets/banana-poker/hero-illustration.png';
 import HeroBackground from './HeroBackground';
+import { Zap, Sprout, Radio, Layers } from 'lucide-react';
+
+const TRUST_BADGES = [
+    { icon: Zap,    label: 'Setup in seconds' },
+    { icon: Sprout, label: 'Free to start' },
+    { icon: Radio,  label: 'Real-time collaboration' },
+    { icon: Layers, label: 'Many advanced features' },
+];
 
 
 const Hero = ({ onCreateSession }) => {
@@ -29,25 +37,48 @@ const Hero = ({ onCreateSession }) => {
                 </div>
 
                 {/* Heading */}
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-neutral-800 dark:text-neutral-200 leading-[1.1] tracking-tight">
-                    Sprints are better when they are
-                    <img
-                        src={heroIllustration}
-                        alt="BANANAS"
-                        className="block mt-2 w-full max-w-[400px] object-contain animate-in fade-in slide-in-from-left-5 duration-700"
-                    />
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-800 dark:text-neutral-200 leading-[1.1] tracking-tight">
+                    Run Better Sprint Estimates.{' '}
+                    <span className="relative whitespace-nowrap inline-block">
+                        In Seconds.
+                        <svg
+                            className="absolute -bottom-2 left-0 w-full overflow-visible"
+                            viewBox="0 0 200 10"
+                            preserveAspectRatio="none"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M2,6 C30,1 70,9 110,4 C145,0 172,8 198,5"
+                                stroke="#ffb800"
+                                strokeWidth="2.5"
+                                fill="none"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </span>
                 </h1>
 
                 {/* Subtext */}
-                <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-light  max-w-lg leading-relaxed">
-                    Peel back the complexity of agile estimation. Scrumky is the high-fidelity, bias-free planning tool designed to help remote teams align faster and build better.
+                <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-light max-w-lg leading-relaxed">
+                    Create a room, share the link, and start estimating instantly. No friction, no accounts, just focused team alignment.
                 </p>
 
-                {/* Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                {/* Trust badges */}
+                <div className="grid grid-cols-2 gap-2 w-fit">
+                    {TRUST_BADGES.map(({ icon: Icon, label }) => (
+                        <div key={label} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03]">
+                            <Icon size={14} className="text-banana-500 shrink-0" />
+                            <span className="text-xs text-white/60 font-medium whitespace-nowrap">{label}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Button */}
+                <div className="flex flex-col sm:flex-row gap-4">
                     <button
                         onClick={onCreateSession}
-                        className="px-8 py-4 bg-banana-500 rounded-xl flex items-center justify-center gap-2 text-dark-900 font-bold  hover:bg-banana-400 transition-colors shadow-xl shadow-banana-500/20 active:scale-95"
+                        className="px-8 py-4 bg-banana-500 rounded-xl flex items-center justify-center gap-2 text-dark-900 font-bold hover:bg-banana-400 transition-colors shadow-xl shadow-banana-500/20 active:scale-95"
                     >
                         <span>Create Room</span>
                         <img src={createRoomIcon} alt="NewRoomIcon" className="w-4 h-4" />
