@@ -45,10 +45,11 @@ export default {
                 },
             },
             fontFamily: {
-                sans: ["Inter", "sans-serif"],
-                heading: ["Inter", "sans-serif"],
+                sans: ["Geist", "sans-serif"],
+                heading: ["Geist", "sans-serif"],
             },
             animation: {
+                'marquee': 'marquee 30s linear infinite',
                 'blob': 'blob 7s infinite',
                 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'expand-contract': 'expand-contract 6s ease-in-out infinite',
@@ -58,6 +59,10 @@ export default {
                 "spin-around": "spin-around calc(var(--speed) * 2) infinite linear",
             },
             keyframes: {
+                marquee: {
+                    '0%': { transform: 'translateX(0)' },
+                    '100%': { transform: 'translateX(-50%)' },
+                },
                 flip: {
                     '0%': { transform: 'rotateY(0deg)' },
                     '100%': { transform: 'rotateY(180deg)' },

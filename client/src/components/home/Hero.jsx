@@ -2,14 +2,9 @@ import HeroCards from './HeroCards';
 import productHuntCat from '../../assets/banana-poker/product-hunt-cat.svg';
 import { ShimmerButton } from '../ui/shimmer-button';
 import { InfiniteGrid } from '../ui/infinite-grid-integration';
-import { Zap, Sprout, Radio, Layers, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
-const TRUST_BADGES = [
-    { icon: Zap, label: 'Setup in seconds' },
-    { icon: Sprout, label: 'Free to start' },
-    { icon: Radio, label: 'Real-time collaboration' },
-    { icon: Layers, label: 'Many advanced features' },
-];
+const TRUST_BADGES = ['No signup', 'Free to start', 'Real-time', 'Setup in seconds'];
 
 const Hero = ({ onCreateSession }) => {
     return (
@@ -26,60 +21,46 @@ const Hero = ({ onCreateSession }) => {
                         </span>
                     </div>
 
-                    {/* Heading — dual-layer trick for continuous gradient + SVG underline */}
-                    <div className="relative pb-2 z-0">
-                        {/* Layer 1: gradient text */}
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-[-0.03em] bg-clip-text text-transparent bg-gradient-to-br from-slate-800 via-slate-600 to-slate-700 dark:from-white dark:via-silver-200 dark:to-silver-400">
-                            Online Planning Poker. Estimate your{' '}
-                            <span className="whitespace-nowrap">Sprints Faster.</span>
-                        </h1>
-
-                        {/* Layer 2: invisible anchor for SVG underline under "In Seconds." */}
-                        <h1 className="absolute inset-0 text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-[-0.03em] pointer-events-none select-none" aria-hidden="true">
-                            <span className="text-transparent">Online Planning Poker. Estimate your{' '}</span>
-                            <span className="relative whitespace-nowrap text-transparent">
-                                Sprint Faster.
-                                <svg
-                                    className="absolute -bottom-2 left-0 w-full overflow-visible"
-                                    viewBox="0 0 200 10"
-                                    preserveAspectRatio="none"
-                                    aria-hidden="true"
-                                >
-                                    <defs>
-                                        <linearGradient id="champagne-underline" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" stopColor="#D4AF6E" />
-                                            <stop offset="50%" stopColor="#C09A3C" />
-                                            <stop offset="100%" stopColor="#6B4E0A" />
-                                        </linearGradient>
-                                    </defs>
-                                    <path
-                                        d="M2,6 C30,1 70,9 110,4 C145,0 172,8 198,5"
-                                        stroke="url(#champagne-underline)"
-                                        strokeWidth="2.5"
-                                        fill="none"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        opacity="0.9"
-                                    />
-                                </svg>
-                            </span>
-                        </h1>
-                    </div>
+                    {/* Heading */}
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.08] tracking-[-0.04em] text-slate-900 dark:text-white">
+                        Online Planning Poker.{' '}
+                        Story point estimation made{' '}
+                        <span className="relative inline-block">
+                            effortless.
+                            <svg
+                                className="absolute -bottom-1 left-0 w-full overflow-visible"
+                                viewBox="0 0 200 8"
+                                preserveAspectRatio="none"
+                                aria-hidden="true"
+                            >
+                                <defs>
+                                    <linearGradient id="champagne-underline" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="#D4AF6E" />
+                                        <stop offset="50%" stopColor="#C09A3C" />
+                                        <stop offset="100%" stopColor="#6B4E0A" />
+                                    </linearGradient>
+                                </defs>
+                                <path
+                                    d="M2,5 C40,1 100,7 198,4"
+                                    stroke="url(#champagne-underline)"
+                                    strokeWidth="2.5"
+                                    fill="none"
+                                    strokeLinecap="round"
+                                    opacity="0.9"
+                                />
+                            </svg>
+                        </span>
+                    </h1>
 
                     {/* Subtext */}
-                    <p className="text-lg md:text-xl text-slate-500 dark:text-silver-400 font-light max-w-lg leading-relaxed">
+                    <p className="text-base md:text-lg text-slate-500 dark:text-neutral-400 font-normal max-w-lg leading-relaxed">
                         Create a room, share the link, and start estimating instantly. No friction, no accounts, just focused team alignment.
                     </p>
 
-                    {/* Trust badges */}
-                    <div className="grid grid-cols-2 gap-2 w-fit">
-                        {TRUST_BADGES.map(({ icon: Icon, label }) => (
-                            <div key={label} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 dark:bg-carbon-950/70 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg shadow-slate-900/5">
-                                <Icon size={14} className="text-silver-500 dark:text-silver-400 shrink-0" />
-                                <span className="text-xs text-slate-600 dark:text-silver-400/70 font-medium whitespace-nowrap">{label}</span>
-                            </div>
-                        ))}
-                    </div>
+                    {/* Trust signals */}
+                    <p className="text-xs text-slate-400 dark:text-neutral-600 font-normal tracking-normal">
+                        {TRUST_BADGES.join('  ·  ')}
+                    </p>
 
                     {/* CTA Button */}
                     <div className="flex flex-col sm:flex-row gap-4 pointer-events-auto mt-2">

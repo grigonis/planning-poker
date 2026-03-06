@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,6 +7,12 @@
   body {
     @apply bg-slate-50 dark:bg-carbon-950 text-slate-700 dark:text-silver-300 antialiased font-sans selection:bg-silver-400/20;
     transition: background-color 300ms ease-in-out, color 300ms ease-in-out, border-color 300ms ease-in-out;
+  }
+
+  /* Vercel-style heading defaults */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight leading-tight;
+    font-feature-settings: "ss01", "cv01", "cv02";
   }
 
   /* Global theme transition for text and structural elements */
