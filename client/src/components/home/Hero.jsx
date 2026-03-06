@@ -30,15 +30,15 @@ const Hero = ({ onCreateSession }) => {
                     <div className="relative pb-2 z-0">
                         {/* Layer 1: gradient text */}
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-[-0.03em] bg-clip-text text-transparent bg-gradient-to-br from-slate-800 via-slate-600 to-slate-700 dark:from-white dark:via-silver-200 dark:to-silver-400">
-                            Run Better Sprint Estimates.{' '}
-                            <span className="whitespace-nowrap">In Seconds.</span>
+                            Online Planning Poker. Estimate your{' '}
+                            <span className="whitespace-nowrap">Sprints Faster.</span>
                         </h1>
 
                         {/* Layer 2: invisible anchor for SVG underline under "In Seconds." */}
                         <h1 className="absolute inset-0 text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-[-0.03em] pointer-events-none select-none" aria-hidden="true">
-                            <span className="text-transparent">Run Better Sprint Estimates.{' '}</span>
+                            <span className="text-transparent">Online Planning Poker. Estimate your{' '}</span>
                             <span className="relative whitespace-nowrap text-transparent">
-                                In Seconds.
+                                Sprint Faster.
                                 <svg
                                     className="absolute -bottom-2 left-0 w-full overflow-visible"
                                     viewBox="0 0 200 10"
@@ -91,7 +91,7 @@ const Hero = ({ onCreateSession }) => {
                             shimmerColor="rgba(255, 255, 255, 0.4)"
                         >
                             <span className="whitespace-pre-wrap text-center text-sm font-bold leading-none tracking-tight text-white flex items-center justify-center gap-2 px-2 py-1 relative z-10 transition-transform duration-300 group-hover:translate-x-1">
-                                Create Room
+                                Start Planning Poker
                                 <ArrowRight className="w-4 h-4" />
                             </span>
                         </ShimmerButton>

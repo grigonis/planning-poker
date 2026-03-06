@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ScrumkyLogo from '../ScrumkyLogo';
+import KeystimateLogo from '../KeystimateLogo';
 import ThemeToggle from '../ThemeToggle';
 
 const Navbar = ({ onCreateSession }) => {
@@ -27,11 +27,11 @@ const Navbar = ({ onCreateSession }) => {
                 {/* Logo Section */}
                 <div className="flex items-center gap-2 group cursor-pointer shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                     <div className="relative flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-                        <ScrumkyLogo className="w-auto h-8" />
+                        <KeystimateLogo className="w-auto h-8" />
                     </div>
                     <div className="flex flex-col justify-center leading-none overflow-hidden whitespace-nowrap pl-1">
-                        <span className="text-xl md:text-2xl font-bold tracking-tight text-neutral-800 dark:text-neutral-200 transition-all duration-300">
-                            Scrumkey
+                        <span className="text-xl md:text-2xl tracking-tight text-neutral-800 dark:text-neutral-200 transition-all duration-300 flex items-center" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                            <span className="font-semibold">Key</span><span className="font-normal">stimate</span>
                         </span>
                     </div>
                 </div>

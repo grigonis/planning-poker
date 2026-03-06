@@ -100,6 +100,16 @@ const HeroCards = () => {
                 className="w-full flex flex-col justify-end text-center px-4 mb-10"
                 style={{ height: '150px' }}
             >
+                {/* Visually hidden for SEO indexing only — renders all terms for crawlers */}
+                <div className="sr-only" aria-hidden="true">
+                    {CARDS.map((card) => (
+                        <div key={card.value}>
+                            <h2>{`Planning Poker Card ${card.value}: ${card.title}`}</h2>
+                            <p>{card.desc}</p>
+                        </div>
+                    ))}
+                </div>
+
                 {selected !== null && (
                     <div key={selected} className="flex flex-col items-center gap-2">
                         <p
@@ -168,7 +178,7 @@ const HeroCards = () => {
                                     <div className="flip-card-face flip-card-back-face rounded-xl overflow-hidden">
                                         <img
                                             src={cardBack}
-                                            alt="Card back"
+                                            alt="Keystimate planning poker card back"
                                             className="w-full h-full"
                                             style={{ objectFit: 'fill', display: 'block' }}
                                         />
@@ -177,7 +187,7 @@ const HeroCards = () => {
                                     <div className="flip-card-face flip-card-front-face rounded-xl overflow-hidden">
                                         <img
                                             src={CARD_FRONTS[card.value]}
-                                            alt={`Card ${card.value}`}
+                                            alt={`Planning poker card value ${card.value} - ${card.title}`}
                                             className="w-full h-full"
                                             style={{ objectFit: 'fill', display: 'block' }}
                                         />
