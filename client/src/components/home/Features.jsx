@@ -1,4 +1,3 @@
-import React from 'react';
 import { Eye, Zap, Link2, EyeOff, Crown, Users, ImageIcon } from 'lucide-react';
 
 const features = [
@@ -55,17 +54,17 @@ const BentoCard = ({ feature }) => {
             bg-white dark:bg-[#101010]
             border border-gray-200 dark:border-white/5
             backdrop-blur-xl
-            hover:shadow-xl dark:hover:shadow-[0_0_20px_rgba(255,165,0,0.1)]
+            hover:shadow-xl dark:hover:shadow-[0_0_20px_rgba(148,163,184,0.08)]
             transition-all duration-500 ease-out
             group flex flex-col gap-5
             ${feature.colSpan}`}
         >
             {/* Animated hover beam */}
-            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-silver-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             {/* Text content */}
             <div className="flex flex-col gap-3">
-                <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-banana-500/10 text-banana-500 self-start flex-shrink-0">
+                <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-silver-400/10 text-silver-400 dark:text-silver-300 self-start flex-shrink-0">
                     <Icon size={18} />
                 </div>
                 <div>
@@ -108,7 +107,7 @@ const Features = () => {
         <section id="features" className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
             <div className="mb-12">
                 <h2 className="text-4xl md:text-5xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight mb-4">
-                    The <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 to-orange-500">Perfect Hand</span> of Features.
+                    The <span className="text-transparent bg-clip-text bg-gradient-to-br from-slate-600 to-silver-400 dark:from-silver-200 dark:to-silver-400">Perfect Hand</span> of Features.
                 </h2>
                 <p className="text-lg text-gray-500 dark:text-gray-400 font-light  max-w-xl leading-relaxed">
                     Designed to fix everything you hate about agile estimation meetings.

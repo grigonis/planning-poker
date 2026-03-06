@@ -1,4 +1,3 @@
-import React from 'react';
 import footerLogo from '../../assets/banana-poker/footer-logo.svg';
 import twitterIcon from '../../assets/banana-poker/social-twitter.svg';
 import linkedinIcon from '../../assets/banana-poker/social-linkedin.svg';
@@ -12,7 +11,7 @@ const Footer = () => {
                     {/* Brand */}
                     <div className="md:col-span-2">
                         <div className="flex items-center gap-2 mb-6">
-                            <div className="w-6 h-6 rounded bg-banana-500/40 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded bg-silver-400/20 flex items-center justify-center">
                                 <img src={footerLogo} alt="Logo" className="w-3 h-3" />
                             </div>
                             <span className="text-lg font-bold text-gray-500 dark:text-white/60">Scrumky</span>

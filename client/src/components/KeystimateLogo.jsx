@@ -1,0 +1,11 @@
+import React from 'react';
+
+const KeystimateLogo = ({ className = "" }) => (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transition-colors duration-300 ${className}`}>
+        <rect width="64" height="64" rx="16" className="fill-neutral-800 dark:fill-neutral-200" />
+        <path d="M21.9999 12C26.4182 12 29.9999 15.5817 29.9999 20C29.9999 23.3764 27.9073 26.2613 24.9491 27.4355C25.219 27.7806 25.4443 28.1867 25.6053 28.6562L31.7714 46.6309C32.668 49.2451 30.8181 51.9998 28.1659 52H15.8348C13.1824 52 11.3326 49.2452 12.2294 46.6309L18.3944 28.6562C18.5554 28.187 18.78 27.7804 19.0497 27.4355C16.0921 26.261 13.9999 23.3759 13.9999 20C13.9999 15.5818 17.5817 12.0001 21.9999 12Z" className="fill-white dark:fill-carbon-950" />
+        <path d="M52 19L39 32L52 45V52H45L33.1641 41.4795L28.6445 28.3545L45 12H52V19Z" className="fill-white dark:fill-carbon-950" />
+    </svg>
+);
+
+export default KeystimateLogo;

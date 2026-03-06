@@ -1,4 +1,3 @@
-import React, { useState, useRef, useEffect } from 'react';
 import {
     motion,
     useMotionValue,
@@ -38,10 +37,9 @@ export const GridPattern = ({ offsetX, offsetY, size }) => {
     );
 };
 
-export const InfiniteGrid = ({ children }) => {
-    const [gridSize, setGridSize] = useState(60);
-    const containerRef = useRef(null);
+const GRID_SIZE = 60;
 
+export const InfiniteGrid = ({ children }) => {
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
 
@@ -60,15 +58,14 @@ export const InfiniteGrid = ({ children }) => {
     useAnimationFrame(() => {
         const currentX = gridOffsetX.get();
         const currentY = gridOffsetY.get();
-        gridOffsetX.set((currentX + speedX) % gridSize);
-        gridOffsetY.set((currentY + speedY) % gridSize);
+        gridOffsetX.set((currentX + speedX) % GRID_SIZE);
+        gridOffsetY.set((currentY + speedY) % GRID_SIZE);
     });
 
     const maskImage = useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black, transparent)`;
 
     return (
         <div
-            ref={containerRef}
             onMouseMove={handleMouseMove}
             className={cn(
                 "relative w-full min-h-[600px] h-screen flex flex-col items-center justify-center overflow-hidden bg-transparent"
@@ -84,7 +81,7 @@ export const InfiniteGrid = ({ children }) => {
             >
                 {/* Layer 1: Subtle background grid (always visible) */}
                 <div className="absolute inset-0 opacity-30 dark:opacity-20 pointer-events-none">
-                    <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} size={gridSize} />
+                    <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} size={GRID_SIZE} />
                 </div>
 
                 {/* Layer 2: Highlighted grid (revealed by mouse mask) */}
@@ -92,7 +89,7 @@ export const InfiniteGrid = ({ children }) => {
                     className="absolute inset-0 opacity-100 pointer-events-none"
                     style={{ maskImage: maskImage, WebkitMaskImage: maskImage }}
                 >
-                    <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} size={gridSize} />
+                    <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} size={GRID_SIZE} />
                 </motion.div>
             </div>
 
