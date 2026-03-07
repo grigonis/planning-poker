@@ -2,14 +2,9 @@ import HeroCards from './HeroCards';
 import productHuntCat from '../../assets/banana-poker/product-hunt-cat.svg';
 import { ShimmerButton } from '../ui/shimmer-button';
 import { InfiniteGrid } from '../ui/infinite-grid-integration';
-import { Zap, Sprout, Radio, Layers, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
-const TRUST_BADGES = [
-    { icon: Zap, label: 'Setup in seconds' },
-    { icon: Sprout, label: 'Free to start' },
-    { icon: Radio, label: 'Real-time collaboration' },
-    { icon: Layers, label: 'Many advanced features' },
-];
+const TRUST_BADGES = ['No signup', 'Free to start', 'Real-time', 'Setup in seconds'];
 
 const Hero = ({ onCreateSession }) => {
     return (
@@ -26,60 +21,50 @@ const Hero = ({ onCreateSession }) => {
                         </span>
                     </div>
 
-                    {/* Heading — dual-layer trick for continuous gradient + SVG underline */}
-                    <div className="relative pb-2 z-0">
-                        {/* Layer 1: gradient text */}
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-[-0.03em] bg-clip-text text-transparent bg-gradient-to-br from-slate-800 via-slate-600 to-slate-700 dark:from-white dark:via-silver-200 dark:to-silver-400">
-                            Online Planning Poker. Estimate your{' '}
-                            <span className="whitespace-nowrap">Sprints Faster.</span>
+                    {/* Heading */}
+                    <div className="flex flex-col gap-4 relative z-20">
+                        <h1 className="text-5xl md:text-6xl lg:text-[72px] font-bold leading-[1.05] tracking-tight text-slate-900 dark:text-white">
+                            Online Planning Poker.
                         </h1>
-
-                        {/* Layer 2: invisible anchor for SVG underline under "In Seconds." */}
-                        <h1 className="absolute inset-0 text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-[-0.03em] pointer-events-none select-none" aria-hidden="true">
-                            <span className="text-transparent">Online Planning Poker. Estimate your{' '}</span>
-                            <span className="relative whitespace-nowrap text-transparent">
-                                Sprint Faster.
-                                <svg
-                                    className="absolute -bottom-2 left-0 w-full overflow-visible"
-                                    viewBox="0 0 200 10"
-                                    preserveAspectRatio="none"
-                                    aria-hidden="true"
-                                >
-                                    <defs>
-                                        <linearGradient id="champagne-underline" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" stopColor="#D4AF6E" />
-                                            <stop offset="50%" stopColor="#C09A3C" />
-                                            <stop offset="100%" stopColor="#6B4E0A" />
-                                        </linearGradient>
-                                    </defs>
-                                    <path
-                                        d="M2,6 C30,1 70,9 110,4 C145,0 172,8 198,5"
-                                        stroke="url(#champagne-underline)"
-                                        strokeWidth="2.5"
-                                        fill="none"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        opacity="0.9"
-                                    />
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-slate-800 dark:text-gray-100 leading-[1.3] md:leading-[1.3] max-w-4xl">
+                            Unlock{' '}
+                            <span className="relative inline-block whitespace-nowrap">
+                                <span className="relative z-10">engaging</span>
+                                {/* SVG Circle around "engaging" */}
+                                <svg className="absolute -top-2 -bottom-2 -left-3 -right-3 w-[calc(100%+24px)] h-[calc(100%+16px)] z-0 pointer-events-none overflow-visible" viewBox="0 0 120 50" preserveAspectRatio="none">
+                                    <path d="M40,10 C80,0 115,10 115,25 C115,45 80,50 40,50 C10,50 5,30 15,15 C20,5 35,5 45,10" 
+                                          fill="none" stroke="#ea580c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                 </svg>
                             </span>
-                        </h1>
+                            ,{' '}
+                            <span className="relative inline-block whitespace-nowrap mx-1">
+                                <span className="relative z-10 text-orange-600 dark:text-orange-500 font-bold drop-shadow-sm tracking-wide">fun</span>
+                                <svg className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)] z-0 pointer-events-none" viewBox="0 0 100 40" preserveAspectRatio="none">
+                                    <path d="M5,25 Q50,15 95,20" fill="none" stroke="#fcd34d" strokeWidth="16" opacity="0.3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                                </svg>
+                            </span>
+                            , and <br className="hidden md:block" />
+                            effort<span className="relative inline-block whitespace-nowrap">
+                                <span className="relative z-10">less</span>
+                                {/* Double underline under "less" */}
+                                <svg className="absolute -bottom-1 md:-bottom-2 left-0 w-full h-4 overflow-visible pointer-events-none" viewBox="0 0 100 30" preserveAspectRatio="none">
+                                    <path d="M0,10 Q50,15 100,5 M5,25 Q45,20 90,25" fill="none" stroke="#facc15" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                                </svg>
+                            </span>{' '}
+                            story point <br className="hidden md:block" />
+                            estimation
+                        </h2>
                     </div>
 
                     {/* Subtext */}
-                    <p className="text-lg md:text-xl text-slate-500 dark:text-silver-400 font-light max-w-lg leading-relaxed">
-                        Create a room, share the link, and start estimating instantly. No friction, no accounts, just focused team alignment.
+                    <p className="text-base md:text-lg text-slate-500 dark:text-neutral-400 font-normal max-w-lg leading-relaxed mt-2">
+                        Scrum meetings don’t have to be boring. Transform your team’s velocity with Keystimate — designed for speed, engagement, and actually keeping it fun
                     </p>
 
-                    {/* Trust badges */}
-                    <div className="grid grid-cols-2 gap-2 w-fit">
-                        {TRUST_BADGES.map(({ icon: Icon, label }) => (
-                            <div key={label} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 dark:bg-carbon-950/70 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-lg shadow-slate-900/5">
-                                <Icon size={14} className="text-silver-500 dark:text-silver-400 shrink-0" />
-                                <span className="text-xs text-slate-600 dark:text-silver-400/70 font-medium whitespace-nowrap">{label}</span>
-                            </div>
-                        ))}
-                    </div>
+                    {/* Trust signals */}
+                    <p className="text-xs text-slate-400 dark:text-neutral-600 font-normal tracking-normal">
+                        {TRUST_BADGES.join('  ·  ')}
+                    </p>
 
                     {/* CTA Button */}
                     <div className="flex flex-col sm:flex-row gap-4 pointer-events-auto mt-2">
