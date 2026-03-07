@@ -22,39 +22,43 @@ const Hero = ({ onCreateSession }) => {
                     </div>
 
                     {/* Heading */}
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.08] tracking-[-0.04em] text-slate-900 dark:text-white">
-                        Online Planning Poker.{' '}
-                        Story point estimation made{' '}
-                        <span className="relative inline-block">
-                            effortless.
-                            <svg
-                                className="absolute -bottom-1 left-0 w-full overflow-visible"
-                                viewBox="0 0 200 8"
-                                preserveAspectRatio="none"
-                                aria-hidden="true"
-                            >
-                                <defs>
-                                    <linearGradient id="champagne-underline" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stopColor="#D4AF6E" />
-                                        <stop offset="50%" stopColor="#C09A3C" />
-                                        <stop offset="100%" stopColor="#6B4E0A" />
-                                    </linearGradient>
-                                </defs>
-                                <path
-                                    d="M2,5 C40,1 100,7 198,4"
-                                    stroke="url(#champagne-underline)"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    strokeLinecap="round"
-                                    opacity="0.9"
-                                />
-                            </svg>
-                        </span>
-                    </h1>
+                    <div className="flex flex-col gap-4 relative z-20">
+                        <h1 className="text-5xl md:text-6xl lg:text-[72px] font-bold leading-[1.05] tracking-tight text-slate-900 dark:text-white">
+                            Online Planning Poker.
+                        </h1>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-slate-800 dark:text-gray-100 leading-[1.3] md:leading-[1.3] max-w-4xl">
+                            Unlock{' '}
+                            <span className="relative inline-block whitespace-nowrap">
+                                <span className="relative z-10">engaging</span>
+                                {/* SVG Circle around "engaging" */}
+                                <svg className="absolute -top-2 -bottom-2 -left-3 -right-3 w-[calc(100%+24px)] h-[calc(100%+16px)] z-0 pointer-events-none overflow-visible" viewBox="0 0 120 50" preserveAspectRatio="none">
+                                    <path d="M40,10 C80,0 115,10 115,25 C115,45 80,50 40,50 C10,50 5,30 15,15 C20,5 35,5 45,10" 
+                                          fill="none" stroke="#ea580c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                </svg>
+                            </span>
+                            ,{' '}
+                            <span className="relative inline-block whitespace-nowrap mx-1">
+                                <span className="relative z-10 text-orange-600 dark:text-orange-500 font-bold drop-shadow-sm tracking-wide">fun</span>
+                                <svg className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)] z-0 pointer-events-none" viewBox="0 0 100 40" preserveAspectRatio="none">
+                                    <path d="M5,25 Q50,15 95,20" fill="none" stroke="#fcd34d" strokeWidth="16" opacity="0.3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                                </svg>
+                            </span>
+                            , and <br className="hidden md:block" />
+                            effort<span className="relative inline-block whitespace-nowrap">
+                                <span className="relative z-10">less</span>
+                                {/* Double underline under "less" */}
+                                <svg className="absolute -bottom-1 md:-bottom-2 left-0 w-full h-4 overflow-visible pointer-events-none" viewBox="0 0 100 30" preserveAspectRatio="none">
+                                    <path d="M0,10 Q50,15 100,5 M5,25 Q45,20 90,25" fill="none" stroke="#facc15" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                                </svg>
+                            </span>{' '}
+                            story point <br className="hidden md:block" />
+                            estimation
+                        </h2>
+                    </div>
 
                     {/* Subtext */}
-                    <p className="text-base md:text-lg text-slate-500 dark:text-neutral-400 font-normal max-w-lg leading-relaxed">
-                        Create a room, share the link, and start estimating instantly. No friction, no accounts, just focused team alignment.
+                    <p className="text-base md:text-lg text-slate-500 dark:text-neutral-400 font-normal max-w-lg leading-relaxed mt-2">
+                        Scrum meetings don’t have to be boring. Transform your team’s velocity with Keystimate — designed for speed, engagement, and actually keeping it fun
                     </p>
 
                     {/* Trust signals */}
