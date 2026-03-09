@@ -235,6 +235,99 @@
   }
 }
 
+/* ── Spotlight Mode ──────────────────────────────────────────── */
+
+/* Text reveal with blur dissolve */
+@keyframes spotlightTextReveal {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Title reveal with scale */
+@keyframes spotlightTitleReveal {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Floating particle drift */
+@keyframes particleFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0);
+  }
+  15% {
+    opacity: var(--particle-opacity, 0.4);
+  }
+  85% {
+    opacity: var(--particle-opacity, 0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(var(--particle-drift-y, -200px)) translateX(var(--particle-drift-x, 10px));
+  }
+}
+
+/* Spotlight cone entrance */
+@keyframes spotlightEnter {
+  from {
+    opacity: 0;
+    transform: scaleX(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Vignette fade-in */
+@keyframes vignetteFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Card glow pulse beneath selected card */
+@keyframes cardGlow {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+/* Spotlight mode — slower flip with delay */
+.spotlight-active .flip-card-inner {
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .spotlight-active .flip-card-inner,
+  .spotlight-overlay,
+  .spotlight-particle {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ── Global Cinematic Grain Overlay ───────────────────────── */
 body::before {
   content: "";
