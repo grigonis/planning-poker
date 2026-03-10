@@ -1,30 +1,82 @@
-# System Architecture
+# Architecture
 
-## Overview
-Planning Poker is a real-time collaborative application using a Client-Server architecture with bidirectional communication via WebSockets.
+**Analysis Date:** 2026-03-10
 
-## Communication Pattern
-- **WebSocket (Socket.io)**: Primary channel for all game state updates, voting, and participant changes.
-- **Event-Driven**: The server uses specialized handlers to process discrete events (Room creation, Voting, etc.).
+## Pattern Overview
 
-## Components
-### Frontend (Client)
-- **Pages**: `Landing.jsx` for initialization, `Room.jsx` for active voting.
-- **Context Managers**: 
-  - `SocketContext.jsx`: Manages the lifecycle of the WebSocket connection.
-  - `ThemeContext.jsx`: Manages dark/light mode state.
-- **UI Components**: Atomic components using Tailwind CSS and Framer Motion for interactivity.
+**Overall:** Client-Server Real-time Sync (Monorepo)
 
-### Backend (Server)
-- **Express App**: Serves as the base for the HTTP server and Socket.io initialization.
-- **Store**: `store.js` implements a simple in-memory key-value store for active rooms and votes.
-- **Handlers**:
-  - `roomHandlers.js`: Manages room joining, creation, and user status.
-  - `voteHandlers.js`: Handles estimate submissions, reveals, and resets.
+**Key Characteristics:**
+- **Real-time Event-Driven:** Socket.io for all game state updates.
+- **State-Synchronized:** Client state is pushed to server and broadcasted to other clients in the room.
+- **In-Memory Store:** Server maintains room and vote state in a simple JS object `server/store.js`.
+
+## Layers
+
+**Client (Frontend):**
+- Purpose: UI/UX, user interaction, state display
+- Location: `client/src`
+- Contains: React components, hooks, context (SocketContext)
+- Depends on: Socket.io Client, Tailwind, Framer Motion
+- Used by: End users
+
+**Server (Backend):**
+- Purpose: State management, cross-client coordination
+- Location: `server/`
+- Contains: Express server, Socket.io handlers, memory store
+- Depends on: Express, Socket.io, UUID
+- Used by: Client application
 
 ## Data Flow
-1. Client emits `join-room` event.
-2. Server validates and updates in-memory store, then emits `room-update` to all clients in that room.
-3. Client emits `submit-vote`.
-4. Server store records vote and notifies peers.
-5. Leader emits `reveal-votes`, server updates state and triggers reveal on all clients.
+
+**Voting Flow:**
+
+1. User clicks a card in `VotingArea.jsx` or similar component.
+2. `socket.emit('submit-vote', { roomId, userId, vote })` is called via `SocketContext`.
+3. Server receives event in `voteHandlers.js`.
+4. Server updates `store.rooms[roomId].players[userId].vote`.
+5. Server calls `io.to(roomId).emit('room_update', updatedRoom)`.
+6. All clients in the same room receive updated state and re-render.
+
+**State Management:**
+- **Global:** Managed at the server via `server/store.js`.
+- **Client Sync:** Provided via `SocketContext` which listens for `room_update` events.
+
+## Key Abstractions
+
+**SocketContext:**
+- Purpose: Provides a hooks-based interface to the server events.
+- Examples: `client/src/context/SocketContext.jsx`
+
+**Handlers:**
+- Purpose: Decouples server event logic into themed modules (Room, Vote).
+- Examples: `server/handlers/roomHandlers.js`, `server/handlers/voteHandlers.js`
+
+## Entry Points
+
+**Frontend Entry:**
+- Location: `client/src/main.jsx`
+- Triggers: Browser page load
+- Responsibilities: Render React app, setup Context providers
+
+**Server Entry:**
+- Location: `server/index.js`
+- Triggers: `npm run dev` or `npm start`
+- Responsibilities: Setup HTTP server, Socket.io server, register event handlers
+
+## Error Handling
+
+**Strategy:** Graceful degradation, alerting user via UI.
+
+**Patterns:**
+- Console logging (Server)
+- Local UI error state (not fully audited, typically fallback to room recovery)
+
+## Cross-Cutting Concerns
+
+**Authentication:** Handled via room-specific user session in localStorage.
+**Validation:** Handled in handlers (e.g., checking if room exists).
+
+---
+
+*Architecture analysis: 2026-03-10*

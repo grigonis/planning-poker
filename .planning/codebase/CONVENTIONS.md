@@ -1,21 +1,85 @@
 # Coding Conventions
 
-## General Patterns
-- **Functional Components**: React components use hooks and avoid class-based state.
-- **Atomic Styles**: Priority is given to Tailwind CSS utilities. Complex effects (glassmorphism/noise) are extracted to `index.css`.
-- **Props Destructuring**: Common practice in component signatures.
+**Analysis Date:** 2026-03-10
 
-## Frontend (React/Vite)
-- **ESM**: Using standard imports/exports.
-- **Context API**: Used for cross-cutting concerns like sockets and themes instead of Redux.
-- **Animations**: Prefer `framer-motion` for complex transitions and standard CSS transitions for simple hover states.
+## Naming Patterns
 
-## Backend (Node/Express)
-- **CommonJS**: Using `require` syntax for imports.
-- **Modular Handlers**: Logic is separated from the main listener to keep `index.js` clean.
-- **Non-Persistent Store**: Current implementation uses a simple memory object (`store.js`).
+**Files:**
+- React components use `.jsx` and PascalCase (e.g., `Navbar.jsx`, `Room.jsx`).
+- Non-component files use `.js` and camelCase (e.g., `roomHandlers.js`, `store.js`).
 
-## UX/UI Principles
-- **Aesthetic Excellence**: High use of glassmorphism, noise textures, and subtle animations (GSD/Antigravity standard).
-- **Responsive**: Mobile-first grid layouts.
-- **Performance**: Recent switch from CPU-heavy SVG filters to high-performance static textures for noise overlays.
+**Functions:**
+- camelCase (e.g., `submit-vote` for socket events, `registerRoomHandlers` for setup).
+
+**Variables:**
+- camelCase for local variables.
+- UPPERCASE for constants (`PORT`, etc.).
+
+**Socket.io Events:**
+- kebab-case as a common convention for events (`create-room`, `join-room`, `submit-vote`, `room-update`).
+
+## Code Style
+
+**Formatting:**
+- Prettier (configured via `.prettierrc` if present, currently standard 2-tab width observed).
+- Standard JavaScript ESM for frontend (`import/export`).
+- CommonJS for server (`require/module.exports`).
+
+**Linting:**
+- ESLint (v8.56.0) configured in `client/package.json`.
+- Standard React/React-hooks recommendations.
+
+## Import Organization
+
+**Order:**
+1. Built-in (e.g., `React`, `ReactDOM`)
+2. External Libraries (`framer-motion`, `lucide-react`)
+3. Context/Hooks (`SocketContext`, `ThemeContext`)
+4. Internal Components/Pages
+5. Assets/CSS
+
+**Path Aliases:**
+- None detected, using relative paths (`../../assets/...`).
+
+## Error Handling
+
+**Patterns:**
+- Try-catch for async operations.
+- Graceful fallbacks for missing data.
+- Server-side logging for connection errors.
+
+## Logging
+
+**Framework:** `console.log` for development debugging.
+
+**Patterns:**
+- Connection/Disconnection events logged on server.
+- Errors logged on server as they occur.
+
+## Comments
+
+**When to Comment:**
+- Above complex logic or workaround (HACK/TODO).
+- Explaining specific socket event requirements.
+
+**JSDoc/TSDoc:**
+- Minimal use currently, mainly standard comments.
+
+## Function Design
+
+**Size:** Preference for compact, focused handlers.
+
+**Parameters:** Single object preferred for complex socket event data.
+
+**Return Values:** Handlers typically return nothing but emit events back.
+
+## Module Design
+
+**Exports:**
+- Named exports for hooks/context.
+- Default exports for React components.
+- Pattern-based module exports for server handlers.
+
+---
+
+*Convention analysis: 2026-03-10*

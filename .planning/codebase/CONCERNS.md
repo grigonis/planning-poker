@@ -1,14 +1,58 @@
-# Technical Concerns & Debt
+# Codebase Concerns
 
-## High Priority
-- **In-Memory Store**: All room and voting data is lost on server restart. Lack of persistence prevents resuming sessions across crashes/restarts.
-- **Scroll Optimization**: Landing page complexity (glassmorphism/filters) required optimization. Excessive use of `backdrop-blur` can still impact low-end devices.
+**Analysis Date:** 2026-03-10
 
-## Technical Debt
-- **CommonJS/ESM Mismatch**: Server uses CJS while Frontend uses ESM. This prevents easy sharing of utility functions (like vote consensus logic) between tiers.
-- **Security**: WebSocket protocol is currently unauthenticated. Reliance on room IDs for "security" is a risk for private grooming sessions.
-- **Error Boundaries**: Client needs more robust handling for socket disconnections or server timeouts.
+## Tech Debt
 
-## Performance
-- Check layout shifts when `Navbar` transitions from `max-w-7xl` to `max-w-4xl`.
-- Verify bundle sizes for large SVGs and dependencies like DiceBear.
+**In-Memory Store:**
+- Issue: `server/store.js` is an ephemeral object. Restarts or crashes wipe all active rooms and sessions.
+- Files: `server/store.js`
+- Impact: Users lose all session state upon server reload. No persistence.
+- Fix approach: Add Redis or a persistent database (Postgres/Mongo) for room state.
+
+**Socket Event Naming:**
+- Issue: Events like `submit-vote` and `room_update` use different naming styles (`-` vs `_`).
+- Files: `server/handlers/`, `client/src/context/SocketContext.jsx`
+- Impact: Inconsistent Developer Experience (DX).
+- Fix approach: Standardize all events (e.g., kebab-case or camelCase).
+
+## Known Bugs
+
+**User Reconnection:**
+- Symptoms: Disconnecting doesn't automatically cleanup or "grey out" users in `server/index.js` (TODO noted).
+- Files: `server/index.js`
+- Impact: Stale players in the room or inability to reconnect with same name.
+- Fix approach: Implement heartbeat or disconnect cleanup logic in `index.js`.
+
+## Security Considerations
+
+**CORS Settings:**
+- Risk: `origin: "*"` used in `server/index.js` for simplicity.
+- Files: `server/index.js`
+- Current mitigation: None.
+- Recommendations: Restrict to actual production domain once deployed.
+
+**Auth Stored as JSON:**
+- Risk: `banana_session_{roomId}` in localStorage stores metadata without tokens.
+- Files: `client/src/pages/Room.jsx` (presumed location)
+- Current mitigation: None (MVP only).
+- Recommendations: Use signed cookies or JWTs for real session integrity.
+
+## Performance Bottlenecks
+
+**Large Room Broadcasts:**
+- Problem: Sending the ENTIRE room object on every vote update.
+- Files: `server/handlers/voteHandlers.js`
+- Cause: Simple state sync.
+- Improvement path: Send deltas or only updated properties.
+
+## Fragile Areas
+
+**Socket Handlers Wiring:**
+- Files: `server/index.js`
+- Why fragile: Handlers are manually registered per connection. Circular dependencies between room and vote handlers possible if they both need to reference the store or IO.
+- Safe modification: Move handlers into a central registry or use classes.
+
+---
+
+*Concerns audit: 2026-03-10*

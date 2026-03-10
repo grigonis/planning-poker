@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(node -e:*)",
-      "mcp__plugin_figma_figma__generate_figma_design"
-    ]
-  }
-}
