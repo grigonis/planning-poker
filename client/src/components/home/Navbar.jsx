@@ -17,7 +17,7 @@ const Navbar = ({ onCreateSession }) => {
     return (
         <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4 pointer-events-none">
             <nav
-                className={`pointer-events-auto transition-all duration-300 ease-out flex items-center justify-between
+                className={`pointer-events-auto flex items-center justify-between will-change-transform transition-[max-width,background-color,border-color,padding,box-shadow] duration-500 ease-in-out
                     ${scrolled
                         ? 'w-full max-w-4xl h-[64px] pl-5 pr-3 bg-white/70 dark:bg-carbon-950/70 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-full shadow-lg shadow-slate-900/5'
                         : 'w-full max-w-7xl h-[64px] px-2 bg-transparent border border-transparent rounded-full'
