@@ -29,11 +29,7 @@
   label,
   input,
   textarea,
-  select,
-  nav,
-  footer,
-  section,
-  header {
+  select {
     @apply transition-colors duration-300 ease-in-out;
   }
 }
@@ -154,15 +150,15 @@
 }
 
 
-/* Bento Grid — Noise Texture */
+/* Bento Grid — Noise Texture (High Performance) */
 .bento-noise::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADe79Q7AAAAB3RSTlMAAAAAAAAAdmS7kgAAADtJREFUKM9jYEAAbYyBEYSRBfNgsBlZMBuEzcjG5gByMrOxOYCcLGxsDsh8EBaYm5mNzQHkZGFjkwIAz8YCRat603UAAAAASUVORK5CYII=");
   background-repeat: repeat;
-  background-size: 200px 200px;
-  opacity: 0.025;
+  background-size: 100px 100px;
+  opacity: 0.015;
   pointer-events: none;
   border-radius: inherit;
   z-index: 1;
@@ -170,7 +166,7 @@
 }
 
 .dark .bento-noise::before {
-  opacity: 0.055;
+  opacity: 0.04;
 }
 
 /* Ensure full height */
@@ -328,43 +324,21 @@
   }
 }
 
-/* ── Global Cinematic Grain Overlay ───────────────────────── */
+/* ── Global Cinematic Grain Overlay (Optimized) ───────────────────────── */
 body::before {
   content: "";
   position: fixed;
-  top: -100px;
-  left: -100px;
+  inset: -100px;
   width: calc(100vw + 200px);
   height: calc(100vh + 200px);
   z-index: -50;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.045;
-  animation: cinematic-grain 0.6s steps(4) infinite;
-}
-
-.dark body::before {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADe79Q7AAAAB3RSTlMAAAAAAAAAdmS7kgAAADtJREFUKM9jYEAAbYyBEYSRBfNgsBlZMBuEzcjG5gByMrOxOYCcLGxsDsh8EBaYm5mNzQHkZGFjkwIAz8YCRat603UAAAAASUVORK5CYII=");
+  background-repeat: repeat;
+  background-size: 100px 100px;
   opacity: 0.025;
 }
 
-@keyframes cinematic-grain {
-  0% {
-    transform: translate(0, 0);
-  }
-
-  25% {
-    transform: translate(-20px, 15px);
-  }
-
-  50% {
-    transform: translate(15px, -20px);
-  }
-
-  75% {
-    transform: translate(-15px, -15px);
-  }
-
-  100% {
-    transform: translate(20px, 20px);
-  }
+.dark body::before {
+  opacity: 0.015;
 }
