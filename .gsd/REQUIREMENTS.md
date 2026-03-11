@@ -16,10 +16,10 @@ A modernized, intuitive Planning Poker experience with specific features for cus
 | VOTE-03 | Facilitators can switch between Standard Presets (Fibonacci, T-Shirt, Powers of 2) | validated |
 | VOTE-04 | Facilitators can create Custom Scales (numbers, letters, emojis) during setup | validated |
 | VOTE-05 | Changing a scale mid-voting is disabled or prompts a warning | validated |
-| TASK-01 | Right-side expandable/collapsible pane for managing tasks | proposed |
-| TASK-02 | Users can vote strictly without tasks if they choose (legacy flow) | proposed |
-| TASK-03 | Facilitators can add a single task manually from the side pane | proposed |
-| TASK-04 | Facilitators can add multiple tasks bulk-action style | proposed |
+| TASK-01 | Right-side expandable/collapsible pane for managing tasks | active |
+| TASK-02 | Users can vote strictly without tasks if they choose (legacy flow) | active |
+| TASK-03 | Facilitators can add a single task manually from the side pane | active |
+| TASK-04 | Facilitators can add multiple tasks bulk-action style | active |
 | TASK-05 | Modernized UI Settings menu (tailored to current app UI) for room configuration | validated |
 | TASK-06 | Spectator role retained exactly as is (can observe without participating) | validated |
 

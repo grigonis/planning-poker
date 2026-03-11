@@ -5,7 +5,7 @@
 ## Success Criteria
 - [x] Dedicated `/create` page functional
 - [x] Modernized Navbar and Settings UI implemented
-- [ ] Voting scales (Fibonacci, Presets, Custom) functional
+- [x] Voting scales (Fibonacci, Presets, Custom) functional
 - [ ] Tasks pane for session management implemented
 
 ## Slices
