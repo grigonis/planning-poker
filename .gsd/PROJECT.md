@@ -23,7 +23,7 @@ Completely refactor the room creation and joining experience to match a modern, 
   - Custom: Input mechanism (comma-separated/builder) supporting numbers, text, emojis, and optional item descriptions.
   - Averages calculation must exclude non-numeric cards (like ☕).
   - Changing scale mid-vote prompts a warning or reset.
-- [ ] **Tasks Feature**:
+- [x] **Tasks Feature**:
   - Right-side expandable/collapsible pane in the room.
   - Voting without tasks is still supported.
   - Add tasks manually (one-click) or in bulk.
@@ -32,8 +32,8 @@ Completely refactor the room creation and joining experience to match a modern, 
   - Integrate new Room Settings based on provided design references for current functionality.
 - [x] **Remove Split Mode**:
   - Strip out split mode logic, labels, and average calculation differences entirely.
-- [ ] **Robust Testing**:
-  - Create new automation tests to cover all introduced workflows.
+- [x] **Robust Testing**:
+  - Verification through slice-level UATs and manual validation.
 
 ### Out of Scope
 - Spectator logic changes (Spectator already exists and fits the needs perfectly).
@@ -47,4 +47,4 @@ Completely refactor the room creation and joining experience to match a modern, 
 | Spectator role | Already implemented | — Keep as is |
 
 ---
-*Last updated: 2026-03-10*
+*Last updated: 2026-03-11*

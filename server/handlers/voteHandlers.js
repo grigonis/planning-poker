@@ -103,7 +103,7 @@ module.exports = (io, socket) => {
         io.to(roomId).emit("revealed", {
             votes: Array.from(room.votes.entries()),
             averages,
-            tasks: room.tasks // Sync tasks back
+            tasks: room.tasks
         });
     };
 
@@ -127,7 +127,16 @@ module.exports = (io, socket) => {
         room.phase = 'IDLE';
         room.votes.clear();
         room.averages = {}; // Clear averages on reset
-        io.to(roomId).emit("reset");
+
+        // If the active task was completed, clear it so host can pick next one
+        if (room.activeTaskId) {
+            const task = room.tasks.find(t => t.id === room.activeTaskId);
+            if (task && task.status === 'COMPLETED') {
+                room.activeTaskId = null;
+            }
+        }
+
+        io.to(roomId).emit("reset", { activeTaskId: room.activeTaskId });
     };
 
     socket.on("start_vote", startVoteHandler);

@@ -16,5 +16,5 @@
   > After this: Layout matches modern design, Spectator role preserved.
 - [x] **S03: Voting Scales Implementation** `risk:medium` `depends:[S02]`
   > After this: Support for Fibonacci, presets, and custom scales with correct averaging.
-- [ ] **S04: Tasks Pane** `risk:medium` `depends:[S03]`
+- [x] **S04: Tasks Pane** `risk:medium` `depends:[S03]`
   > After this: Right-side pane for single/bulk task management.

@@ -40,7 +40,9 @@ const Room = () => {
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [isTasksOpen, setIsTasksOpen] = useState(false);
+    const [isTasksOpen, setIsTasksOpen] = useState(
+        localStorage.getItem(`banana_tasks_open_${roomId}`) === 'true'
+    );
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     // Tasks State
@@ -188,9 +190,11 @@ const Room = () => {
             }
         };
 
-        const onRevealed = ({ votes: revealedVotes, averages }) => {
+        const onRevealed = ({ votes: revealedVotes, averages, tasks: updatedTasks, activeTaskId: updatedActiveTaskId }) => {
             setPhase('REVEALED');
             setAverages(averages);
+            if (updatedTasks) setTasks(updatedTasks);
+            if (updatedActiveTaskId !== undefined) setActiveTaskId(updatedActiveTaskId);
             const votesMap = {};
             revealedVotes.forEach(([uid, val]) => {
                 votesMap[uid] = val;
@@ -243,11 +247,12 @@ const Room = () => {
             }
         };
 
-        const onReset = () => {
+        const onReset = ({ activeTaskId: updatedActiveTaskId } = {}) => {
             setPhase('IDLE');
             setMyVote(null);
             setVotes({});
             setAverages({});
+            if (updatedActiveTaskId !== undefined) setActiveTaskId(updatedActiveTaskId);
         };
 
         const onPartialRevote = ({ phase }) => {
@@ -478,7 +483,13 @@ const Room = () => {
                             </div>
 
                             <button
-                                onClick={() => setIsTasksOpen(prev => !prev)}
+                                onClick={() => {
+                                    setIsTasksOpen(prev => {
+                                        const next = !prev;
+                                        localStorage.setItem(`banana_tasks_open_${roomId}`, next);
+                                        return next;
+                                    });
+                                }}
                                 className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-orange-100 dark:bg-banana-500/20 border-orange-500/30 dark:border-banana-500/30 text-orange-600 dark:text-banana-500 shadow-sm' : 'bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}
                             >
                                 <LayoutList size={16} />
@@ -570,9 +581,13 @@ const Room = () => {
             {validUser && (
                 <TasksPane
                     isOpen={isTasksOpen}
-                    onClose={() => setIsTasksOpen(false)}
+                    onClose={() => {
+                        setIsTasksOpen(false);
+                        localStorage.setItem(`banana_tasks_open_${roomId}`, 'false');
+                    }}
                     tasks={tasks}
                     activeTaskId={activeTaskId}
+                    isHost={isMeHost}
                     onCreateTask={handleCreateTask}
                     onBulkCreate={handleBulkCreate}
                     onDeleteTask={handleDeleteTask}

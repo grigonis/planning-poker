@@ -1,10 +1,27 @@
 const { rooms } = require("../store");
 const { v4: uuidv4 } = require("uuid");
 
+const getUser = (socket) => {
+    const roomId = socket.data.roomId;
+    if (!roomId) return null;
+
+    const room = rooms.get(roomId);
+    if (!room) return null;
+
+    const userId = socket.data.userId;
+    if (!userId) return null;
+
+    const user = room.users.get(userId);
+    return { user, room, userId };
+};
+
 module.exports = (io, socket) => {
     const createTaskHandler = ({ roomId, title }) => {
-        const room = rooms.get(roomId);
-        if (!room) return;
+        const result = getUser(socket);
+        if (!result) return;
+        const { user, room } = result;
+
+        if (!user || !user.isHost) return;
 
         const task = {
             id: uuidv4(),
@@ -18,8 +35,11 @@ module.exports = (io, socket) => {
     };
 
     const bulkCreateTasksHandler = ({ roomId, titles }) => {
-        const room = rooms.get(roomId);
-        if (!room) return;
+        const result = getUser(socket);
+        if (!result) return;
+        const { user, room } = result;
+
+        if (!user || !user.isHost) return;
 
         const newTasks = titles.split('\n')
             .map(t => t.trim())
@@ -36,8 +56,11 @@ module.exports = (io, socket) => {
     };
 
     const deleteTaskHandler = ({ roomId, taskId }) => {
-        const room = rooms.get(roomId);
-        if (!room) return;
+        const result = getUser(socket);
+        if (!result) return;
+        const { user, room } = result;
+
+        if (!user || !user.isHost) return;
 
         room.tasks = room.tasks.filter(t => t.id !== taskId);
         if (room.activeTaskId === taskId) {
@@ -48,8 +71,11 @@ module.exports = (io, socket) => {
     };
 
     const selectTaskHandler = ({ roomId, taskId }) => {
-        const room = rooms.get(roomId);
-        if (!room) return;
+        const result = getUser(socket);
+        if (!result) return;
+        const { user, room } = result;
+
+        if (!user || !user.isHost) return;
 
         // Reset previous voting task status if it was in 'VOTING'
         room.tasks.forEach(t => {

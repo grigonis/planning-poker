@@ -11,6 +11,7 @@ const TasksPane = ({
     onClose, 
     tasks = [], 
     activeTaskId, 
+    isHost = false,
     onCreateTask, 
     onBulkCreate, 
     onDeleteTask, 
@@ -117,23 +118,25 @@ const TasksPane = ({
                                                     )}
                                                 </div>
 
-                                                <div className="flex flex-col gap-2 items-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    {!isCompleted && !isVoting && (
+                                                {isHost && (
+                                                    <div className="flex flex-col gap-2 items-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {!isCompleted && !isVoting && (
+                                                            <button 
+                                                                onClick={() => onSelectTask(task.id)}
+                                                                className="p-1.5 rounded-lg bg-orange-100 dark:bg-banana-500/20 text-orange-600 dark:text-banana-500 hover:scale-105 transition-transform"
+                                                                title="Vote on this task"
+                                                            >
+                                                                <ChevronRight size={16} />
+                                                            </button>
+                                                        )}
                                                         <button 
-                                                            onClick={() => onSelectTask(task.id)}
-                                                            className="p-1.5 rounded-lg bg-orange-100 dark:bg-banana-500/20 text-orange-600 dark:text-banana-500 hover:scale-105 transition-transform"
-                                                            title="Vote on this task"
+                                                            onClick={() => onDeleteTask(task.id)}
+                                                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors"
                                                         >
-                                                            <ChevronRight size={16} />
+                                                            <Trash2 size={16} />
                                                         </button>
-                                                    )}
-                                                    <button 
-                                                        onClick={() => onDeleteTask(task.id)}
-                                                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </motion.div>
                                     );
@@ -152,60 +155,62 @@ const TasksPane = ({
                     </div>
 
                     {/* Footer Controls */}
-                    <div className="p-6 bg-gray-50/50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5">
-                        {showBulkAdd ? (
-                            <form onSubmit={handleBulkSubmit} className="space-y-3">
-                                <textarea
-                                    value={bulkText}
-                                    onChange={(e) => setBulkText(e.target.value)}
-                                    placeholder="Paste tasks here (one per line)..."
-                                    className="w-full h-32 p-3 text-sm bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-orange-500 dark:focus:border-banana-500 transition-all font-medium placeholder:text-gray-400"
-                                    autoFocus
-                                />
-                                <div className="flex gap-2">
+                    {isHost && (
+                        <div className="p-6 bg-gray-50/50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5">
+                            {showBulkAdd ? (
+                                <form onSubmit={handleBulkSubmit} className="space-y-3">
+                                    <textarea
+                                        value={bulkText}
+                                        onChange={(e) => setBulkText(e.target.value)}
+                                        placeholder="Paste tasks here (one per line)..."
+                                        className="w-full h-32 p-3 text-sm bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-orange-500 dark:focus:border-banana-500 transition-all font-medium placeholder:text-gray-400"
+                                        autoFocus
+                                    />
+                                    <div className="flex gap-2">
+                                        <button 
+                                            type="submit"
+                                            className="flex-1 bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 text-sm font-bold py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+                                        >
+                                            Import Tasks
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setShowBulkAdd(false)}
+                                            className="px-4 py-2.5 bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-white text-sm font-bold rounded-xl"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <div className="space-y-3">
+                                    <form onSubmit={handleSingleSubmit} className="relative">
+                                        <input 
+                                            type="text"
+                                            value={newTaskTitle}
+                                            onChange={(e) => setNewTaskTitle(e.target.value)}
+                                            placeholder="Enter task title..."
+                                            className="w-full pl-4 pr-12 py-3 bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-orange-500 dark:focus:border-banana-500 transition-all font-semibold placeholder:text-gray-400"
+                                        />
+                                        <button 
+                                            type="submit"
+                                            disabled={!newTaskTitle.trim()}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 rounded-lg hover:scale-105 transition-transform disabled:opacity-30 disabled:hover:scale-100"
+                                        >
+                                            <Plus size={18} />
+                                        </button>
+                                    </form>
                                     <button 
-                                        type="submit"
-                                        className="flex-1 bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 text-sm font-bold py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+                                        onClick={() => setShowBulkAdd(true)}
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-white/10 text-gray-500 hover:text-orange-500 dark:hover:text-banana-500 hover:border-orange-500 focus:outline-none transition-all text-sm font-bold"
                                     >
-                                        Import Tasks
-                                    </button>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setShowBulkAdd(false)}
-                                        className="px-4 py-2.5 bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-white text-sm font-bold rounded-xl"
-                                    >
-                                        Cancel
+                                        <ListPlus size={18} />
+                                        Bulk Add Tasks
                                     </button>
                                 </div>
-                            </form>
-                        ) : (
-                            <div className="space-y-3">
-                                <form onSubmit={handleSingleSubmit} className="relative">
-                                    <input 
-                                        type="text"
-                                        value={newTaskTitle}
-                                        onChange={(e) => setNewTaskTitle(e.target.value)}
-                                        placeholder="Enter task title..."
-                                        className="w-full pl-4 pr-12 py-3 bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-orange-500 dark:focus:border-banana-500 transition-all font-semibold placeholder:text-gray-400"
-                                    />
-                                    <button 
-                                        type="submit"
-                                        disabled={!newTaskTitle.trim()}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 rounded-lg hover:scale-105 transition-transform disabled:opacity-30 disabled:hover:scale-100"
-                                    >
-                                        <Plus size={18} />
-                                    </button>
-                                </form>
-                                <button 
-                                    onClick={() => setShowBulkAdd(true)}
-                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-white/10 text-gray-500 hover:text-orange-500 dark:hover:text-banana-500 hover:border-orange-500 focus:outline-none transition-all text-sm font-bold"
-                                >
-                                    <ListPlus size={18} />
-                                    Bulk Add Tasks
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </motion.div>
             )}
         </AnimatePresence>
