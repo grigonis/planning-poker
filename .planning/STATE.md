@@ -4,10 +4,10 @@
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | Foundation Refactoring | pending |
-| 2 | Modernized Navbar & Room UI | pending |
-| 3 | Voting Scales Implementation | pending |
+| 1 | Foundation Refactoring | complete |
+| 2 | Modernized Navbar & Room UI | complete |
+| 3 | Voting Scales Implementation | active |
 | 4 | Tasks Pane | pending |
 
 ## Current Focus
-*Ready to begin Phase 1 planning.*
+*Phase 3: Voting Scales Implementation (Planning and Implementation).*

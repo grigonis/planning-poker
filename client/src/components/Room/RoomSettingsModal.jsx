@@ -38,12 +38,12 @@ const RoomSettingsModal = ({
                 {/* Header */}
                 <div className="flex items-center justify-between p-8 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
                     <div className="flex items-center gap-4 text-gray-900 dark:text-white">
-                        <div className="p-3 rounded-2xl bg-orange-500/10 dark:bg-banana-500/10">
-                            <Settings className="w-6 h-6 text-orange-500 dark:text-banana-500" />
+                        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-orange-500/10 to-orange-500/5 dark:from-white/10 dark:to-white/5 border border-orange-500/20 dark:border-white/10 shadow-inner">
+                            <Settings className="w-6 h-6 text-orange-500 dark:text-white" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black tracking-tight">Room Settings</h2>
-                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5 opacity-60">Configuration Dashboard</p>
+                            <h2 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-white/60">Room Settings</h2>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mt-1">Configuration Dashboard</p>
                         </div>
                     </div>
                     <button
@@ -97,77 +97,71 @@ const RoomSettingsModal = ({
                     <div className="h-px bg-gray-100 dark:bg-white/5"></div>
 
                     {/* Toggles Grid */}
-                    <div className="space-y-6">
+                    <div className="space-y-3">
                         {/* Setting: Fun Features */}
-                        <div className="flex items-center justify-between gap-4 group">
+                        <div className="flex items-center justify-between gap-4 group p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-white/5 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => onUpdateSettings({ funFeatures: !funFeatures })}>
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-xl shrink-0 transition-colors ${funFeatures ? 'bg-orange-500/10 dark:bg-banana-500/10 text-orange-500 dark:text-banana-500' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
+                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${funFeatures ? 'bg-orange-500/10 text-orange-500 dark:bg-white/10 dark:text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
                                     <Sparkles className="w-5 h-5" />
                                 </div>
-                                <div>
-                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-0.5">Celebration Effects</h3>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug max-w-[240px]">Show confetti and play sounds when the team reaches consensus.</p>
+                                <div className="mt-0.5">
+                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-1">Celebration Effects</h3>
+                                    <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug">Show confetti and play sounds when the team reaches consensus.</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => onUpdateSettings({ funFeatures: !funFeatures })}
-                                className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${funFeatures ? 'bg-orange-500 dark:bg-banana-500' : 'bg-gray-200 dark:bg-gray-700'}`}
-                            >
-                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white shadow-md ${funFeatures ? 'left-6.5' : 'left-1'}`}></div>
+                            <button className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${funFeatures ? 'bg-orange-500 dark:bg-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white dark:bg-black shadow-md ${funFeatures ? 'left-6.5' : 'left-1'}`}></div>
                             </button>
                         </div>
 
                         {/* Setting: Auto Reveal */}
-                        <div className="flex items-center justify-between gap-4 group">
+                        <div className="flex items-center justify-between gap-4 group p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-white/5 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => onUpdateSettings({ autoReveal: !autoReveal })}>
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-xl shrink-0 transition-colors ${autoReveal ? 'bg-green-500/10 text-green-500' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
+                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${autoReveal ? 'bg-green-500/10 text-green-600 dark:bg-white/10 dark:text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
                                     <Zap className="w-5 h-5" />
                                 </div>
-                                <div>
-                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-0.5">Instant Reveal</h3>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug max-w-[240px]">Automatically reveal cards once every eligible team member has voted.</p>
+                                <div className="mt-0.5">
+                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-1">Instant Reveal</h3>
+                                    <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug">Automatically reveal cards once every eligible team member has voted.</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => onUpdateSettings({ autoReveal: !autoReveal })}
-                                className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${autoReveal ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}
-                            >
-                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white shadow-md ${autoReveal ? 'left-6.5' : 'left-1'}`}></div>
+                            <button className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${autoReveal ? 'bg-green-500 dark:bg-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white dark:bg-black shadow-md ${autoReveal ? 'left-6.5' : 'left-1'}`}></div>
                             </button>
                         </div>
 
                         {/* Setting: Anonymous Mode */}
-                        <div className="flex items-center justify-between gap-4 group">
+                        <div className="flex items-center justify-between gap-4 group p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-white/5 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => onUpdateSettings({ anonymousMode: !anonymousMode })}>
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-xl shrink-0 transition-colors ${anonymousMode ? 'bg-purple-500/10 text-purple-500' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
+                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${anonymousMode ? 'bg-purple-500/10 text-purple-600 dark:bg-white/10 dark:text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
                                     <EyeOff className="w-5 h-5" />
                                 </div>
-                                <div>
-                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-0.5">Privacy Mode</h3>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug max-w-[240px]">Hide player identities during active voting to prevent anchoring bias.</p>
+                                <div className="mt-0.5">
+                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-1">Privacy Mode</h3>
+                                    <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug">Hide player identities during active voting to prevent anchoring bias.</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => onUpdateSettings({ anonymousMode: !anonymousMode })}
-                                className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${anonymousMode ? 'bg-purple-500' : 'bg-gray-200 dark:bg-gray-700'}`}
-                            >
-                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white shadow-md ${anonymousMode ? 'left-6.5' : 'left-1'}`}></div>
+                            <button className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${anonymousMode ? 'bg-purple-500 dark:bg-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white dark:bg-black shadow-md ${anonymousMode ? 'left-6.5' : 'left-1'}`}></div>
                             </button>
                         </div>
                     </div>
 
                     {/* Danger Zone */}
-                    <div className="pt-4 border-t border-gray-100 dark:border-white/5 space-y-4">
-                        <h3 className="text-rose-600 dark:text-rose-500 font-black text-[10px] uppercase tracking-[0.2em] px-1">Critical Controls</h3>
+                    <div className="pt-6 border-t border-gray-100 dark:border-white/5 space-y-4">
+                        <div className="flex items-center gap-2 px-2 text-rose-500">
+                            <AlertTriangle className="w-4 h-4" />
+                            <h3 className="font-bold text-xs uppercase tracking-[0.1em]">Danger Zone</h3>
+                        </div>
                         <button
                             onClick={() => {
                                 if (window.confirm('Are you sure you want to end this session for everyone?')) {
                                     onEndSession();
                                 }
                             }}
-                            className="bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 text-rose-600 dark:text-rose-400 font-bold w-full py-4 rounded-[20px] transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                            className="bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold w-full py-4 rounded-[20px] transition-all flex items-center justify-center gap-3 active:scale-95 group shadow-sm"
                         >
-                            <Power className="w-5 h-5 group-hover:scale-110 group-hover:rotate-12 transition-transform" />
+                            <Power className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             Terminate Voting Session
                         </button>
                     </div>

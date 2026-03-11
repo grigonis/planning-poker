@@ -426,50 +426,64 @@ const Room = () => {
             <div className="absolute inset-0 aurora z-0" />
             <div className="absolute inset-0 modern-grid z-0" />
 
-            {/* Unified Navbar with Invite Button */}
-            <div className="sticky top-0 z-40 bg-gray-50/80 dark:bg-dark-900/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 transition-colors duration-300">
-                <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            {/* Unified Navbar */}
+            <div className="sticky top-0 z-40 bg-white/80 dark:bg-[#101010]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 transition-colors duration-300">
+                <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
                     {/* Logo/Room Info */}
-                    <div className="flex flex-col">
-                        <h1 className="text-xl font-bold  text-orange-500 dark:text-banana-500 leading-none">BananaPoker</h1>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">Room: {roomId}</span>
+                    <div className="flex items-center gap-4">
+                        <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
+                            <h1 className="text-xl font-black text-orange-500 dark:text-banana-500 leading-none tracking-tight">BananaPoker</h1>
+                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                <span>Room: <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded ml-0.5 select-all">{roomId}</span></span>
+                            </div>
+                        </div>
+                        {/* Divider */}
+                        <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-white/10 ml-2"></div>
+                        
+                        {/* Status (Connected) */}
+                        <div className="hidden md:flex items-center gap-1.5 ml-2">
+                            <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{socket?.connected ? 'Live' : 'Offline'}</span>
+                        </div>
                     </div>
-                    {/* Game Mode Badge removed */}
 
                     {/* Actions */}
                     {validUser && (
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 bg-white dark:bg-dark-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/5 hide-on-mobile transition-colors duration-300">
-                                <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                <span className="text-sm text-gray-700 dark:text-gray-300 font-bold">{currentUser.name}</span>
-                                <span className="text-xs text-gray-400 dark:text-gray-500 border-l border-gray-200 dark:border-white/10 pl-2 ml-1">{currentUser.role}</span>
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/[0.04] px-1.5 py-1.5 rounded-full border border-gray-200 dark:border-white/5 transition-colors duration-300 hide-on-mobile">
+                                <span className="text-sm text-gray-900 dark:text-white font-bold ml-2 max-w-[120px] truncate">{currentUser.name}</span>
+                                {currentUser.role === 'SPECTATOR' ? (
+                                    <span className="text-[10px] font-black tracking-widest uppercase text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full ml-1 border border-blue-500/20">Spectator</span>
+                                ) : (
+                                    <span className="text-[10px] font-black tracking-widest uppercase text-gray-600 dark:text-white/60 bg-white dark:bg-white/10 px-2 py-0.5 rounded-full ml-1 border border-gray-200 dark:border-white/5 shadow-sm">Estimator</span>
+                                )}
                             </div>
 
                             <button
                                 onClick={() => setIsTasksOpen(true)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-orange-100 dark:bg-banana-500/20 border-orange-500/30 dark:border-banana-500/30 text-orange-600 dark:text-banana-500 shadow-sm' : 'bg-gray-100 dark:bg-white/10 border-gray-200 dark:border-white/5 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-white/20'}`}
+                                className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-orange-100 dark:bg-banana-500/20 border-orange-500/30 dark:border-banana-500/30 text-orange-600 dark:text-banana-500 shadow-sm' : 'bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}
                             >
                                 <LayoutList size={16} />
-                                <span className="hide-on-mobile">Tasks</span>
-                                {tasks.length > 0 && <span className="bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 px-1.5 py-0.5 rounded-md text-[10px] leading-tight ml-1">{tasks.length}</span>}
+                                <span className="hidden lg:inline">Tasks</span>
+                                {tasks.length > 0 && <span className="bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 px-1.5 py-0.5 rounded-md text-[10px] leading-none ml-0.5 shadow-sm">{tasks.length}</span>}
+                            </button>
+
+                            <button
+                                onClick={() => setIsInviteModalOpen(true)}
+                                className="bg-orange-500/10 dark:bg-banana-500/10 hover:bg-orange-500/20 dark:hover:bg-banana-500/20 text-orange-600 dark:text-banana-500 border border-orange-500/20 dark:border-banana-500/20 text-sm font-bold px-3 lg:px-4 py-2 rounded-full transition-colors flex items-center gap-2"
+                            >
+                                <Users size={16} />
+                                <span className="hidden lg:inline">Invite</span>
                             </button>
 
                             <ThemeToggle />
 
-                            <button
-                                onClick={() => setIsInviteModalOpen(true)}
-                                className="bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-white text-sm font-bold  px-4 py-2 rounded-full transition-colors border border-gray-200 dark:border-white/5 flex items-center gap-2"
-                            >
-                                <Users size={16} />
-                                Invite
-                            </button>
-
                             {isMeHost && (
                                 <button
                                     onClick={() => setIsSettingsOpen(true)}
-                                    className="p-2 rounded-full bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors border border-gray-200 dark:border-white/5"
+                                    className="p-2 rounded-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/[0.08] text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm"
                                 >
-                                    <Settings className="w-5 h-5" />
+                                    <Settings className="w-4.5 h-4.5" />
                                 </button>
                             )}
                         </div>
