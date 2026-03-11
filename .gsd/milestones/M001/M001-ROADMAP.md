@@ -6,7 +6,7 @@
 - [x] Dedicated `/create` page functional
 - [x] Modernized Navbar and Settings UI implemented
 - [x] Voting scales (Fibonacci, Presets, Custom) functional
-- [ ] Tasks pane for session management implemented
+- [x] Tasks pane for session management implemented
 
 ## Slices
 
