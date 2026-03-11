@@ -78,6 +78,8 @@ module.exports = (io, socket) => {
             if (settings.funFeatures !== undefined) room.funFeatures = settings.funFeatures;
             if (settings.autoReveal !== undefined) room.autoReveal = settings.autoReveal;
             if (settings.anonymousMode !== undefined) room.anonymousMode = settings.anonymousMode;
+            if (settings.votingSystem !== undefined) room.votingSystem = settings.votingSystem;
+            
             io.to(roomId).emit('room_settings_updated', { settings });
             console.log(`Room ${roomId} settings updated:`, settings);
         }

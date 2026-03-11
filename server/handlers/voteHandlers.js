@@ -65,20 +65,30 @@ module.exports = (io, socket) => {
     const performReveal = (room, roomId) => {
         room.phase = 'REVEALED';
 
-        // Calculate averages (Highest vote wins, ignoring non-numeric values)
-        let averages = {};
-        let max = null;
+        // Calculate averages (Arithmetic mean, ignoring non-numeric values)
+        let total = 0;
+        let count = 0;
         
         room.votes.forEach((val, userId) => {
             const u = room.users.get(userId);
             if (u && u.role !== 'SPECTATOR') {
-                if (val === '☕' || val === '?' || val === 'COFFEE' || val === 'questionMark') return;
+                // Ignore non-numeric cards (e.g., ☕, ?, symbols)
                 const num = parseFloat(val);
-                if (!isNaN(num) && (max === null || num > max)) max = num;
+                if (!isNaN(num)) {
+                    total += num;
+                    count++;
+                }
             }
         });
         
-        averages.total = max !== null ? max : 0;
+        const averageValue = count > 0 ? (total / count) : 0;
+        // Round to 1 decimal place
+        const roundedAverage = Math.round(averageValue * 10) / 10;
+
+        let averages = {
+            total: roundedAverage,
+            count: count
+        };
         room.averages = averages;
 
         // If an active task is selected, save the result to it

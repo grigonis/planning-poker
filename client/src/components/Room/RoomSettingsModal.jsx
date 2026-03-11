@@ -5,7 +5,7 @@ const PRESETS = [
     { id: 'FIBONACCI_MODIFIED', name: 'Modified Fibonacci', values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕'] },
     { id: 'FIBONACCI', name: 'Fibonacci', values: [1, 2, 3, 5, 8, 13, 21, 34, 55, 89] },
     { id: 'TSHIRT', name: 'T-Shirt Sizes', values: ['XS', 'S', 'M', 'L', 'XL', 'XXL'] },
-    { id: 'POWERS_OF_2', name: 'Powers of 2', values: [0, 1, 2, 4, 8, 16, 32, 64] },
+    { id: 'POWERS', name: 'Powers of 2', values: [0, 1, 2, 4, 8, 16, 32, 64] },
 ];
 
 const RoomSettingsModal = ({ 
@@ -19,6 +19,11 @@ const RoomSettingsModal = ({
     onUpdateSettings, 
     onEndSession 
 }) => {
+    const [customScaleText, setCustomScaleText] = React.useState(
+        votingSystem?.type === 'CUSTOM' ? votingSystem.values.join(', ') : '0, 1, 2, 3, 5, 8, 13, 21, ☕'
+    );
+    const [isCustomMode, setIsCustomMode] = React.useState(votingSystem?.type === 'CUSTOM');
+
     if (!isOpen) return null;
 
     const isRoundActive = phase !== 'IDLE' && phase !== 'REVEALED';
@@ -28,7 +33,33 @@ const RoomSettingsModal = ({
             alert('Cannot change voting system while a round is in progress. Please reveal or reset the round first.');
             return;
         }
-        onUpdateSettings({ votingSystem: preset });
+        setIsCustomMode(false);
+        onUpdateSettings({ 
+            votingSystem: {
+                type: preset.id,
+                name: preset.name,
+                values: preset.values
+            }
+        });
+    };
+
+    const handleCustomScaleSubmit = () => {
+        if (isRoundActive) {
+            alert('Cannot change voting system while a round is in progress.');
+            return;
+        }
+        const values = customScaleText.split(',').map(s => s.trim()).filter(Boolean);
+        if (values.length === 0) {
+            alert("Please provide at least one value for the custom scale");
+            return;
+        }
+        onUpdateSettings({ 
+            votingSystem: {
+                type: 'CUSTOM',
+                name: 'Custom Scale',
+                values
+            }
+        });
     };
 
     return (
@@ -74,7 +105,7 @@ const RoomSettingsModal = ({
                         
                         <div className="grid grid-cols-2 gap-3">
                             {PRESETS.map((preset) => {
-                                const isSelected = votingSystem?.type === preset.id;
+                                const isSelected = !isCustomMode && votingSystem?.type === preset.id;
                                 return (
                                     <button
                                         key={preset.id}
@@ -91,7 +122,57 @@ const RoomSettingsModal = ({
                                     </button>
                                 );
                             })}
+                            
+                            {/* Custom Scale Button */}
+                            <button
+                                onClick={() => {
+                                    if (isRoundActive && !isCustomMode) {
+                                        alert('Cannot change voting system while a round is in progress.');
+                                        return;
+                                    }
+                                    setIsCustomMode(true);
+                                }}
+                                disabled={isRoundActive && !isCustomMode}
+                                className={`p-4 rounded-2xl border text-left transition-all duration-300
+                                    ${isCustomMode 
+                                        ? 'bg-orange-500/10 dark:bg-banana-500/10 border-orange-500 dark:border-banana-500 text-orange-600 dark:text-banana-400 shadow-[0_0_20px_rgba(255,184,0,0.1)]' 
+                                        : 'bg-white dark:bg-white/[0.03] border-gray-100 dark:border-white/5 text-gray-500 hover:border-orange-500/30 dark:hover:border-banana-500/30'
+                                    } ${isRoundActive && !isCustomMode ? 'opacity-30 cursor-not-allowed' : 'active:scale-95'}`}
+                            >
+                                <div className="font-bold text-sm mb-1">Custom Scale</div>
+                                <div className="text-[10px] opacity-60 truncate">Define your own values...</div>
+                            </button>
                         </div>
+
+                        {isCustomMode && (
+                            <div className="mt-4 space-y-3 p-4 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 rounded-2xl animate-in slide-in-from-top-2 duration-300">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Comma-separated values</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={customScaleText}
+                                        onChange={(e) => setCustomScaleText(e.target.value)}
+                                        className="flex-1 px-4 py-2 bg-white dark:bg-dark-900 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-banana-500"
+                                        placeholder="e.g. 1, 2, 3, 5, 8, 13, ?, ☕"
+                                        disabled={isRoundActive}
+                                    />
+                                    <button
+                                        onClick={handleCustomScaleSubmit}
+                                        disabled={isRoundActive}
+                                        className="px-4 py-2 bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 px-1">
+                                    {customScaleText.split(',').map(s => s.trim()).filter(Boolean).map((val, idx) => (
+                                        <span key={idx} className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-white/10 shadow-sm rounded flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold text-gray-700 dark:text-gray-200 min-w-4 h-5">
+                                            {val}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="h-px bg-gray-100 dark:bg-white/5"></div>
