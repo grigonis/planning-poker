@@ -11,7 +11,7 @@ module.exports = (io, socket) => {
         }
     };
 
-    const createRoomHandler = ({ name, role, gameMode }, callback) => {
+    const createRoomHandler = ({ name, role, gameMode, presetParams }, callback) => {
         const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
         const userId = uuidv4();
 
@@ -24,7 +24,14 @@ module.exports = (io, socket) => {
             funFeatures: false,
             autoReveal: true,
             anonymousMode: false,
-            averages: {}
+            averages: {},
+            votingSystem: presetParams?.votingSystem || {
+                type: 'FIBONACCI_MODIFIED',
+                name: 'Modified Fibonacci',
+                values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
+            },
+            tasks: [],
+            activeTaskId: null
         };
 
         // Validate role or default to HOST (which acts as DEV usually)
@@ -57,6 +64,9 @@ module.exports = (io, socket) => {
             funFeatures: room.funFeatures,
             autoReveal: room.autoReveal,
             anonymousMode: room.anonymousMode,
+            votingSystem: room.votingSystem,
+            tasks: room.tasks,
+            activeTaskId: room.activeTaskId,
             users: Array.from(room.users.values())
         });
         console.log(`Room created: ${roomId} by ${socket.id} (${name}) as ${hostRole} in ${room.gameMode} mode`);
@@ -95,11 +105,8 @@ module.exports = (io, socket) => {
         } else {
             // NEW JOIN
             const newUserId = uuidv4();
-            // Standardize role based on mode
-            let finalRole = role;
-            if (room.gameMode === 'STANDARD') {
-                finalRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV'; // Map Estimator to DEV
-            }
+            // Enforce STANDARD roles 
+            let finalRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV'; // Map all estimators to DEV
 
             user = {
                 id: newUserId,
@@ -133,7 +140,10 @@ module.exports = (io, socket) => {
             mode: room.gameMode,
             funFeatures: room.funFeatures,
             autoReveal: room.autoReveal,
-            anonymousMode: room.anonymousMode
+            anonymousMode: room.anonymousMode,
+            votingSystem: room.votingSystem,
+            tasks: room.tasks,
+            activeTaskId: room.activeTaskId
         });
 
         console.log(`${name} joined ${roomId} as ${user.role} (User ID: ${user.id})`);
@@ -174,14 +184,14 @@ module.exports = (io, socket) => {
         }
     };
 
-    const updateAvatarHandler = ({ roomId }) => {
+    const updateProfileHandler = ({ roomId, name, avatarSeed }) => {
         const userId = socket.data.userId;
         const room = rooms.get(roomId);
         if (room && userId) {
             const user = room.users.get(userId);
             if (user) {
-                // Generate a random seed
-                user.avatarSeed = Math.random().toString(36).substring(7);
+                if (name) user.name = name;
+                if (avatarSeed) user.avatarSeed = avatarSeed;
                 // Broadcast update
                 const usersList = Array.from(room.users.values());
                 io.to(roomId).emit('user_joined', usersList);
@@ -210,6 +220,7 @@ module.exports = (io, socket) => {
     socket.on("toggle_fun_features", updateRoomSettingsHandler); // keeping legacy name for backwards compatibility temporarily
     socket.on("update_room_settings", updateRoomSettingsHandler);
     socket.on("send_reaction", reactionHandler);
-    socket.on("update_avatar", updateAvatarHandler);
+    socket.on("update_avatar", updateProfileHandler); // fallback for existing UI
+    socket.on("update_profile", updateProfileHandler);
     socket.on("end_session", endSessionHandler);
 };

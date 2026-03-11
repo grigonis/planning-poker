@@ -14,13 +14,21 @@ const rooms = new Map();
 module.exports = {
     rooms,
     // Helper methods can be added here
-    createRoom: (roomId, hostId) => {
+    createRoom: (roomId, hostId, roomConfig = {}) => {
         rooms.set(roomId, {
             id: roomId,
             hostId,
             phase: 'IDLE',
             users: new Map(), // socketId -> User
-            votes: new Map()  // userId -> Vote
+            votes: new Map(),  // userId -> Vote
+            votingSystem: roomConfig.votingSystem || {
+                type: 'FIBONACCI_MODIFIED',
+                name: 'Modified Fibonacci',
+                values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
+            },
+            tasks: [],
+            activeTaskId: null,
+            ...roomConfig
         });
         return rooms.get(roomId);
     },

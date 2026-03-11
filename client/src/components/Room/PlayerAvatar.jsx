@@ -19,7 +19,7 @@ function getMonkeyAlias(userId) {
     return MONKEY_ALIASES[Math.abs(hash)];
 }
 
-const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction, anonymousMode = false, voteHighlight = null }) => {
+const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction, anonymousMode = false, voteHighlight = null, hideDetails = false }) => {
     const { socket } = useSocket();
     const isAnon = anonymousMode && !isCurrentUser && user.role !== 'SPECTATOR';
     const displayName = isAnon ? getMonkeyAlias(user.id) : user.name;
@@ -73,10 +73,6 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                         <RefreshCw className="text-white w-5 h-5 animate-spin-slow" />
                     </div>
                 )}
-                <span
-                    className={`presence-dot !w-3.5 !h-3.5 ${isOnline ? 'presence-dot--online shadow-[0_0_8px_rgba(34,197,94,0.8)]' : 'presence-dot--offline'}`}
-                />
-
                 {/* Active Emoji Reaction Overlay */}
                 {activeReaction?.icon && (
                     <div
@@ -88,25 +84,28 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                 )}
             </div>
 
-            {/* Name + Host badge */}
-            <span className="font-bold  text-gray-900 dark:text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
-                {displayName}
-                {user.isHost && !isAnon && <Crown size={12} className="text-orange-500 dark:text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(255,92,0,0.5)] dark:drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
-            </span>
+            {/* Details */}
+            {!hideDetails && (
+                <>
+                    <span className="font-bold  text-gray-900 dark:text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
+                        {displayName}
+                        {user.isHost && !isAnon && <Crown size={12} className="text-orange-500 dark:text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(255,92,0,0.5)] dark:drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
+                    </span>
 
-            {/* Role badge */}
-            <span className={`
-                text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm
-                ${user.role === 'SPECTATOR'
-                    ? 'bg-gradient-to-r from-gray-800/80 to-gray-700/80 text-gray-400 border border-gray-600/50'
-                    : roomMode === 'STANDARD'
-                        ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200 border border-gray-500/50'
-                        : user.role === 'DEV'
-                            ? 'bg-gradient-to-r from-indigo-600/40 to-indigo-500/40 text-indigo-200 border border-indigo-500/50'
-                            : 'bg-gradient-to-r from-rose-600/40 to-rose-500/40 text-rose-200 border border-rose-500/50'
-                }            `}>
-                {user.role === 'SPECTATOR' ? 'Spectator' : (roomMode === 'STANDARD' ? 'Estimator' : user.role)}
-            </span>
+                    <span className={`
+                        text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm
+                        ${user.role === 'SPECTATOR'
+                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-700/80 text-gray-400 border border-gray-600/50'
+                            : roomMode === 'STANDARD'
+                                ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200 border border-gray-500/50'
+                                : user.role === 'DEV'
+                                    ? 'bg-gradient-to-r from-indigo-600/40 to-indigo-500/40 text-indigo-200 border border-indigo-500/50'
+                                    : 'bg-gradient-to-r from-rose-600/40 to-rose-500/40 text-rose-200 border border-rose-500/50'
+                        }            `}>
+                        {user.role === 'SPECTATOR' ? 'Spectator' : (roomMode === 'STANDARD' ? 'Estimator' : user.role)}
+                    </span>
+                </>
+            )}
         </div>
     );
 };

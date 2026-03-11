@@ -24,8 +24,6 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
 
     const isVotingPhase = phase === 'VOTING' || phase.startsWith('PARTIAL');
     let isParticipating = true;
-    if (phase === 'PARTIAL_VOTE_DEV' && user.role !== 'DEV') isParticipating = false;
-    if (phase === 'PARTIAL_VOTE_QA' && user.role !== 'QA') isParticipating = false;
 
     if (!isParticipating && phase !== 'IDLE') {
         return <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px]" />;
@@ -61,24 +59,46 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
 
 const CARD_SCALE = [0, 0.5, 1, 2, 3, 4, 5];
 
-function computeGroupStats(groupUsers, votes) {
-    const numeric = groupUsers
-        .map(u => ({ user: u, num: parseFloat(votes[u.id]) }))
-        .filter(v => !isNaN(v.num) && votes[v.user.id] !== undefined);
-    if (numeric.length < 2) return { highVoters: [], lowVoters: [], isExact: false, isAdjacent: false };
-    const nums = numeric.map(v => v.num);
-    const highest = Math.max(...nums);
-    const lowest = Math.min(...nums);
-    if (highest === lowest) {
-        const uniqueNums = [...new Set(nums)];
-        return { highVoters: [], lowVoters: [], isExact: uniqueNums.length === 1, isAdjacent: false };
+function computeGroupStats(groupUsers, votes, cardScale) {
+    // 1. Determine active scale (default to Modified Fibonacci if missing)
+    const scale = cardScale || [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕'];
+    
+    // 2. Filter users and find their index in the scale
+    const activeVoters = groupUsers
+        .map(u => ({ 
+            user: u, 
+            value: votes[u.id], 
+            index: scale.indexOf(String(votes[u.id])) === -1 ? scale.indexOf(Number(votes[u.id])) : scale.indexOf(String(votes[u.id]))
+        }))
+        .filter(v => {
+            if (v.value === undefined || v.index === -1) return false;
+            // Ignore non-numeric markers for stats (Coffee, ?, etc)
+            const val = String(v.value).toUpperCase();
+            return val !== '☕' && val !== '?' && val !== 'COFFEE' && val !== 'QUESTIONMARK' && val !== 'QUESTION';
+        });
+
+    if (activeVoters.length === 0) return { highVoters: [], lowVoters: [], isExact: false, isAdjacent: false };
+
+    // 3. Exact Consensus check
+    const indices = activeVoters.map(v => v.index);
+    const maxIdx = Math.max(...indices);
+    const minIdx = Math.min(...indices);
+
+    if (maxIdx === minIdx) {
+        return { 
+            highVoters: [], 
+            lowVoters: [], 
+            isExact: activeVoters.length > 0, 
+            isAdjacent: false 
+        };
     }
-    const uniqueNums = [...new Set(nums)];
-    const indices = uniqueNums.map(n => CARD_SCALE.indexOf(n));
-    const isAdjacent = indices.every(i => i !== -1) && Math.max(...indices) - Math.min(...indices) <= 1;
+
+    // 4. Adjacency check (within 1 step on the scale)
+    const isAdjacent = (maxIdx - minIdx) <= 1;
+
     return {
-        highVoters: numeric.filter(v => v.num === highest).map(v => v.user),
-        lowVoters: numeric.filter(v => v.num === lowest).map(v => v.user),
+        highVoters: activeVoters.filter(v => v.index === maxIdx).map(v => v.user),
+        lowVoters: activeVoters.filter(v => v.index === minIdx).map(v => v.user),
         isExact: false,
         isAdjacent
     };
@@ -147,14 +167,14 @@ const PokerTable = ({
     roomMode,
     averages = {},
     activeReactions = {},
-    isHost,
-    funFeatures,
-    autoReveal,
     anonymousMode = false,
+    isHost = false,
+    votingSystem = { values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕'] },
+    tasks = [],
+    activeTaskId = null,
     onStartVote,
     onReveal,
-    onReset,
-    onRevotePartial
+    onReset
 }) => {
     // Seat shuffle for anonymous mode
     const [displayUsers, setDisplayUsers] = useState(users);
@@ -224,32 +244,14 @@ const PokerTable = ({
     // Compute vote highlights and outlier info for REVEALED phase
     const voteHighlights = {};
     let stdHighVoters = [], stdLowVoters = [], stdIsExact = false, stdIsAdjacent = false;
-    let devHighVoters = [], devLowVoters = [], devIsExact = false, devIsAdjacent = false;
-    let qaHighVoters = [], qaLowVoters = [], qaIsExact = false, qaIsAdjacent = false;
 
     if (phase === 'REVEALED') {
-        if (roomMode === 'SPLIT') {
-            const devUsers = users.filter(u => (u.role === 'DEV' || u.role === 'HOST') && votes[u.id] !== undefined);
-            const qaUsers = users.filter(u => u.role === 'QA' && votes[u.id] !== undefined);
-            ({ highVoters: devHighVoters, lowVoters: devLowVoters, isExact: devIsExact, isAdjacent: devIsAdjacent } = computeGroupStats(devUsers, votes));
-            ({ highVoters: qaHighVoters, lowVoters: qaLowVoters, isExact: qaIsExact, isAdjacent: qaIsAdjacent } = computeGroupStats(qaUsers, votes));
-            // Only glow when no consensus for that group
-            if (!devIsExact && !devIsAdjacent) {
-                devHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
-                devLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
-            }
-            if (!qaIsExact && !qaIsAdjacent) {
-                qaHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
-                qaLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
-            }
-        } else {
-            const voterUsers = users.filter(u => u.role !== 'SPECTATOR' && votes[u.id] !== undefined);
-            ({ highVoters: stdHighVoters, lowVoters: stdLowVoters, isExact: stdIsExact, isAdjacent: stdIsAdjacent } = computeGroupStats(voterUsers, votes));
-            // Only glow when no consensus
-            if (!stdIsExact && !stdIsAdjacent) {
-                stdHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
-                stdLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
-            }
+        const voterUsers = users.filter(u => u.role !== 'SPECTATOR' && votes[u.id] !== undefined);
+        ({ highVoters: stdHighVoters, lowVoters: stdLowVoters, isExact: stdIsExact, isAdjacent: stdIsAdjacent } = computeGroupStats(voterUsers, votes, votingSystem?.values));
+        // Only glow when no consensus
+        if (!stdIsExact && !stdIsAdjacent) {
+            stdHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
+            stdLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
         }
     }
 
@@ -261,8 +263,6 @@ const PokerTable = ({
         users.forEach(u => {
             if (u.role === 'SPECTATOR') return;
             let isParticipating = true;
-            if (phase === 'PARTIAL_VOTE_DEV' && u.role !== 'DEV') isParticipating = false;
-            if (phase === 'PARTIAL_VOTE_QA' && u.role !== 'QA') isParticipating = false;
 
             if (isParticipating) {
                 eligibleVotersCount++;
@@ -291,33 +291,43 @@ const PokerTable = ({
 
                     {/* Phase-aware center content */}
                     {phase === 'IDLE' && (
-                        <div className="relative z-10 flex flex-col items-center gap-4">
-                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold  tracking-[0.2em] uppercase opacity-70">
-                                Planning Poker
+                        <div className="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
+                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
+                                {activeTaskId ? 'Up Next' : 'Planning Poker'}
                             </span>
-                            <p className="text-gray-400 dark:text-white/40 text-sm md:text-base ">
-                                Waiting for host to start voting...
-                            </p>
+                            <div className="flex flex-col items-center gap-2">
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-tight">
+                                    {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'Task Selection Error') : 'Waiting for round...'}
+                                </h3>
+                                {!activeTaskId && isHost && (
+                                    <p className="text-gray-400 dark:text-white/40 text-sm italic">
+                                        Select a task from the sidebar or just start
+                                    </p>
+                                )}
+                            </div>
                             {isHost && (
                                 <div className="flex flex-col items-center gap-4 mt-2">
                                     <button
                                         onClick={onStartVote}
-                                        className="bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold  flex items-center gap-2 transition-all shadow-[0_0_30px_rgba(255,92,0,0.25)] dark:shadow-[0_0_30px_rgba(238,173,43,0.3)] active:scale-95"
+                                        className="bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 px-6 md:px-10 py-3 md:py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-[0_0_40px_rgba(255,92,0,0.2)] dark:shadow-[0_0_40px_rgba(238,173,43,0.25)] active:scale-95"
                                     >
                                         <Play size={18} />
-                                        Start Voting Round
+                                        {activeTaskId ? 'Start Voting Task' : 'Quick Start Round'}
                                     </button>
                                 </div>
                             )}
                         </div>
                     )}
                     {isVotingPhase && (
-                        <div className="relative z-10 flex flex-col items-center gap-4">
-                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold  tracking-[0.2em] uppercase opacity-70">
-                                Current Estimation
-                            </span>
-                            <p className="text-lg md:text-2xl font-extrabold text-gray-900 dark:text-white  animate-pulse mb-0 md:mb-1">
-                                Voting in progress...
+                        <div className="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
+                            <div className="flex items-center gap-3">
+                                <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
+                                    Currently Estimating
+                                </span>
+                            </div>
+
+                            <p className="text-xl md:text-3xl font-black text-gray-900 dark:text-white leading-tight">
+                                {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'General Estimation') : 'General Pointing'}
                             </p>
 
                             {/* Dynamic Progress Bar inline */}
@@ -351,7 +361,6 @@ const PokerTable = ({
                     )}
 
                     {phase === 'REVEALED' && (() => {
-                        const isStandard = averages.total !== undefined;
                         const OutlierLine = ({ highV, lowV }) => {
                             if (highV.length === 0 && lowV.length === 0) return null;
                             return (
@@ -368,63 +377,33 @@ const PokerTable = ({
                         };
                         return (
                             <div className="relative z-10 flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
-                                <span className="text-orange-500 dark:text-banana-500 text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
-                                    Voting Results
-                                </span>
+                                <div className="flex flex-col items-center gap-1 mb-2">
+                                    <span className="text-orange-500 dark:text-banana-500 text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
+                                        Voting Results
+                                    </span>
+                                    <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate max-w-[200px]">
+                                        {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'Task Result') : 'Session Result'}
+                                    </h3>
+                                </div>
 
-                                {isStandard ? (
-                                    <>
-                                        {stdIsExact ? (
-                                            <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">
-                                                ✓ Consensus
-                                            </div>
-                                        ) : stdIsAdjacent ? (
-                                            <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">
-                                                ≈ Near Consensus
-                                            </div>
-                                        ) : (stdHighVoters.length > 0 || stdLowVoters.length > 0) ? (
-                                            <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">
-                                                No Consensus — Re-vote recommended
-                                            </div>
-                                        ) : null}
-                                        <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
-                                            <p className="text-[10px] font-bold text-orange-500 dark:text-banana-500/70 uppercase tracking-widest mb-0.5">Result</p>
-                                            <div className="text-3xl md:text-4xl font-extrabold text-orange-500 dark:text-banana-400 leading-none">{averages.total || '—'}</div>
-                                        </div>
-                                        <OutlierLine highV={stdHighVoters} lowV={stdLowVoters} />
-                                    </>
-                                ) : (
-                                    <div className="flex gap-2 w-full">
-                                        <div className="flex-1 flex flex-col gap-1 items-center">
-                                            {devIsExact ? (
-                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">✓ Consensus</div>
-                                            ) : devIsAdjacent ? (
-                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">≈ Near</div>
-                                            ) : (devHighVoters.length > 0 || devLowVoters.length > 0) ? (
-                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">No Consensus</div>
-                                            ) : null}
-                                            <div className="glass rounded-xl px-3 py-2 text-center w-full border border-indigo-500/20">
-                                                <p className="text-[9px] font-bold text-indigo-400/70 uppercase tracking-widest mb-0.5">Dev</p>
-                                                <div className="text-2xl font-extrabold text-indigo-400 leading-none">{averages.dev || '—'}</div>
-                                            </div>
-                                            <OutlierLine highV={devHighVoters} lowV={devLowVoters} />
-                                        </div>
-                                        <div className="flex-1 flex flex-col gap-1 items-center">
-                                            {qaIsExact ? (
-                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">✓ Consensus</div>
-                                            ) : qaIsAdjacent ? (
-                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">≈ Near</div>
-                                            ) : (qaHighVoters.length > 0 || qaLowVoters.length > 0) ? (
-                                                <div className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">No Consensus</div>
-                                            ) : null}
-                                            <div className="glass rounded-xl px-3 py-2 text-center w-full border border-rose-500/20">
-                                                <p className="text-[9px] font-bold text-rose-400/70 uppercase tracking-widest mb-0.5">QA</p>
-                                                <div className="text-2xl font-extrabold text-rose-400 leading-none">{averages.qa || '—'}</div>
-                                            </div>
-                                            <OutlierLine highV={qaHighVoters} lowV={qaLowVoters} />
-                                        </div>
+                                {stdIsExact ? (
+                                    <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">
+                                        ✓ Consensus
                                     </div>
-                                )}
+                                ) : stdIsAdjacent ? (
+                                    <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">
+                                        ≈ Near Consensus
+                                    </div>
+                                ) : (stdHighVoters.length > 0 || stdLowVoters.length > 0) ? (
+                                    <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">
+                                        No Consensus — Re-vote recommended
+                                    </div>
+                                ) : null}
+                                <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
+                                    <p className="text-[10px] font-bold text-orange-500 dark:text-banana-500/70 uppercase tracking-widest mb-0.5">Result</p>
+                                    <div className="text-3xl md:text-4xl font-extrabold text-orange-500 dark:text-banana-400 leading-none">{averages.total || '—'}</div>
+                                </div>
+                                <OutlierLine highV={stdHighVoters} lowV={stdLowVoters} />
 
                                 {isHost && (
                                     <div className="flex flex-col items-center gap-2 w-full pt-1">
@@ -435,22 +414,6 @@ const PokerTable = ({
                                             <RotateCcw size={15} />
                                             New Round
                                         </button>
-                                        {!isStandard && (
-                                            <div className="flex gap-2 w-full">
-                                                <button
-                                                    onClick={() => onRevotePartial('DEV')}
-                                                    className="flex-1 px-3 py-2 rounded-lg font-bold border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs"
-                                                >
-                                                    Re-vote DEV
-                                                </button>
-                                                <button
-                                                    onClick={() => onRevotePartial('QA')}
-                                                    className="flex-1 px-3 py-2 rounded-lg font-bold border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition-colors text-xs"
-                                                >
-                                                    Re-vote QA
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
                                 )}
                             </div>

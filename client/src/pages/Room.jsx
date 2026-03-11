@@ -6,8 +6,11 @@ import PokerTable from '../components/Room/PokerTable';
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
 import RoomSettingsModal from '../components/Room/RoomSettingsModal';
+import EditProfileModal from '../components/Room/EditProfileModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
-import { Users, Crown, Settings } from 'lucide-react';
+import TasksPane from '../components/Room/TasksPane';
+import PlayerAvatar from '../components/Room/PlayerAvatar';
+import { Users, Crown, Settings, LayoutList } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Room = () => {
@@ -29,9 +32,20 @@ const Room = () => {
     const [funFeatures, setFunFeatures] = useState(location.state?.funFeatures || false);
     const [autoReveal, setAutoReveal] = useState(location.state?.autoReveal || false);
     const [anonymousMode, setAnonymousMode] = useState(location.state?.anonymousMode || false);
+    const [votingSystem, setVotingSystem] = useState(location.state?.votingSystem || {
+        type: 'FIBONACCI_MODIFIED',
+        name: 'Modified Fibonacci',
+        values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
+    });
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isTasksOpen, setIsTasksOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    // Tasks State
+    const [tasks, setTasks] = useState(location.state?.tasks || []);
+    const [activeTaskId, setActiveTaskId] = useState(location.state?.activeTaskId || null);
 
     // Guest / Session State
     const [currentUser, setCurrentUser] = useState(location.state || {});
@@ -64,6 +78,9 @@ const Room = () => {
                     if (response.funFeatures !== undefined) setFunFeatures(response.funFeatures);
                     if (response.autoReveal !== undefined) setAutoReveal(response.autoReveal);
                     if (response.anonymousMode !== undefined) setAnonymousMode(response.anonymousMode);
+                    if (response.votingSystem) setVotingSystem(response.votingSystem);
+                    if (response.tasks) setTasks(response.tasks);
+                    if (response.activeTaskId) setActiveTaskId(response.activeTaskId);
 
                     if (response.phase === 'REVEALED' && response.votes) {
                         const votesMap = {};
@@ -78,7 +95,8 @@ const Room = () => {
                         id: response.userId,
                         isHost: serverMe?.isHost || false,
                         gameMode: response.mode,
-                        funFeatures: response.funFeatures
+                        funFeatures: response.funFeatures,
+                        avatarSeed: serverMe?.avatarSeed || name
                     };
 
                     setCurrentUser(updatedUser);
@@ -119,8 +137,18 @@ const Room = () => {
             setUsers(updatedUsers);
             if (currentUser.id) {
                 const me = updatedUsers.find(u => u.id === currentUser.id);
-                if (me && (me.isHost !== currentUser.isHost || me.role !== currentUser.role)) {
-                    setCurrentUser(prev => ({ ...prev, isHost: me.isHost, role: me.role }));
+                if (me && (me.isHost !== currentUser.isHost || me.role !== currentUser.role || me.name !== currentUser.name || me.avatarSeed !== currentUser.avatarSeed)) {
+                    setCurrentUser(prev => {
+                        const next = { ...prev, isHost: me.isHost, role: me.role, name: me.name, avatarSeed: me.avatarSeed };
+                        // Persist session info on changes
+                        localStorage.setItem(`banana_session_${roomId}`, JSON.stringify({
+                            userId: next.id,
+                            name: next.name,
+                            role: next.role,
+                            roomId
+                        }));
+                        return next;
+                    });
                 }
             }
         };
@@ -236,6 +264,7 @@ const Room = () => {
             if (settings.funFeatures !== undefined) setFunFeatures(settings.funFeatures);
             if (settings.autoReveal !== undefined) setAutoReveal(settings.autoReveal);
             if (settings.anonymousMode !== undefined) setAnonymousMode(settings.anonymousMode);
+            if (settings.votingSystem) setVotingSystem(settings.votingSystem);
         };
 
         const onSessionEnded = () => {
@@ -259,6 +288,11 @@ const Room = () => {
             }, 6000); // Show for 6 seconds
         };
 
+        const onTasksUpdated = ({ tasks, activeTaskId }) => {
+            if (tasks) setTasks(tasks);
+            if (activeTaskId !== undefined) setActiveTaskId(activeTaskId);
+        };
+
         socket.on('user_joined', onUserJoined);
         socket.on('vote_started', onVoteStarted);
         socket.on('vote_update', onVoteUpdate);
@@ -268,6 +302,7 @@ const Room = () => {
         socket.on('room_settings_updated', onRoomSettingsUpdated);
         socket.on('session_ended', onSessionEnded);
         socket.on('show_reaction', onShowReaction);
+        socket.on('tasks_updated', onTasksUpdated);
 
         return () => {
             socket.off('user_joined', onUserJoined);
@@ -279,6 +314,7 @@ const Room = () => {
             socket.off('room_settings_updated', onRoomSettingsUpdated);
             socket.off('session_ended', onSessionEnded);
             socket.off('show_reaction', onShowReaction);
+            socket.off('tasks_updated', onTasksUpdated);
         };
     }, [socket, currentUser.role, currentUser.id, funFeatures, autoReveal, navigate]);
 
@@ -296,6 +332,7 @@ const Room = () => {
         if (user.funFeatures !== undefined) setFunFeatures(user.funFeatures);
         if (user.autoReveal !== undefined) setAutoReveal(user.autoReveal);
         if (user.anonymousMode !== undefined) setAnonymousMode(user.anonymousMode);
+        if (user.votingSystem) setVotingSystem(user.votingSystem);
 
         // Note: phase and votes are not passed by GuestJoinModal directly right now,
         // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!
@@ -352,8 +389,29 @@ const Room = () => {
         socket.emit('update_room_settings', { roomId, settings });
     };
 
+    const handleUpdateProfile = ({ name, avatarSeed }) => {
+        socket.emit('update_profile', { roomId, name, avatarSeed });
+    };
+
     const handleEndSession = () => {
         socket.emit('end_session', { roomId });
+    };
+
+    // Task Management
+    const handleCreateTask = (title) => {
+        socket.emit('create_task', { roomId, title });
+    };
+
+    const handleBulkCreate = (titles) => {
+        socket.emit('bulk_create_tasks', { roomId, titles });
+    };
+
+    const handleDeleteTask = (taskId) => {
+        socket.emit('delete_task', { roomId, taskId });
+    };
+
+    const handleSelectTask = (taskId) => {
+        socket.emit('select_task', { roomId, taskId });
     };
 
     // Derived state
@@ -386,44 +444,64 @@ const Room = () => {
             <div className="absolute inset-0 aurora z-0" />
             <div className="absolute inset-0 modern-grid z-0" />
 
-            {/* Unified Navbar with Invite Button */}
-            <div className="sticky top-0 z-40 bg-gray-50/80 dark:bg-dark-900/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 transition-colors duration-300">
-                <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            {/* Unified Navbar */}
+            <div className="sticky top-0 z-40 bg-white/80 dark:bg-[#101010]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 transition-colors duration-300">
+                <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
                     {/* Logo/Room Info */}
-                    <div className="flex flex-col">
-                        <h1 className="text-xl font-bold  text-orange-500 dark:text-banana-500 leading-none">BananaPoker</h1>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">Room: {roomId}</span>
-                    </div>
-                    {/* Game Mode Badge */}
-                    <div className="bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded text-[10px] text-gray-500 dark:text-gray-400  uppercase tracking-wider border border-gray-200 dark:border-white/5 transition-colors duration-300">
-                        {roomMode} Mode
+                    <div className="flex items-center gap-4">
+                        <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
+                            <h1 className="text-xl font-black text-orange-500 dark:text-banana-500 leading-none tracking-tight">BananaPoker</h1>
+                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                <span>Room: <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded ml-0.5 select-all">{roomId}</span></span>
+                            </div>
+                        </div>
+                        {/* Divider */}
+                        <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-white/10 ml-2"></div>
+                        
+                        {/* Status (Connected) */}
+                        <div className="hidden md:flex items-center gap-1.5 ml-2">
+                            <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{socket?.connected ? 'Live' : 'Offline'}</span>
+                        </div>
                     </div>
 
                     {/* Actions */}
                     {validUser && (
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 bg-white dark:bg-dark-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/5 hide-on-mobile transition-colors duration-300">
-                                <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                <span className="text-sm text-gray-700 dark:text-gray-300 font-bold">{currentUser.name}</span>
-                                <span className="text-xs text-gray-400 dark:text-gray-500 border-l border-gray-200 dark:border-white/10 pl-2 ml-1">{currentUser.role}</span>
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div 
+                                onClick={() => setIsProfileOpen(true)}
+                                className="flex items-center justify-center transition-transform duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                            >
+                                <div className="pointer-events-none">
+                                    <PlayerAvatar user={{ ...currentUser, connected: true }} size={36} isCurrentUser={false} anonymousMode={false} hideDetails={true} />
+                                </div>
                             </div>
 
-                            <ThemeToggle />
+                            <button
+                                onClick={() => setIsTasksOpen(prev => !prev)}
+                                className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-orange-100 dark:bg-banana-500/20 border-orange-500/30 dark:border-banana-500/30 text-orange-600 dark:text-banana-500 shadow-sm' : 'bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}
+                            >
+                                <LayoutList size={16} />
+                                <span className="hidden lg:inline">Tasks</span>
+                                {tasks.length > 0 && <span className="bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 px-1.5 py-0.5 rounded-md text-[10px] leading-none ml-0.5 shadow-sm">{tasks.length}</span>}
+                            </button>
 
                             <button
                                 onClick={() => setIsInviteModalOpen(true)}
-                                className="bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-white text-sm font-bold  px-4 py-2 rounded-full transition-colors border border-gray-200 dark:border-white/5 flex items-center gap-2"
+                                className="bg-orange-500/10 dark:bg-banana-500/10 hover:bg-orange-500/20 dark:hover:bg-banana-500/20 text-orange-600 dark:text-banana-500 border border-orange-500/20 dark:border-banana-500/20 text-sm font-bold px-3 lg:px-4 py-2 rounded-full transition-colors flex items-center gap-2"
                             >
                                 <Users size={16} />
-                                Invite
+                                <span className="hidden lg:inline">Invite</span>
                             </button>
+
+                            <ThemeToggle />
 
                             {isMeHost && (
                                 <button
                                     onClick={() => setIsSettingsOpen(true)}
-                                    className="p-2 rounded-full bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors border border-gray-200 dark:border-white/5"
+                                    className="p-2 rounded-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/[0.08] text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm"
                                 >
-                                    <Settings className="w-5 h-5" />
+                                    <Settings className="w-4.5 h-4.5" />
                                 </button>
                             )}
                         </div>
@@ -450,6 +528,7 @@ const Room = () => {
                                 role={currentUser.role}
                                 onVote={handleVote}
                                 currentVote={myVote}
+                                votingSystem={votingSystem}
                             />
                         )}
 
@@ -460,13 +539,15 @@ const Room = () => {
                             votes={votes}
                             myVote={myVote}
                             phase={phase}
-                            roomMode={roomMode}
                             averages={averages}
                             activeReactions={activeReactions}
                             isHost={isMeHost}
                             funFeatures={funFeatures}
                             autoReveal={autoReveal}
                             anonymousMode={anonymousMode}
+                            votingSystem={votingSystem}
+                            tasks={tasks}
+                            activeTaskId={activeTaskId}
                             onStartVote={handleStartVote}
                             onReveal={handleReveal}
                             onReset={handleReset}
@@ -481,9 +562,23 @@ const Room = () => {
                                 phase={phase}
                             />
                         )}
+
                     </>
                 )}
             </main>
+
+            {validUser && (
+                <TasksPane
+                    isOpen={isTasksOpen}
+                    onClose={() => setIsTasksOpen(false)}
+                    tasks={tasks}
+                    activeTaskId={activeTaskId}
+                    onCreateTask={handleCreateTask}
+                    onBulkCreate={handleBulkCreate}
+                    onDeleteTask={handleDeleteTask}
+                    onSelectTask={handleSelectTask}
+                />
+            )}
 
             <InviteModal
                 isOpen={isInviteModalOpen}
@@ -496,8 +591,16 @@ const Room = () => {
                 funFeatures={funFeatures}
                 autoReveal={autoReveal}
                 anonymousMode={anonymousMode}
+                votingSystem={votingSystem}
+                phase={phase}
                 onUpdateSettings={handleUpdateSettings}
                 onEndSession={handleEndSession}
+            />
+            <EditProfileModal
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+                currentUser={currentUser}
+                onUpdateProfile={handleUpdateProfile}
             />
         </div>
     );
