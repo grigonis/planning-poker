@@ -7,7 +7,8 @@ import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
 import RoomSettingsModal from '../components/Room/RoomSettingsModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
-import { Users, Crown, Settings } from 'lucide-react';
+import TasksPane from '../components/Room/TasksPane';
+import { Users, Crown, Settings, LayoutList } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Room = () => {
@@ -29,9 +30,19 @@ const Room = () => {
     const [funFeatures, setFunFeatures] = useState(location.state?.funFeatures || false);
     const [autoReveal, setAutoReveal] = useState(location.state?.autoReveal || false);
     const [anonymousMode, setAnonymousMode] = useState(location.state?.anonymousMode || false);
+    const [votingSystem, setVotingSystem] = useState(location.state?.votingSystem || {
+        type: 'FIBONACCI_MODIFIED',
+        name: 'Modified Fibonacci',
+        values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
+    });
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isTasksOpen, setIsTasksOpen] = useState(false);
+
+    // Tasks State
+    const [tasks, setTasks] = useState(location.state?.tasks || []);
+    const [activeTaskId, setActiveTaskId] = useState(location.state?.activeTaskId || null);
 
     // Guest / Session State
     const [currentUser, setCurrentUser] = useState(location.state || {});
@@ -64,6 +75,9 @@ const Room = () => {
                     if (response.funFeatures !== undefined) setFunFeatures(response.funFeatures);
                     if (response.autoReveal !== undefined) setAutoReveal(response.autoReveal);
                     if (response.anonymousMode !== undefined) setAnonymousMode(response.anonymousMode);
+                    if (response.votingSystem) setVotingSystem(response.votingSystem);
+                    if (response.tasks) setTasks(response.tasks);
+                    if (response.activeTaskId) setActiveTaskId(response.activeTaskId);
 
                     if (response.phase === 'REVEALED' && response.votes) {
                         const votesMap = {};
@@ -236,6 +250,7 @@ const Room = () => {
             if (settings.funFeatures !== undefined) setFunFeatures(settings.funFeatures);
             if (settings.autoReveal !== undefined) setAutoReveal(settings.autoReveal);
             if (settings.anonymousMode !== undefined) setAnonymousMode(settings.anonymousMode);
+            if (settings.votingSystem) setVotingSystem(settings.votingSystem);
         };
 
         const onSessionEnded = () => {
@@ -259,6 +274,11 @@ const Room = () => {
             }, 6000); // Show for 6 seconds
         };
 
+        const onTasksUpdated = ({ tasks, activeTaskId }) => {
+            if (tasks) setTasks(tasks);
+            if (activeTaskId !== undefined) setActiveTaskId(activeTaskId);
+        };
+
         socket.on('user_joined', onUserJoined);
         socket.on('vote_started', onVoteStarted);
         socket.on('vote_update', onVoteUpdate);
@@ -268,6 +288,7 @@ const Room = () => {
         socket.on('room_settings_updated', onRoomSettingsUpdated);
         socket.on('session_ended', onSessionEnded);
         socket.on('show_reaction', onShowReaction);
+        socket.on('tasks_updated', onTasksUpdated);
 
         return () => {
             socket.off('user_joined', onUserJoined);
@@ -279,6 +300,7 @@ const Room = () => {
             socket.off('room_settings_updated', onRoomSettingsUpdated);
             socket.off('session_ended', onSessionEnded);
             socket.off('show_reaction', onShowReaction);
+            socket.off('tasks_updated', onTasksUpdated);
         };
     }, [socket, currentUser.role, currentUser.id, funFeatures, autoReveal, navigate]);
 
@@ -296,6 +318,7 @@ const Room = () => {
         if (user.funFeatures !== undefined) setFunFeatures(user.funFeatures);
         if (user.autoReveal !== undefined) setAutoReveal(user.autoReveal);
         if (user.anonymousMode !== undefined) setAnonymousMode(user.anonymousMode);
+        if (user.votingSystem) setVotingSystem(user.votingSystem);
 
         // Note: phase and votes are not passed by GuestJoinModal directly right now,
         // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!
@@ -356,6 +379,23 @@ const Room = () => {
         socket.emit('end_session', { roomId });
     };
 
+    // Task Management
+    const handleCreateTask = (title) => {
+        socket.emit('create_task', { roomId, title });
+    };
+
+    const handleBulkCreate = (titles) => {
+        socket.emit('bulk_create_tasks', { roomId, titles });
+    };
+
+    const handleDeleteTask = (taskId) => {
+        socket.emit('delete_task', { roomId, taskId });
+    };
+
+    const handleSelectTask = (taskId) => {
+        socket.emit('select_task', { roomId, taskId });
+    };
+
     // Derived state
     const isMeHost = users.find(u => u.id === currentUser.id)?.isHost || false;
     const validUser = viewState === 'ROOM';
@@ -394,10 +434,7 @@ const Room = () => {
                         <h1 className="text-xl font-bold  text-orange-500 dark:text-banana-500 leading-none">BananaPoker</h1>
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">Room: {roomId}</span>
                     </div>
-                    {/* Game Mode Badge */}
-                    <div className="bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded text-[10px] text-gray-500 dark:text-gray-400  uppercase tracking-wider border border-gray-200 dark:border-white/5 transition-colors duration-300">
-                        {roomMode} Mode
-                    </div>
+                    {/* Game Mode Badge removed */}
 
                     {/* Actions */}
                     {validUser && (
@@ -407,6 +444,15 @@ const Room = () => {
                                 <span className="text-sm text-gray-700 dark:text-gray-300 font-bold">{currentUser.name}</span>
                                 <span className="text-xs text-gray-400 dark:text-gray-500 border-l border-gray-200 dark:border-white/10 pl-2 ml-1">{currentUser.role}</span>
                             </div>
+
+                            <button
+                                onClick={() => setIsTasksOpen(true)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-orange-100 dark:bg-banana-500/20 border-orange-500/30 dark:border-banana-500/30 text-orange-600 dark:text-banana-500 shadow-sm' : 'bg-gray-100 dark:bg-white/10 border-gray-200 dark:border-white/5 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-white/20'}`}
+                            >
+                                <LayoutList size={16} />
+                                <span className="hide-on-mobile">Tasks</span>
+                                {tasks.length > 0 && <span className="bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 px-1.5 py-0.5 rounded-md text-[10px] leading-tight ml-1">{tasks.length}</span>}
+                            </button>
 
                             <ThemeToggle />
 
@@ -450,6 +496,7 @@ const Room = () => {
                                 role={currentUser.role}
                                 onVote={handleVote}
                                 currentVote={myVote}
+                                votingSystem={votingSystem}
                             />
                         )}
 
@@ -460,13 +507,15 @@ const Room = () => {
                             votes={votes}
                             myVote={myVote}
                             phase={phase}
-                            roomMode={roomMode}
                             averages={averages}
                             activeReactions={activeReactions}
                             isHost={isMeHost}
                             funFeatures={funFeatures}
                             autoReveal={autoReveal}
                             anonymousMode={anonymousMode}
+                            votingSystem={votingSystem}
+                            tasks={tasks}
+                            activeTaskId={activeTaskId}
                             onStartVote={handleStartVote}
                             onReveal={handleReveal}
                             onReset={handleReset}
@@ -481,6 +530,18 @@ const Room = () => {
                                 phase={phase}
                             />
                         )}
+
+                        {/* Tasks Sidebar */}
+                        <TasksPane
+                            isOpen={isTasksOpen}
+                            onClose={() => setIsTasksOpen(false)}
+                            tasks={tasks}
+                            activeTaskId={activeTaskId}
+                            onCreateTask={handleCreateTask}
+                            onBulkCreate={handleBulkCreate}
+                            onDeleteTask={handleDeleteTask}
+                            onSelectTask={handleSelectTask}
+                        />
                     </>
                 )}
             </main>
@@ -496,6 +557,8 @@ const Room = () => {
                 funFeatures={funFeatures}
                 autoReveal={autoReveal}
                 anonymousMode={anonymousMode}
+                votingSystem={votingSystem}
+                phase={phase}
                 onUpdateSettings={handleUpdateSettings}
                 onEndSession={handleEndSession}
             />

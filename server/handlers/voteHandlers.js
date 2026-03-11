@@ -37,8 +37,6 @@ module.exports = (io, socket) => {
         // Spectator cannot vote
         if (user.role === 'SPECTATOR') return;
 
-        if (room.phase === 'PARTIAL_VOTE_DEV' && user.role !== 'DEV') return;
-        if (room.phase === 'PARTIAL_VOTE_QA' && user.role !== 'QA') return;
         if (room.phase === 'REVEALED') return;
 
         room.votes.set(userId, value);
@@ -55,8 +53,6 @@ module.exports = (io, socket) => {
             room.users.forEach(u => {
                 if (u.role === 'SPECTATOR') return;
                 if (!u.connected) return;
-                if (room.phase === 'PARTIAL_VOTE_DEV' && u.role !== 'DEV') return;
-                if (room.phase === 'PARTIAL_VOTE_QA' && u.role !== 'QA') return;
                 eligibleVoters++;
             });
 
@@ -69,48 +65,35 @@ module.exports = (io, socket) => {
     const performReveal = (room, roomId) => {
         room.phase = 'REVEALED';
 
-        // Calculate averages based on MODES
+        // Calculate averages (Highest vote wins, ignoring non-numeric values)
         let averages = {};
-
-        if (room.gameMode === 'SPLIT') {
-            let devMax = null, qaMax = null;
-
-            room.votes.forEach((val, userId) => {
-                const u = room.users.get(userId);
-                if (u) {
-                    const num = parseFloat(val);
-                    if (!isNaN(num)) {
-                        if (u.role === 'DEV' || u.role === 'HOST') {
-                            if (devMax === null || num > devMax) devMax = num;
-                        }
-                        if (u.role === 'QA') {
-                            if (qaMax === null || num > qaMax) qaMax = num;
-                        }
-                    }
-                }
-            });
-
-            averages.dev = devMax !== null ? devMax : 0;
-            averages.qa = qaMax !== null ? qaMax : 0;
-
-        } else {
-            // STANDARD MODE — highest vote wins
-            let max = null;
-            room.votes.forEach((val, userId) => {
-                const u = room.users.get(userId);
-                if (u && u.role !== 'SPECTATOR') {
-                    const num = parseFloat(val);
-                    if (!isNaN(num) && (max === null || num > max)) max = num;
-                }
-            });
-            averages.total = max !== null ? max : 0;
-        }
-
+        let max = null;
+        
+        room.votes.forEach((val, userId) => {
+            const u = room.users.get(userId);
+            if (u && u.role !== 'SPECTATOR') {
+                if (val === '☕' || val === '?' || val === 'COFFEE' || val === 'questionMark') return;
+                const num = parseFloat(val);
+                if (!isNaN(num) && (max === null || num > max)) max = num;
+            }
+        });
+        
+        averages.total = max !== null ? max : 0;
         room.averages = averages;
+
+        // If an active task is selected, save the result to it
+        if (room.activeTaskId) {
+            const task = room.tasks.find(t => t.id === room.activeTaskId);
+            if (task) {
+                task.votes = averages.total;
+                task.status = 'COMPLETED';
+            }
+        }
 
         io.to(roomId).emit("revealed", {
             votes: Array.from(room.votes.entries()),
-            averages
+            averages,
+            tasks: room.tasks // Sync tasks back
         });
     };
 
@@ -137,33 +120,8 @@ module.exports = (io, socket) => {
         io.to(roomId).emit("reset");
     };
 
-    const revotePartialHandler = ({ roomId, targetRole }) => {
-        // targetRole: 'DEV' | 'QA'
-        const result = getUser(socket);
-        if (!result) return;
-        const { user, room } = result;
-
-        if (!user || !user.isHost) return;
-
-        const newPhase = targetRole === 'DEV' ? 'PARTIAL_VOTE_DEV' : 'PARTIAL_VOTE_QA';
-        room.phase = newPhase;
-
-        // Clear votes ONLY for that role?
-        const usersToClear = [];
-        room.votes.forEach((val, userId) => {
-            const u = room.users.get(userId);
-            if (u && u.role === targetRole) {
-                usersToClear.push(userId);
-            }
-        });
-        usersToClear.forEach(uid => room.votes.delete(uid));
-
-        io.to(roomId).emit("partial_revote", { phase: newPhase });
-    };
-
     socket.on("start_vote", startVoteHandler);
     socket.on("cast_vote", castVoteHandler);
     socket.on("reveal", revealHandler);
     socket.on("reset", resetHandler);
-    socket.on("revote_partial", revotePartialHandler);
 };
