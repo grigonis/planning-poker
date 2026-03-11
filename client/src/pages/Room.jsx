@@ -6,8 +6,10 @@ import PokerTable from '../components/Room/PokerTable';
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
 import RoomSettingsModal from '../components/Room/RoomSettingsModal';
+import EditProfileModal from '../components/Room/EditProfileModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
 import TasksPane from '../components/Room/TasksPane';
+import PlayerAvatar from '../components/Room/PlayerAvatar';
 import { Users, Crown, Settings, LayoutList } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -39,6 +41,7 @@ const Room = () => {
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isTasksOpen, setIsTasksOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     // Tasks State
     const [tasks, setTasks] = useState(location.state?.tasks || []);
@@ -92,7 +95,8 @@ const Room = () => {
                         id: response.userId,
                         isHost: serverMe?.isHost || false,
                         gameMode: response.mode,
-                        funFeatures: response.funFeatures
+                        funFeatures: response.funFeatures,
+                        avatarSeed: serverMe?.avatarSeed || name
                     };
 
                     setCurrentUser(updatedUser);
@@ -133,8 +137,18 @@ const Room = () => {
             setUsers(updatedUsers);
             if (currentUser.id) {
                 const me = updatedUsers.find(u => u.id === currentUser.id);
-                if (me && (me.isHost !== currentUser.isHost || me.role !== currentUser.role)) {
-                    setCurrentUser(prev => ({ ...prev, isHost: me.isHost, role: me.role }));
+                if (me && (me.isHost !== currentUser.isHost || me.role !== currentUser.role || me.name !== currentUser.name || me.avatarSeed !== currentUser.avatarSeed)) {
+                    setCurrentUser(prev => {
+                        const next = { ...prev, isHost: me.isHost, role: me.role, name: me.name, avatarSeed: me.avatarSeed };
+                        // Persist session info on changes
+                        localStorage.setItem(`banana_session_${roomId}`, JSON.stringify({
+                            userId: next.id,
+                            name: next.name,
+                            role: next.role,
+                            roomId
+                        }));
+                        return next;
+                    });
                 }
             }
         };
@@ -375,6 +389,10 @@ const Room = () => {
         socket.emit('update_room_settings', { roomId, settings });
     };
 
+    const handleUpdateProfile = ({ name, avatarSeed }) => {
+        socket.emit('update_profile', { roomId, name, avatarSeed });
+    };
+
     const handleEndSession = () => {
         socket.emit('end_session', { roomId });
     };
@@ -450,17 +468,17 @@ const Room = () => {
                     {/* Actions */}
                     {validUser && (
                         <div className="flex items-center gap-2 md:gap-3">
-                            <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/[0.04] px-1.5 py-1.5 rounded-full border border-gray-200 dark:border-white/5 transition-colors duration-300 hide-on-mobile">
-                                <span className="text-sm text-gray-900 dark:text-white font-bold ml-2 max-w-[120px] truncate">{currentUser.name}</span>
-                                {currentUser.role === 'SPECTATOR' ? (
-                                    <span className="text-[10px] font-black tracking-widest uppercase text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full ml-1 border border-blue-500/20">Spectator</span>
-                                ) : (
-                                    <span className="text-[10px] font-black tracking-widest uppercase text-gray-600 dark:text-white/60 bg-white dark:bg-white/10 px-2 py-0.5 rounded-full ml-1 border border-gray-200 dark:border-white/5 shadow-sm">Estimator</span>
-                                )}
+                            <div 
+                                onClick={() => setIsProfileOpen(true)}
+                                className="flex items-center justify-center transition-transform duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                            >
+                                <div className="pointer-events-none">
+                                    <PlayerAvatar user={{ ...currentUser, connected: true }} size={36} isCurrentUser={false} anonymousMode={false} hideDetails={true} />
+                                </div>
                             </div>
 
                             <button
-                                onClick={() => setIsTasksOpen(true)}
+                                onClick={() => setIsTasksOpen(prev => !prev)}
                                 className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-orange-100 dark:bg-banana-500/20 border-orange-500/30 dark:border-banana-500/30 text-orange-600 dark:text-banana-500 shadow-sm' : 'bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}
                             >
                                 <LayoutList size={16} />
@@ -545,20 +563,22 @@ const Room = () => {
                             />
                         )}
 
-                        {/* Tasks Sidebar */}
-                        <TasksPane
-                            isOpen={isTasksOpen}
-                            onClose={() => setIsTasksOpen(false)}
-                            tasks={tasks}
-                            activeTaskId={activeTaskId}
-                            onCreateTask={handleCreateTask}
-                            onBulkCreate={handleBulkCreate}
-                            onDeleteTask={handleDeleteTask}
-                            onSelectTask={handleSelectTask}
-                        />
                     </>
                 )}
             </main>
+
+            {validUser && (
+                <TasksPane
+                    isOpen={isTasksOpen}
+                    onClose={() => setIsTasksOpen(false)}
+                    tasks={tasks}
+                    activeTaskId={activeTaskId}
+                    onCreateTask={handleCreateTask}
+                    onBulkCreate={handleBulkCreate}
+                    onDeleteTask={handleDeleteTask}
+                    onSelectTask={handleSelectTask}
+                />
+            )}
 
             <InviteModal
                 isOpen={isInviteModalOpen}
@@ -575,6 +595,12 @@ const Room = () => {
                 phase={phase}
                 onUpdateSettings={handleUpdateSettings}
                 onEndSession={handleEndSession}
+            />
+            <EditProfileModal
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+                currentUser={currentUser}
+                onUpdateProfile={handleUpdateProfile}
             />
         </div>
     );

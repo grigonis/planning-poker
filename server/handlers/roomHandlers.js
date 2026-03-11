@@ -184,14 +184,14 @@ module.exports = (io, socket) => {
         }
     };
 
-    const updateAvatarHandler = ({ roomId }) => {
+    const updateProfileHandler = ({ roomId, name, avatarSeed }) => {
         const userId = socket.data.userId;
         const room = rooms.get(roomId);
         if (room && userId) {
             const user = room.users.get(userId);
             if (user) {
-                // Generate a random seed
-                user.avatarSeed = Math.random().toString(36).substring(7);
+                if (name) user.name = name;
+                if (avatarSeed) user.avatarSeed = avatarSeed;
                 // Broadcast update
                 const usersList = Array.from(room.users.values());
                 io.to(roomId).emit('user_joined', usersList);
@@ -220,6 +220,7 @@ module.exports = (io, socket) => {
     socket.on("toggle_fun_features", updateRoomSettingsHandler); // keeping legacy name for backwards compatibility temporarily
     socket.on("update_room_settings", updateRoomSettingsHandler);
     socket.on("send_reaction", reactionHandler);
-    socket.on("update_avatar", updateAvatarHandler);
+    socket.on("update_avatar", updateProfileHandler); // fallback for existing UI
+    socket.on("update_profile", updateProfileHandler);
     socket.on("end_session", endSessionHandler);
 };
