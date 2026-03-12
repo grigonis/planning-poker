@@ -199,6 +199,6 @@ unmapped |
 | R114 | constraint | active | all | none | unmapped |
 
 ## Coverage Summary
-- Active requirements: 14
+- Active requirements: 12
 - Mapped to slices: 14
-- Validated: 0 (M002 not yet started)
+- Validated: 2 (R104, R106)
