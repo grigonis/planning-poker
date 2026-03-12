@@ -27,3 +27,5 @@
 | D019 | M002/S02 | convention | Modal accessibility titles | DialogTitle with sr-only for purely visual modals | Ensures screen readers can identify the modal's purpose without cluttering the visual design | Yes |
 | D020 | M002/S02 | arch | JoinSessionModal migration | Rebuild using shadcn Dialog | Consistency with room modals; ensures a unified joining experience from landing to room | No |
 | D021 | M002/S02 | convention | Destructive actions in modals | Use AlertDialog for Danger Zone actions inside RoomSettingsModal | Provides a standard, high-friction confirmation for irreversible actions | No |
+| D022 | M002/S03 | arch | TasksPane side-panel | Rebuild with shadcn Sheet | Standardizes side-panel behavior and gains accessibility (focus trap, ARIA) while maintaining the right-side drawer pattern | No |
+| D023 | M002/S03 | convention | Role selection | ToggleGroup for all role pickers | Eliminates manual button-state logic and provides accessible toggle semantics | No |

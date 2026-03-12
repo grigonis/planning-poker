@@ -37,53 +37,53 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R104 — All room modals use shadcn Dialog
 - Class: primary-user-loop
-- Status: active
+- Status: validated
 - Description: RoomSettingsModal, EditProfileModal, InviteModal, GuestJoinModal each use Dialog/DialogContent/DialogHeader/DialogTitle
 - Why it matters: Accessibility (focus trap, ARIA roles, keyboard dismiss) and visual consistency
 - Source: audit
 - Primary owning slice: M002/S02
 - Supporting slices: none
-- Validation: unmapped
+- Validation: S02-UAT
 
 ### R105 — TasksPane uses shadcn Sheet
 - Class: primary-user-loop
-- Status: active
+- Status: validated
 - Description: TasksPane.jsx rebuilt using Sheet/SheetContent/SheetHeader/SheetTitle (side variant)
 - Why it matters: Consistent side-panel pattern with accessibility; removes hand-rolled fixed-position panel
 - Source: audit
 - Primary owning slice: M002/S03
 - Supporting slices: none
-- Validation: unmapped
+- Validation: S03-UAT
 
 ### R106 — RoomSettingsModal toggles use shadcn Switch
 - Class: primary-user-loop
-- Status: active
+- Status: validated
 - Description: Three hand-rolled toggle buttons (Fun Features, Auto Reveal, Anonymous Mode) replaced with shadcn Switch
 - Why it matters: Custom toggles use non-standard fractional Tailwind values that don't resolve; Switch provides accessible boolean input
 - Source: audit
 - Primary owning slice: M002/S02
 - Supporting slices: none
-- Validation: unmapped
+- Validation: S02-UAT
 
 ### R107 — All room forms use shadcn Input / Label / Textarea / Select
 - Class: primary-user-loop
-- Status: active
+- Status: validated
 - Description: Raw input/textarea/select in CreateRoom, GuestJoinModal, TasksPane, EditProfileModal, RoomSettingsModal replaced with shadcn primitives using FieldGroup+Field pattern
 - Why it matters: Eliminates per-file bespoke styling inconsistencies
 - Source: audit
 - Primary owning slice: M002/S03
 - Supporting slices: M002/S02
-- Validation: unmapped
+- Validation: S03-UAT
 
 ### R108 — Role pickers use ToggleGroup
 - Class: primary-user-loop
-- Status: active
+- Status: validated
 - Description: DEV/QA/Spectator role selection in CreateRoom and GuestJoinModal replaced with ToggleGroup + ToggleGroupItem
 - Why it matters: Eliminates manual active-state button loops; provides accessible toggle semantics
 - Source: audit
 - Primary owning slice: M002/S03
 - Supporting slices: none
-- Validation: unmapped
+- Validation: S03-UAT
 
 ### R109 — alert()/confirm() replaced with Sonner + AlertDialog
 - Class: primary-user-loop
@@ -186,19 +186,18 @@ This file is the explicit capability and coverage contract for the project.
 | R102 | core-capability | active | M002/S01 | none | unmapped |
 | R103 | quality-attribute | active | M002/S04 | S02, S03 | unmapped |
 | R104 | primary-user-loop | validated | M002/S02 | none | S02-UAT |
-| R105 | primary-user-loop | active | M002/S03 | none | unmapped |
+| R105 | primary-user-loop | validated | M002/S03 | none | S03-UAT |
 | R106 | primary-user-loop | validated | M002/S02 | none | S02-UAT |
-| R107 | primary-user-loop | active | M002/S03 | S02 | unmapped |
-| R108 | primary-user-loop | active | M002/S03 | none | unmapped |
+| R107 | primary-user-loop | validated | M002/S03 | S02 | S03-UAT |
+| R108 | primary-user-loop | validated | M002/S03 | none | S03-UAT |
 | R109 | primary-user-loop | active | M002/S04 | S02 | unmapped |
 | R110 | primary-user-loop | active | M002/S04 | none | unmapped |
 | R111 | quality-attribute | active | M002/S04 | none | unmapped |
 | R112 | quality-attribute | active | M002/S05 | none | unmapped |
-| R113 | quality-attribute | active | M002/S01 | none | 
-unmapped |
+| R113 | quality-attribute | active | M002/S01 | none | unmapped |
 | R114 | constraint | active | all | none | unmapped |
 
 ## Coverage Summary
-- Active requirements: 12
+- Active requirements: 9
 - Mapped to slices: 14
-- Validated: 2 (R104, R106)
+- Validated: 5 (R104, R105, R106, R107, R108)

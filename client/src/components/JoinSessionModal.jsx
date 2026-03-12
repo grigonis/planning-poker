@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const JoinSessionModal = ({ isOpen, onClose }) => {
     const [step, setStep] = useState(1);
@@ -153,50 +154,38 @@ const JoinSessionModal = ({ isOpen, onClose }) => {
 
                             <div className="space-y-2">
                                 <Label className="text-sm font-bold">Your Role</Label>
-                                <div className={`grid gap-2 p-1 bg-muted/50 rounded-xl border ${roomMode === 'SPLIT' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                                <ToggleGroup type="single" value={role} onValueChange={(val) => val && setRole(val)} className={`grid gap-2 p-1 bg-muted/50 rounded-xl border border-border ${roomMode === 'SPLIT' ? 'grid-cols-3' : 'grid-cols-2'}`}>
                                     {roomMode === 'SPLIT' ? (
                                         <>
-                                            <Button
-                                                type="button"
-                                                variant={role === 'DEV' ? "default" : "ghost"}
-                                                size="sm"
-                                                onClick={() => setRole('DEV')}
-                                                className="h-8 text-xs font-bold"
+                                            <ToggleGroupItem
+                                                value="DEV"
+                                                className="h-8 text-xs font-bold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                                             >
                                                 Developer
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={role === 'QA' ? "destructive" : "ghost"}
-                                                size="sm"
-                                                onClick={() => setRole('QA')}
-                                                className="h-8 text-xs font-bold"
+                                            </ToggleGroupItem>
+                                            <ToggleGroupItem
+                                                value="QA"
+                                                className="h-8 text-xs font-bold data-[state=on]:bg-destructive data-[state=on]:text-destructive-foreground"
                                             >
                                                 QA
-                                            </Button>
+                                            </ToggleGroupItem>
                                         </>
                                     ) : (
-                                        <Button
-                                            type="button"
-                                            variant={role === 'DEV' ? "default" : "ghost"}
-                                            size="sm"
-                                            onClick={() => setRole('DEV')}
-                                            className="h-8 text-xs font-bold"
+                                        <ToggleGroupItem
+                                            value="DEV"
+                                            className="h-8 text-xs font-bold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                                         >
                                             Estimator
-                                        </Button>
+                                        </ToggleGroupItem>
                                     )}
 
-                                    <Button
-                                        type="button"
-                                        variant={role === 'SPECTATOR' ? "secondary" : "ghost"}
-                                        size="sm"
-                                        onClick={() => setRole('SPECTATOR')}
-                                        className="h-8 text-xs font-bold"
+                                    <ToggleGroupItem
+                                        value="SPECTATOR"
+                                        className="h-8 text-xs font-bold data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
                                     >
                                         Spectator
-                                    </Button>
-                                </div>
+                                    </ToggleGroupItem>
+                                </ToggleGroup>
                             </div>
 
                             <Button

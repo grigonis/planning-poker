@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
     const { socket } = useSocket();
@@ -112,55 +113,45 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                 </Label>
                                 <div className="grid gap-3">
                                     {gameMode === 'STANDARD' ? (
-                                        <>
-                                            <Button
-                                                type="button"
-                                                variant={role === 'DEV' ? "default" : "outline"}
-                                                onClick={() => setRole('DEV')}
-                                                className="h-auto flex-col items-start p-3 gap-0.5"
+                                        <ToggleGroup type="single" value={role} onValueChange={(val) => val && setRole(val)} className="flex flex-col gap-2">
+                                            <ToggleGroupItem
+                                                value="DEV"
+                                                className="w-full h-auto flex-col items-start p-3 gap-0.5 border border-border data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                                             >
                                                 <span className="font-bold">Estimator</span>
                                                 <span className="text-xs opacity-80 font-normal">Vote on stories</span>
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant={role === 'SPECTATOR' ? "secondary" : "outline"}
-                                                onClick={() => setRole('SPECTATOR')}
-                                                className="h-auto flex-col items-start p-3 gap-0.5"
+                                            </ToggleGroupItem>
+                                            <ToggleGroupItem
+                                                value="SPECTATOR"
+                                                className="w-full h-auto flex-col items-start p-3 gap-0.5 border border-border data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                                             >
                                                 <span className="font-bold">Spectator</span>
                                                 <span className="text-xs opacity-80 font-normal">View only</span>
-                                            </Button>
-                                        </>
+                                            </ToggleGroupItem>
+                                        </ToggleGroup>
                                     ) : (
-                                        <div className="grid grid-cols-1 gap-2">
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant={role === 'DEV' ? "default" : "outline"}
-                                                    onClick={() => setRole('DEV')}
-                                                    className="font-bold"
+                                        <ToggleGroup type="single" value={role} onValueChange={(val) => val && setRole(val)} className="flex flex-col gap-2">
+                                            <div className="grid grid-cols-2 gap-2 w-full">
+                                                <ToggleGroupItem
+                                                    value="DEV"
+                                                    className="font-bold border border-border data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                                                 >
                                                     Developer
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant={role === 'QA' ? "destructive" : "outline"}
-                                                    onClick={() => setRole('QA')}
-                                                    className="font-bold"
+                                                </ToggleGroupItem>
+                                                <ToggleGroupItem
+                                                    value="QA"
+                                                    className="font-bold border border-border data-[state=on]:bg-destructive data-[state=on]:text-destructive-foreground"
                                                 >
                                                     QA
-                                                </Button>
+                                                </ToggleGroupItem>
                                             </div>
-                                            <Button
-                                                type="button"
-                                                variant={role === 'SPECTATOR' ? "secondary" : "outline"}
-                                                onClick={() => setRole('SPECTATOR')}
-                                                className="font-bold"
+                                            <ToggleGroupItem
+                                                value="SPECTATOR"
+                                                className="w-full font-bold border border-border data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
                                             >
                                                 Spectator
-                                            </Button>
-                                        </div>
+                                            </ToggleGroupItem>
+                                        </ToggleGroup>
                                     )}
                                 </div>
                             </div>

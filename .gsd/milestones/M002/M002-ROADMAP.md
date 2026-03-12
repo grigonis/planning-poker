@@ -51,7 +51,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Modals → Dialog + Switch** `risk:medium` `depends:[S01]`
   > After this: RoomSettingsModal, EditProfileModal, InviteModal, and GuestJoinModal all use shadcn Dialog; the three setting toggles use shadcn Switch; end-session uses AlertDialog; all modals have accessible titles and focus management.
 
-- [ ] **S03: Forms + Sheet + ToggleGroup** `risk:medium` `depends:[S01]`
+- [x] **S03: Forms + Sheet + ToggleGroup** `risk:medium` `depends:[S01]`
   > After this: TasksPane uses shadcn Sheet; all inputs/textareas/selects in CreateRoom and room modals use shadcn form primitives; role pickers use ToggleGroup; Badge replaces custom role spans in PlayerAvatar.
 
 - [ ] **S04: Voting Overlay + Toasts** `risk:medium` `depends:[S02,S03]`

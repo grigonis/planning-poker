@@ -4,6 +4,7 @@ import { avataaars } from '@dicebear/collection';
 import { Crown, RefreshCw } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 import anonymousMonkeySvg from '../../assets/banana-poker/anonymous-monkey.svg';
+import { Badge } from '../ui/badge';
 
 const MONKEY_ALIASES = [
     'Bonobo', 'Macaque', 'Tamarin', 'Capuchin', 'Gibbon',
@@ -58,7 +59,7 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                     className={`rounded-full overflow-hidden border-2 bg-slate-800 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.5)] ${isOnline
                         ? 'border-white/10 ring-4 ring-white/5 group-hover:ring-white/10'
                         : 'border-white/20 opacity-50 grayscale'
-                        } ${isCurrentUser ? 'cursor-pointer hover:scale-105 hover:border-orange-400 dark:hover:border-banana-400' : ''}`}
+                        } ${isCurrentUser ? 'cursor-pointer hover:scale-105 hover:border-primary' : ''}`}
                     style={{ width: size, height: size }}
                 >
                     <img
@@ -87,23 +88,27 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
             {/* Details */}
             {!hideDetails && (
                 <>
-                    <span className="font-bold  text-gray-900 dark:text-white text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
+                    <span className="font-bold text-foreground text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
                         {displayName}
-                        {user.isHost && !isAnon && <Crown size={12} className="text-orange-500 dark:text-banana-500 flex-shrink-0 drop-shadow-[0_0_5px_rgba(255,92,0,0.5)] dark:drop-shadow-[0_0_5px_rgba(238,173,43,0.5)]" />}
+                        {user.isHost && !isAnon && <Crown size={12} className="text-primary flex-shrink-0" />}
                     </span>
 
-                    <span className={`
-                        text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm
-                        ${user.role === 'SPECTATOR'
-                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-700/80 text-gray-400 border border-gray-600/50'
-                            : roomMode === 'STANDARD'
-                                ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200 border border-gray-500/50'
-                                : user.role === 'DEV'
-                                    ? 'bg-gradient-to-r from-indigo-600/40 to-indigo-500/40 text-indigo-200 border border-indigo-500/50'
-                                    : 'bg-gradient-to-r from-rose-600/40 to-rose-500/40 text-rose-200 border border-rose-500/50'
-                        }            `}>
+                    <Badge 
+                        variant="secondary" 
+                        className={`
+                            text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm border-none
+                            ${user.role === 'SPECTATOR'
+                                ? 'bg-muted text-muted-foreground'
+                                : roomMode === 'STANDARD'
+                                    ? 'bg-primary/20 text-primary'
+                                    : user.role === 'DEV'
+                                        ? 'bg-indigo-500/20 text-indigo-400'
+                                        : 'bg-rose-500/20 text-rose-400'
+                            }
+                        `}
+                    >
                         {user.role === 'SPECTATOR' ? 'Spectator' : (roomMode === 'STANDARD' ? 'Estimator' : user.role)}
-                    </span>
+                    </Badge>
                 </>
             )}
         </div>
