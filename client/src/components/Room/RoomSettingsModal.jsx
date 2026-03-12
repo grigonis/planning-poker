@@ -1,5 +1,6 @@
 import React from 'react';
 import { Settings, Sparkles, Zap, EyeOff, LayoutPanelLeft, AlertTriangle, Power } from 'lucide-react';
+import { toast } from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -50,7 +51,7 @@ const RoomSettingsModal = ({
 
     const handleVoteSystemChange = (preset) => {
         if (isRoundActive) {
-            alert('Cannot change voting system while a round is in progress. Please reveal or reset the round first.');
+            toast.error('Cannot change voting system while a round is in progress. Please reveal or reset the round first.');
             return;
         }
         setIsCustomMode(false);
@@ -65,12 +66,12 @@ const RoomSettingsModal = ({
 
     const handleCustomScaleSubmit = () => {
         if (isRoundActive) {
-            alert('Cannot change voting system while a round is in progress.');
+            toast.error('Cannot change voting system while a round is in progress.');
             return;
         }
         const values = customScaleText.split(',').map(s => s.trim()).filter(Boolean);
         if (values.length === 0) {
-            alert("Please provide at least one value for the custom scale");
+            toast.error("Please provide at least one value for the custom scale");
             return;
         }
         onUpdateSettings({ 
@@ -137,7 +138,7 @@ const RoomSettingsModal = ({
                                 variant={isCustomMode ? "default" : "outline"}
                                 onClick={() => {
                                     if (isRoundActive && !isCustomMode) {
-                                        alert('Cannot change voting system while a round is in progress.');
+                                        toast.error('Cannot change voting system while a round is in progress.');
                                         return;
                                     }
                                     setIsCustomMode(true);

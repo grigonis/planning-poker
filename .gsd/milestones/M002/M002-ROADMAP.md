@@ -54,7 +54,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Forms + Sheet + ToggleGroup** `risk:medium` `depends:[S01]`
   > After this: TasksPane uses shadcn Sheet; all inputs/textareas/selects in CreateRoom and room modals use shadcn form primitives; role pickers use ToggleGroup; Badge replaces custom role spans in PlayerAvatar.
 
-- [ ] **S04: Voting Overlay + Toasts** `risk:medium` `depends:[S02,S03]`
+- [x] **S04: Voting Overlay + Toasts** `risk:medium` `depends:[S02,S03]`
   > After this: VotingOverlay uses shadcn Card components for voting cards; Card.jsx uses semantic tokens; all alert() calls replaced with Sonner toasts; zero banana-* token references remain in room scope.
 
 - [ ] **S05: Navbar Unification + Cleanup** `risk:low` `depends:[S04]`

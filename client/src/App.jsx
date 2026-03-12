@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from "@/components/ui/sonner";
 import { SocketProvider } from './context/SocketContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Landing from './pages/Landing';
@@ -9,7 +10,8 @@ import CreateRoom from './pages/CreateRoom';
 function App() {
   return (
     <ThemeProvider>
-    <SocketProvider>
+      <Toaster position="top-center" richColors />
+      <SocketProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />

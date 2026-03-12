@@ -67,7 +67,7 @@ const ConsensusBadge = ({ stats }) => {
         </div>
     );
     if (stats.isAdjacent) return (
-        <div className="flex items-center justify-center gap-1.5 px-3 py-1 bg-banana-500/10 border border-banana-500/20 rounded-full text-banana-400 text-[10px] font-bold uppercase tracking-wider">
+        <div className="flex items-center justify-center gap-1.5 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary text-[10px] font-bold uppercase tracking-wider">
             <Zap size={10} />
             Near Consensus
         </div>
@@ -151,9 +151,9 @@ const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode
                     {isStandard ? (
                         <GroupBlock
                             stats={standardStats}
-                            accentClass="text-banana-400"
-                            borderClass="border-banana-500/20"
-                            bgClass="bg-banana-500/[0.06]"
+                            accentClass="text-primary"
+                            borderClass="border-primary/20"
+                            bgClass="bg-primary/[0.06]"
                             labelClass=""
                         />
                     ) : (

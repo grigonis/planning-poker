@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, User, Hash, Loader2 } from 'lucide-react';
+import { toast } from "sonner";
 import { useSocket } from '../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -34,7 +35,7 @@ const JoinSessionModal = ({ isOpen, onClose }) => {
         socket.emit('check_room', { roomId: roomCode.toUpperCase() }, (response) => {
             setIsLoading(false);
             if (response.error) {
-                alert(response.error);
+                toast.error(response.error);
                 return;
             }
             setRoomMode(response.mode || 'STANDARD');
@@ -51,7 +52,7 @@ const JoinSessionModal = ({ isOpen, onClose }) => {
         socket.emit('join_room', { roomId: roomCode.toUpperCase(), name, role }, (response) => {
             setIsLoading(false);
             if (response.error) {
-                alert(response.error);
+                toast.error(response.error);
                 return;
             }
             navigate(`/room/${roomCode.toUpperCase()}`, {

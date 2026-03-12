@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, User, Users, Eye } from 'lucide-react';
+import { toast } from "sonner";
 import { useSocket } from '../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
@@ -59,7 +60,7 @@ const CreateRoom = () => {
         if (votingSystem === 'custom') {
             const values = customScaleText.split(',').map(s => s.trim()).filter(Boolean);
             if (values.length === 0) {
-                alert("Please provide at least one value for the custom scale");
+                toast.error("Please provide at least one value for the custom scale");
                 setIsLoading(false);
                 return;
             }
@@ -80,7 +81,7 @@ const CreateRoom = () => {
         }, (response) => {
             setIsLoading(false);
             if (response.error) {
-                alert(response.error);
+                toast.error(response.error);
                 return;
             }
             navigate(`/room/${response.roomId}`, {

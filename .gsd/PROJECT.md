@@ -13,7 +13,7 @@ Frictionless real-time estimation — no signup, join by link, vote together, se
 - M001 complete: dedicated `/create` page, modernized room navbar, voting systems (Fibonacci presets + custom scales), tasks side-pane, room settings (fun features, auto-reveal, anonymous mode)
 - Landing page (`/`) is a full marketing page with a distinct custom design system — preserved as-is
 - Room UI has accumulated visual inconsistencies and a structural token breakage (`banana-*` used 47× but not defined in Tailwind config)
-- M002 in progress: migrating all room-facing UI to shadcn/ui with "claude blu 2" theme
+- M002 in progress (S04 complete): migrating all room-facing UI to shadcn/ui with "claude blu 2" theme. Modals, forms, sheets, and voting overlay now use shadcn. All banana-* tokens replaced.
 
 ## Architecture / Key Patterns
 

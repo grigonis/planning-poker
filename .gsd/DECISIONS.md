@@ -29,3 +29,5 @@
 | D021 | M002/S02 | convention | Destructive actions in modals | Use AlertDialog for Danger Zone actions inside RoomSettingsModal | Provides a standard, high-friction confirmation for irreversible actions | No |
 | D022 | M002/S03 | arch | TasksPane side-panel | Rebuild with shadcn Sheet | Standardizes side-panel behavior and gains accessibility (focus trap, ARIA) while maintaining the right-side drawer pattern | No |
 | D023 | M002/S03 | convention | Role selection | ToggleGroup for all role pickers | Eliminates manual button-state logic and provides accessible toggle semantics | No |
+| D024 | M002/S04 | arch | Toast provider | sonner | Modern, rich colors, easy integration with shadcn | No |
+| D025 | M002/S04 | convention | Notification placement | Top-center | Standardized placement for all room-facing toasts | Yes |

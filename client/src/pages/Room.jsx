@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import VotingOverlay from '../components/Voting/VotingOverlay';
 import PokerTable from '../components/Room/PokerTable';
+import { toast } from "sonner";
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
 import RoomSettingsModal from '../components/Room/RoomSettingsModal';
@@ -67,7 +68,7 @@ const Room = () => {
             }, (response) => {
                 if (response.error) {
                     if (response.error === 'Room not found') {
-                        alert("Room not found");
+                        toast.error("Room not found");
                         navigate('/');
                         return;
                     }
@@ -216,7 +217,7 @@ const Room = () => {
                                 particleCount: 150,
                                 spread: 70,
                                 origin: { y: 0.6 },
-                                colors: ['#4b2bee', '#facc15', '#ffffff'] // Primary, Banana, White
+                                colors: ['#2563eb', '#60a5fa', '#ffffff'] // Primary, Accent Blue, White
                             });
                         });
 
@@ -273,7 +274,7 @@ const Room = () => {
         };
 
         const onSessionEnded = () => {
-            alert('The host has ended this session.');
+            toast.error('The host has ended this session.');
             navigate('/');
         };
 
@@ -433,7 +434,7 @@ const Room = () => {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center transition-colors duration-300">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-8 h-8 border-2 border-orange-500 dark:border-banana-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                     <p className="text-gray-400 ">
                         {!socket ? 'Initializing Socket...' : !isConnected ? 'Connecting to Server...' : 'Joining Room...'}
                     </p>
@@ -443,7 +444,7 @@ const Room = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 font-sans text-gray-900 dark:text-white selection:bg-banana-500/30 flex flex-col relative transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 font-sans text-gray-900 dark:text-white selection:bg-primary/30 flex flex-col relative transition-colors duration-300">
 
             {/* Background Effects */}
             <div className="absolute inset-0 aurora z-0" />
@@ -455,7 +456,7 @@ const Room = () => {
                     {/* Logo/Room Info */}
                     <div className="flex items-center gap-4">
                         <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
-                            <h1 className="text-xl font-black text-orange-500 dark:text-banana-500 leading-none tracking-tight">BananaPoker</h1>
+                            <h1 className="text-xl font-black text-primary leading-none tracking-tight">BananaPoker</h1>
                             <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
                                 <span>Room: <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded ml-0.5 select-all">{roomId}</span></span>
                             </div>
@@ -490,16 +491,16 @@ const Room = () => {
                                         return next;
                                     });
                                 }}
-                                className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-orange-100 dark:bg-banana-500/20 border-orange-500/30 dark:border-banana-500/30 text-orange-600 dark:text-banana-500 shadow-sm' : 'bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}
+                                className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-primary/10 border-primary/30 text-primary shadow-sm' : 'bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}
                             >
                                 <LayoutList size={16} />
                                 <span className="hidden lg:inline">Tasks</span>
-                                {tasks.length > 0 && <span className="bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 px-1.5 py-0.5 rounded-md text-[10px] leading-none ml-0.5 shadow-sm">{tasks.length}</span>}
+                                {tasks.length > 0 && <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded-md text-[10px] leading-none ml-0.5 shadow-sm">{tasks.length}</span>}
                             </button>
 
                             <button
                                 onClick={() => setIsInviteModalOpen(true)}
-                                className="bg-orange-500/10 dark:bg-banana-500/10 hover:bg-orange-500/20 dark:hover:bg-banana-500/20 text-orange-600 dark:text-banana-500 border border-orange-500/20 dark:border-banana-500/20 text-sm font-bold px-3 lg:px-4 py-2 rounded-full transition-colors flex items-center gap-2"
+                                className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-sm font-bold px-3 lg:px-4 py-2 rounded-full transition-colors flex items-center gap-2"
                             >
                                 <Users size={16} />
                                 <span className="hidden lg:inline">Invite</span>

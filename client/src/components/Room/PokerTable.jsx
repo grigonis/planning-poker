@@ -34,16 +34,16 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
         if (hasVoted) {
             // Player has voted: Face-down player card
             return (
-                <img src={playerFaceDownSVG} alt="Voted" className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg animate-in zoom-in duration-300 drop-shadow-[0_0_15px_rgba(255,184,0,0.3)]" />
+                <img src={playerFaceDownSVG} alt="Voted" className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg animate-in zoom-in duration-300 drop-shadow-primary/30" />
             );
         } else {
             // Player is deciding: Card dashed placeholder
             return (
-                <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-orange-500/40 dark:border-white/20 flex flex-col items-center justify-center bg-orange-500/5 dark:bg-white/5 opacity-80 shadow-inner">
+                <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-primary/40 dark:border-white/20 flex flex-col items-center justify-center bg-primary/5 dark:bg-white/5 opacity-80 shadow-inner">
                     <div className="flex space-x-1">
-                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-orange-400 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-orange-400 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-orange-400 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-primary/80 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-primary/80 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-primary/80 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                     </div>
                 </div>
             );
@@ -285,14 +285,14 @@ const PokerTable = ({
                 {/* Table Surface (Realistic Glassmorphism per Figma) */}
                 <div className="absolute inset-0 m-auto w-[60%] h-[55%] sm:w-[70%] sm:h-[60%] md:w-[75%] md:h-[65%] rounded-[60px] md:rounded-[120px] bg-white/10 dark:bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center justify-center z-10 p-6 md:p-12 transition-all duration-700">
                     {/* Center Glow */}
-                    <div className="absolute bg-orange-500/10 dark:bg-[rgba(255,210,77,0.05)] blur-[30px] rounded-[9999px] w-[80%] h-[70%] pointer-events-none transition-all duration-700" />
+                    <div className="absolute bg-primary/10 blur-[30px] rounded-[9999px] w-[80%] h-[70%] pointer-events-none transition-all duration-700" />
                     {/* Inner Edge Border Glow */}
-                    <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,184,0,0.05)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] rounded-[inherit] pointer-events-none" />
+                    <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(37,99,235,0.05)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] rounded-[inherit] pointer-events-none" />
 
                     {/* Phase-aware center content */}
                     {phase === 'IDLE' && (
                         <div className="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
-                            <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
+                            <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
                                 {activeTaskId ? 'Up Next' : 'Planning Poker'}
                             </span>
                             <div className="flex flex-col items-center gap-2">
@@ -309,7 +309,7 @@ const PokerTable = ({
                                 <div className="flex flex-col items-center gap-4 mt-2">
                                     <button
                                         onClick={onStartVote}
-                                        className="bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 px-6 md:px-10 py-3 md:py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-[0_0_40px_rgba(255,92,0,0.2)] dark:shadow-[0_0_40px_rgba(238,173,43,0.25)] active:scale-95"
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 md:px-10 py-3 md:py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-primary/20 active:scale-95"
                                     >
                                         <Play size={18} />
                                         {activeTaskId ? 'Start Voting Task' : 'Quick Start Round'}
@@ -321,7 +321,7 @@ const PokerTable = ({
                     {isVotingPhase && (
                         <div className="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
                             <div className="flex items-center gap-3">
-                                <span className="text-orange-500 dark:text-banana-500 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
+                                <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
                                     Currently Estimating
                                 </span>
                             </div>
@@ -335,7 +335,7 @@ const PokerTable = ({
                                 <div className="flex items-center justify-center gap-3 w-[200px] sm:w-[240px] md:w-[280px] mt-1 animate-in fade-in zoom-in-95 duration-500">
                                     <div className="flex-1 h-2 bg-gray-200/50 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200/50 dark:border-white/5 shadow-inner backdrop-blur-sm relative">
                                         <div
-                                            className="h-full bg-gradient-to-r from-orange-500 via-banana-400 to-orange-500 dark:from-banana-500 dark:via-orange-400 dark:to-banana-500 transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(255,184,0,0.6)] dark:shadow-[0_0_12px_rgba(255,184,0,0.6)] relative"
+                                            className="h-full bg-gradient-to-r from-primary/80 via-primary to-primary/80 transition-all duration-1000 ease-out shadow-primary/60 relative"
                                             style={{ width: `${voteProgress}%` }}
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent"></div>
@@ -378,7 +378,7 @@ const PokerTable = ({
                         return (
                             <div className="relative z-10 flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
                                 <div className="flex flex-col items-center gap-1 mb-2">
-                                    <span className="text-orange-500 dark:text-banana-500 text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
+                                    <span className="text-primary text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
                                         Voting Results
                                     </span>
                                     <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate max-w-[200px]">
@@ -400,8 +400,8 @@ const PokerTable = ({
                                     </div>
                                 ) : null}
                                 <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
-                                    <p className="text-[10px] font-bold text-orange-500 dark:text-banana-500/70 uppercase tracking-widest mb-0.5">Result</p>
-                                    <div className="text-3xl md:text-4xl font-extrabold text-orange-500 dark:text-banana-400 leading-none">{averages.total || '—'}</div>
+                                    <p className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-0.5">Result</p>
+                                    <div className="text-3xl md:text-4xl font-extrabold text-primary leading-none">{averages.total || '—'}</div>
                                 </div>
                                 <OutlierLine highV={stdHighVoters} lowV={stdLowVoters} />
 
