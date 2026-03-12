@@ -185,9 +185,9 @@ This file is the explicit capability and coverage contract for the project.
 | R101 | core-capability | active | M002/S01 | none | unmapped |
 | R102 | core-capability | active | M002/S01 | none | unmapped |
 | R103 | quality-attribute | active | M002/S04 | S02, S03 | unmapped |
-| R104 | primary-user-loop | active | M002/S02 | none | unmapped |
+| R104 | primary-user-loop | validated | M002/S02 | none | S02-UAT |
 | R105 | primary-user-loop | active | M002/S03 | none | unmapped |
-| R106 | primary-user-loop | active | M002/S02 | none | unmapped |
+| R106 | primary-user-loop | validated | M002/S02 | none | S02-UAT |
 | R107 | primary-user-loop | active | M002/S03 | S02 | unmapped |
 | R108 | primary-user-loop | active | M002/S03 | none | unmapped |
 | R109 | primary-user-loop | active | M002/S04 | S02 | unmapped |

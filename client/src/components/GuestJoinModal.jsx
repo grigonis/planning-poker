@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
-import { Users, AlertCircle } from 'lucide-react';
+import { Users, AlertCircle, Loader2 } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
     const { socket } = useSocket();
@@ -18,8 +27,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
             setLoading(false);
             if (response.exists) {
                 setGameMode(response.mode);
-                if (response.mode === 'STANDARD') setRole('DEV');
-                else setRole('DEV');
+                setRole('DEV');
             } else {
                 setError("Room not found. Please check the URL.");
             }
@@ -48,134 +56,123 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
         });
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-[#101010] backdrop-blur-2xl border border-gray-200 dark:border-white/5 rounded-2xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-300">
+        <Dialog open={isOpen} onOpenChange={() => {}}>
+            <DialogContent className="sm:max-w-md [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
+                <DialogHeader>
+                    <DialogTitle className="sr-only">Join Session</DialogTitle>
+                </DialogHeader>
 
                 {loading ? (
                     <div className="text-center py-8">
-                        <div className="w-8 h-8 border-2 border-banana-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-gray-500 dark:text-gray-400 ">Checking Room...</p>
+                        <Loader2 className="size-8 animate-spin mx-auto mb-4 text-primary" />
+                        <p className="text-muted-foreground">Checking Room...</p>
                     </div>
                 ) : error ? (
                     <div className="text-center py-8">
-                        <div className="bg-red-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-                            <AlertCircle size={32} className="text-red-500" />
+                        <div className="bg-destructive/10 size-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-destructive/20">
+                            <AlertCircle className="size-8 text-destructive" />
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 ">Unable to Join</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6">{error}</p>
-                        <a href="/" className="text-orange-500 dark:text-banana-500 hover:text-banana-400 font-bold  hover:underline">
-                            Return to Home
-                        </a>
+                        <h2 className="text-xl font-bold mb-2">Unable to Join</h2>
+                        <p className="text-muted-foreground mb-6">{error}</p>
+                        <Button asChild variant="link" className="font-bold text-primary">
+                            <a href="/">Return to Home</a>
+                        </Button>
                     </div>
                 ) : (
                     <>
                         <div className="text-center mb-6">
-                            <div className="bg-orange-500/10 dark:bg-banana-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20 dark:border-banana-500/20">
-                                <Users size={32} className="text-orange-500 dark:text-banana-500" />
+                            <div className="bg-primary/10 size-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20">
+                                <Users className="size-8 text-primary" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 ">Join {gameMode === 'STANDARD' ? 'Planning' : 'Split'} Session</h2>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">Room: <span className="font-mono text-orange-500 dark:text-banana-500">{roomId}</span></p>
+                            <h2 className="text-2xl font-bold mb-2">Join {gameMode === 'STANDARD' ? 'Planning' : 'Split'} Session</h2>
+                            <p className="text-muted-foreground text-sm">Room: <span className="font-mono text-primary">{roomId}</span></p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ">
+                            <div className="space-y-2">
+                                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     Your Display Name
-                                </label>
-                                <input
+                                </Label>
+                                <Input
+                                    id="name"
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="e.g., Alex"
-                                    className="w-full bg-gray-50 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-banana-500/50 focus:ring-1 focus:ring-banana-500/50 transition-all font-bold"
+                                    className="font-bold"
                                     autoFocus
                                     required
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ">
+                            <div className="space-y-2">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     Join As
-                                </label>
+                                </Label>
                                 <div className="grid gap-3">
                                     {gameMode === 'STANDARD' ? (
                                         <>
-                                            <button
+                                            <Button
                                                 type="button"
+                                                variant={role === 'DEV' ? "default" : "outline"}
                                                 onClick={() => setRole('DEV')}
-                                                className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden group ${role === 'DEV'
-                                                    ? 'bg-orange-500 text-white border-orange-500 dark:bg-banana-500 dark:text-dark-900 dark:border-banana-500 shadow-[0_0_20px_rgba(255,92,0,0.2)] dark:shadow-[0_0_20px_rgba(234,179,8,0.2)]'
-                                                    : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                    }`}
+                                                className="h-auto flex-col items-start p-3 gap-0.5"
                                             >
-                                                <div className="font-bold  relative z-10">Estimator</div>
-                                                <div className="text-xs opacity-80 relative z-10">Vote on stories</div>
-                                            </button>
-                                            <button
+                                                <span className="font-bold">Estimator</span>
+                                                <span className="text-xs opacity-80 font-normal">Vote on stories</span>
+                                            </Button>
+                                            <Button
                                                 type="button"
+                                                variant={role === 'SPECTATOR' ? "secondary" : "outline"}
                                                 onClick={() => setRole('SPECTATOR')}
-                                                className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden group ${role === 'SPECTATOR'
-                                                    ? 'bg-purple-500 text-white border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
-                                                    : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                    }`}
+                                                className="h-auto flex-col items-start p-3 gap-0.5"
                                             >
-                                                <div className="font-bold  relative z-10">Spectator</div>
-                                                <div className="text-xs opacity-80 relative z-10">View only</div>
-                                            </button>
+                                                <span className="font-bold">Spectator</span>
+                                                <span className="text-xs opacity-80 font-normal">View only</span>
+                                            </Button>
                                         </>
                                     ) : (
                                         <div className="grid grid-cols-1 gap-2">
                                             <div className="grid grid-cols-2 gap-2">
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant={role === 'DEV' ? "default" : "outline"}
                                                     onClick={() => setRole('DEV')}
-                                                    className={`p-3 rounded-xl border text-left transition-all ${role === 'DEV'
-                                                        ? 'bg-indigo-500 text-white border-indigo-500'
-                                                        : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                        }`}
+                                                    className="font-bold"
                                                 >
-                                                    <div className="font-bold ">Developer</div>
-                                                </button>
-                                                <button
+                                                    Developer
+                                                </Button>
+                                                <Button
                                                     type="button"
+                                                    variant={role === 'QA' ? "destructive" : "outline"}
                                                     onClick={() => setRole('QA')}
-                                                    className={`p-3 rounded-xl border text-left transition-all ${role === 'QA'
-                                                        ? 'bg-rose-500 text-white border-rose-500'
-                                                        : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                        }`}
+                                                    className="font-bold"
                                                 >
-                                                    <div className="font-bold ">QA</div>
-                                                </button>
+                                                    QA
+                                                </Button>
                                             </div>
-                                            <button
+                                            <Button
                                                 type="button"
+                                                variant={role === 'SPECTATOR' ? "secondary" : "outline"}
                                                 onClick={() => setRole('SPECTATOR')}
-                                                className={`p-3 rounded-xl border text-left transition-all ${role === 'SPECTATOR'
-                                                    ? 'bg-purple-500 text-white border-purple-500'
-                                                    : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                    }`}
+                                                className="font-bold"
                                             >
-                                                <div className="font-bold ">Spectator</div>
-                                            </button>
+                                                Spectator
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="w-full bg-orange-500 dark:bg-banana-500 hover:bg-orange-600 dark:hover:bg-banana-400 text-white dark:text-dark-900 font-bold  py-4 rounded-xl shadow-[0_4px_0_0_#cc4a00] dark:shadow-[0_4px_0_0_#e69900] hover:shadow-[0_2px_0_0_#cc4a00] dark:hover:shadow-[0_2px_0_0_#e69900] hover:translate-y-[2px] transition-all"
-                            >
+                            <Button type="submit" className="w-full h-12 text-lg font-bold">
                                 Join Session
-                            </button>
+                            </Button>
                         </form>
                     </>
                 )}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

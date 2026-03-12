@@ -48,7 +48,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Bootstrap + Theme** `risk:high` `depends:[]`
   > After this: shadcn is initialised in `client/`, "claude blu 2" CSS variables are live, `cn()` is available at `src/lib/utils.ts`, a sample Button renders with the correct blue primary in both light and dark mode, Inter font is loaded, stale App.css is removed.
 
-- [ ] **S02: Modals → Dialog + Switch** `risk:medium` `depends:[S01]`
+- [x] **S02: Modals → Dialog + Switch** `risk:medium` `depends:[S01]`
   > After this: RoomSettingsModal, EditProfileModal, InviteModal, and GuestJoinModal all use shadcn Dialog; the three setting toggles use shadcn Switch; end-session uses AlertDialog; all modals have accessible titles and focus management.
 
 - [ ] **S03: Forms + Sheet + ToggleGroup** `risk:medium` `depends:[S01]`

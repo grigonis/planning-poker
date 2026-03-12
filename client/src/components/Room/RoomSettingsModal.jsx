@@ -1,5 +1,27 @@
 import React from 'react';
-import { X, Settings, Sparkles, Zap, Power, EyeOff, LayoutPanelLeft, AlertTriangle } from 'lucide-react';
+import { Settings, Sparkles, Zap, EyeOff, LayoutPanelLeft, AlertTriangle, Power } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const PRESETS = [
     { id: 'FIBONACCI_MODIFIED', name: 'Modified Fibonacci', values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕'] },
@@ -23,8 +45,6 @@ const RoomSettingsModal = ({
         votingSystem?.type === 'CUSTOM' ? votingSystem.values.join(', ') : '0, 1, 2, 3, 5, 8, 13, 21, ☕'
     );
     const [isCustomMode, setIsCustomMode] = React.useState(votingSystem?.type === 'CUSTOM');
-
-    if (!isOpen) return null;
 
     const isRoundActive = phase !== 'IDLE' && phase !== 'REVEALED';
 
@@ -63,37 +83,30 @@ const RoomSettingsModal = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="w-full max-w-lg bg-white dark:bg-[#0c0c0c] backdrop-blur-3xl border border-gray-200 dark:border-white/10 rounded-[32px] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden relative animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
-
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-lg p-0 overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="flex items-center justify-between p-8 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
-                    <div className="flex items-center gap-4 text-gray-900 dark:text-white">
-                        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-orange-500/10 to-orange-500/5 dark:from-white/10 dark:to-white/5 border border-orange-500/20 dark:border-white/10 shadow-inner">
-                            <Settings className="w-6 h-6 text-orange-500 dark:text-white" />
+                <div className="flex items-center justify-between p-8 bg-muted/30">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3.5 rounded-2xl bg-primary/10 border border-primary/20 shadow-inner">
+                            <Settings className="size-6 text-primary" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-white/60">Room Settings</h2>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mt-1">Configuration Dashboard</p>
+                            <DialogTitle className="text-2xl font-black tracking-tight">Room Settings</DialogTitle>
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mt-1">Configuration Dashboard</p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-700 dark:hover:text-white transition-all p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10"
-                    >
-                        <X className="w-6 h-6" />
-                    </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
+                <div className="p-8 space-y-8 overflow-y-auto flex-1">
 
                     {/* Voting System Section */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <LayoutPanelLeft className="w-5 h-5 text-orange-500 dark:text-banana-500" />
-                                <h3 className="font-bold text-gray-900 dark:text-white">Voting System</h3>
+                                <LayoutPanelLeft className="size-5 text-primary" />
+                                <h3 className="font-bold">Voting System</h3>
                             </div>
                             {isRoundActive && (
                                 <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-wider border border-amber-500/20">
@@ -107,24 +120,21 @@ const RoomSettingsModal = ({
                             {PRESETS.map((preset) => {
                                 const isSelected = !isCustomMode && votingSystem?.type === preset.id;
                                 return (
-                                    <button
+                                    <Button
                                         key={preset.id}
+                                        variant={isSelected ? "default" : "outline"}
                                         onClick={() => handleVoteSystemChange(preset)}
                                         disabled={isRoundActive && !isSelected}
-                                        className={`p-4 rounded-2xl border text-left transition-all duration-300
-                                            ${isSelected 
-                                                ? 'bg-orange-500/10 dark:bg-banana-500/10 border-orange-500 dark:border-banana-500 text-orange-600 dark:text-banana-400 shadow-[0_0_20px_rgba(255,184,0,0.1)]' 
-                                                : 'bg-white dark:bg-white/[0.03] border-gray-100 dark:border-white/5 text-gray-500 hover:border-orange-500/30 dark:hover:border-banana-500/30'
-                                            } ${isRoundActive && !isSelected ? 'opacity-30 cursor-not-allowed' : 'active:scale-95'}`}
+                                        className={`h-auto flex-col items-start p-4 gap-1 ${isSelected ? "bg-primary/10 text-primary border-primary hover:bg-primary/20" : ""}`}
                                     >
-                                        <div className="font-bold text-sm mb-1">{preset.name}</div>
-                                        <div className="text-[10px] opacity-60 truncate">{preset.values.join(', ')}</div>
-                                    </button>
+                                        <div className="font-bold text-sm">{preset.name}</div>
+                                        <div className="text-[10px] opacity-60 truncate w-full text-left">{preset.values.join(', ')}</div>
+                                    </Button>
                                 );
                             })}
                             
-                            {/* Custom Scale Button */}
-                            <button
+                            <Button
+                                variant={isCustomMode ? "default" : "outline"}
                                 onClick={() => {
                                     if (isRoundActive && !isCustomMode) {
                                         alert('Cannot change voting system while a round is in progress.');
@@ -133,40 +143,37 @@ const RoomSettingsModal = ({
                                     setIsCustomMode(true);
                                 }}
                                 disabled={isRoundActive && !isCustomMode}
-                                className={`p-4 rounded-2xl border text-left transition-all duration-300
-                                    ${isCustomMode 
-                                        ? 'bg-orange-500/10 dark:bg-banana-500/10 border-orange-500 dark:border-banana-500 text-orange-600 dark:text-banana-400 shadow-[0_0_20px_rgba(255,184,0,0.1)]' 
-                                        : 'bg-white dark:bg-white/[0.03] border-gray-100 dark:border-white/5 text-gray-500 hover:border-orange-500/30 dark:hover:border-banana-500/30'
-                                    } ${isRoundActive && !isCustomMode ? 'opacity-30 cursor-not-allowed' : 'active:scale-95'}`}
+                                className={`h-auto flex-col items-start p-4 gap-1 ${isCustomMode ? "bg-primary/10 text-primary border-primary hover:bg-primary/20" : ""}`}
                             >
-                                <div className="font-bold text-sm mb-1">Custom Scale</div>
-                                <div className="text-[10px] opacity-60 truncate">Define your own values...</div>
-                            </button>
+                                <div className="font-bold text-sm">Custom Scale</div>
+                                <div className="text-[10px] opacity-60 truncate w-full text-left">Define your own values...</div>
+                            </Button>
                         </div>
 
                         {isCustomMode && (
-                            <div className="mt-4 space-y-3 p-4 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 rounded-2xl animate-in slide-in-from-top-2 duration-300">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Comma-separated values</label>
+                            <div className="mt-4 space-y-3 p-4 bg-muted/30 border rounded-2xl">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Comma-separated values</Label>
                                 <div className="flex gap-2">
-                                    <input
+                                    <Input
                                         type="text"
                                         value={customScaleText}
                                         onChange={(e) => setCustomScaleText(e.target.value)}
-                                        className="flex-1 px-4 py-2 bg-white dark:bg-dark-900 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-banana-500"
+                                        className="text-sm"
                                         placeholder="e.g. 1, 2, 3, 5, 8, 13, ?, ☕"
                                         disabled={isRoundActive}
                                     />
-                                    <button
+                                    <Button
                                         onClick={handleCustomScaleSubmit}
                                         disabled={isRoundActive}
-                                        className="px-4 py-2 bg-orange-500 dark:bg-banana-500 text-white dark:text-dark-900 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                                        size="sm"
+                                        className="font-bold"
                                     >
                                         Apply
-                                    </button>
+                                    </Button>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5 px-1">
                                     {customScaleText.split(',').map(s => s.trim()).filter(Boolean).map((val, idx) => (
-                                        <span key={idx} className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-white/10 shadow-sm rounded flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold text-gray-700 dark:text-gray-200 min-w-4 h-5">
+                                        <span key={idx} className="bg-background border shadow-sm rounded flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold min-w-4 h-5">
                                             {val}
                                         </span>
                                     ))}
@@ -175,81 +182,102 @@ const RoomSettingsModal = ({
                         )}
                     </div>
 
-                    <div className="h-px bg-gray-100 dark:bg-white/5"></div>
+                    <Separator />
 
                     {/* Toggles Grid */}
                     <div className="space-y-3">
                         {/* Setting: Fun Features */}
-                        <div className="flex items-center justify-between gap-4 group p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-white/5 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => onUpdateSettings({ funFeatures: !funFeatures })}>
+                        <div className="flex items-center justify-between gap-4 p-4 rounded-3xl border border-transparent hover:border-border hover:bg-muted/30 transition-colors">
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${funFeatures ? 'bg-orange-500/10 text-orange-500 dark:bg-white/10 dark:text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
-                                    <Sparkles className="w-5 h-5" />
+                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${funFeatures ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                    <Sparkles className="size-5" />
                                 </div>
                                 <div className="mt-0.5">
-                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-1">Celebration Effects</h3>
-                                    <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug">Show confetti and play sounds when the team reaches consensus.</p>
+                                    <Label htmlFor="funFeatures" className="font-bold text-sm mb-1 cursor-pointer">Celebration Effects</Label>
+                                    <p className="text-[13px] text-muted-foreground leading-snug">Show confetti and play sounds when the team reaches consensus.</p>
                                 </div>
                             </div>
-                            <button className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${funFeatures ? 'bg-orange-500 dark:bg-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white dark:bg-black shadow-md ${funFeatures ? 'left-6.5' : 'left-1'}`}></div>
-                            </button>
+                            <Switch 
+                                id="funFeatures"
+                                checked={funFeatures}
+                                onCheckedChange={(checked) => onUpdateSettings({ funFeatures: checked })}
+                            />
                         </div>
 
                         {/* Setting: Auto Reveal */}
-                        <div className="flex items-center justify-between gap-4 group p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-white/5 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => onUpdateSettings({ autoReveal: !autoReveal })}>
+                        <div className="flex items-center justify-between gap-4 p-4 rounded-3xl border border-transparent hover:border-border hover:bg-muted/30 transition-colors">
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${autoReveal ? 'bg-green-500/10 text-green-600 dark:bg-white/10 dark:text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
-                                    <Zap className="w-5 h-5" />
+                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${autoReveal ? 'bg-green-500/10 text-green-600' : 'bg-muted text-muted-foreground'}`}>
+                                    <Zap className="size-5" />
                                 </div>
                                 <div className="mt-0.5">
-                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-1">Instant Reveal</h3>
-                                    <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug">Automatically reveal cards once every eligible team member has voted.</p>
+                                    <Label htmlFor="autoReveal" className="font-bold text-sm mb-1 cursor-pointer">Instant Reveal</Label>
+                                    <p className="text-[13px] text-muted-foreground leading-snug">Automatically reveal cards once every eligible team member has voted.</p>
                                 </div>
                             </div>
-                            <button className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${autoReveal ? 'bg-green-500 dark:bg-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white dark:bg-black shadow-md ${autoReveal ? 'left-6.5' : 'left-1'}`}></div>
-                            </button>
+                            <Switch 
+                                id="autoReveal"
+                                checked={autoReveal}
+                                onCheckedChange={(checked) => onUpdateSettings({ autoReveal: checked })}
+                            />
                         </div>
 
                         {/* Setting: Anonymous Mode */}
-                        <div className="flex items-center justify-between gap-4 group p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-white/5 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => onUpdateSettings({ anonymousMode: !anonymousMode })}>
+                        <div className="flex items-center justify-between gap-4 p-4 rounded-3xl border border-transparent hover:border-border hover:bg-muted/30 transition-colors">
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${anonymousMode ? 'bg-purple-500/10 text-purple-600 dark:bg-white/10 dark:text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
-                                    <EyeOff className="w-5 h-5" />
+                                <div className={`p-3 rounded-2xl shrink-0 transition-colors ${anonymousMode ? 'bg-purple-500/10 text-purple-600' : 'bg-muted text-muted-foreground'}`}>
+                                    <EyeOff className="size-5" />
                                 </div>
                                 <div className="mt-0.5">
-                                    <h3 className="text-gray-900 dark:text-white font-bold text-sm mb-1">Privacy Mode</h3>
-                                    <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-snug">Hide player identities during active voting to prevent anchoring bias.</p>
+                                    <Label htmlFor="anonymousMode" className="font-bold text-sm mb-1 cursor-pointer">Privacy Mode</Label>
+                                    <p className="text-[13px] text-muted-foreground leading-snug">Hide player identities during active voting to prevent anchoring bias.</p>
                                 </div>
                             </div>
-                            <button className={`relative shrink-0 w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner ${anonymousMode ? 'bg-purple-500 dark:bg-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                                <div className={`absolute top-1 w-4.5 h-4.5 rounded-full transition-all bg-white dark:bg-black shadow-md ${anonymousMode ? 'left-6.5' : 'left-1'}`}></div>
-                            </button>
+                            <Switch 
+                                id="anonymousMode"
+                                checked={anonymousMode}
+                                onCheckedChange={(checked) => onUpdateSettings({ anonymousMode: checked })}
+                            />
                         </div>
                     </div>
 
                     {/* Danger Zone */}
-                    <div className="pt-6 border-t border-gray-100 dark:border-white/5 space-y-4">
-                        <div className="flex items-center gap-2 px-2 text-rose-500">
-                            <AlertTriangle className="w-4 h-4" />
+                    <div className="pt-6 border-t space-y-4">
+                        <div className="flex items-center gap-2 px-2 text-destructive">
+                            <AlertTriangle className="size-4" />
                             <h3 className="font-bold text-xs uppercase tracking-[0.1em]">Danger Zone</h3>
                         </div>
-                        <button
-                            onClick={() => {
-                                if (window.confirm('Are you sure you want to end this session for everyone?')) {
-                                    onEndSession();
-                                }
-                            }}
-                            className="bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold w-full py-4 rounded-[20px] transition-all flex items-center justify-center gap-3 active:scale-95 group shadow-sm"
-                        >
-                            <Power className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            Terminate Voting Session
-                        </button>
+
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="destructive"
+                                    className="w-full h-14 rounded-[20px] font-bold gap-3 text-base shadow-sm"
+                                >
+                                    <Power className="size-5" />
+                                    Terminate Voting Session
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will end the session for everyone and redirect all players to the home page. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={onEndSession} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        End Session
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
 
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 
