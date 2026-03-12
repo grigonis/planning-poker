@@ -66,21 +66,11 @@ This milestone is complete only when all are true:
 
 Produces:
 - `src/lib/utils.ts` → `cn()` utility at canonical path
-- `src/components/ui/button.tsx` → Button with variant/size props
-- `src/components/ui/dialog.tsx` → Dialog primitive
-- `src/components/ui/alert-dialog.tsx` → AlertDialog primitive
-- `src/components/ui/sheet.tsx` → Sheet primitive
-- `src/components/ui/switch.tsx` → Switch primitive
-- `src/components/ui/input.tsx`, `textarea.tsx`, `label.tsx`, `select.tsx` → form primitives
-- `src/components/ui/toggle-group.tsx` → ToggleGroup primitive
-- `src/components/ui/badge.tsx` → Badge primitive
-- `src/components/ui/card.tsx` → Card primitive
-- `src/components/ui/sonner.tsx` → Toaster component
-- `src/components/ui/progress.tsx` → Progress primitive
-- `src/components/ui/separator.tsx` → Separator primitive
+- `src/components/ui/button.tsx` → Button with variant/size props (only component added in S01)
 - `client/src/index.css` → "claude blu 2" CSS variables in `:root` and `.dark`
 - `client/tailwind.config.js` → CSS variable color extensions for semantic tokens
-- `components.json` → shadcn config
+- `components.json` → shadcn config (nova preset; enables `npx shadcn add <component>` in all downstream slices)
+- Note: dialog, alert-dialog, sheet, switch, input, textarea, label, select, toggle-group, badge, card, sonner, progress, separator are added by `npx shadcn add` in the slice that first needs them (S02/S03/S04/S05)
 
 Consumes: nothing (first slice)
 
@@ -122,6 +112,6 @@ Consumes from S03: all form primitives stable
 Produces:
 - `src/components/Room/RoomNavbar.jsx` → shared navbar for Room.jsx and CreateRoom.jsx
 - `PokerTable.jsx` vote progress → shadcn Progress component
-- `client/src/App.css` → removed
+- Note: `client/src/App.css` was already removed in S01/T04
 
 Consumes from S04: all semantic tokens stable; Button variants established
