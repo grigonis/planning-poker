@@ -11,7 +11,7 @@
 - 🔄 **M003:** Room UX Restructure
 
 ## Recent Decisions
-- Dialogs render outside DropdownMenu tree (state-driven open flags in Room.jsx) to avoid Radix focus/portal conflicts
+- None recorded
 
 ## Blockers
 - None
