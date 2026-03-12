@@ -11,10 +11,10 @@
 - 🔄 **M003:** Room UX Restructure
 
 ## Recent Decisions
-- None recorded
+- Dialogs render outside DropdownMenu tree (state-driven open flags in Room.jsx) to avoid Radix focus/portal conflicts
 
 ## Blockers
 - None
 
 ## Next Action
-Execute T02: Install DropdownMenu, build host dropdown, and extract SettingsDialog in slice S02.
+Execute T03: Build EditRoomDetailsDialog and add navbar description display in slice S02.

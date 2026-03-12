@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
 import RoomSettingsModal from '../components/Room/RoomSettingsModal';
+import SettingsDialog from '../components/Room/SettingsDialog';
+import CustomizeCardsDialog from '../components/Room/CustomizeCardsDialog';
 import EditProfileModal from '../components/Room/EditProfileModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
 import TasksPane from '../components/Room/TasksPane';
@@ -40,7 +42,9 @@ const Room = () => {
     const [roomDescription, setRoomDescription] = useState(location.state?.roomDescription || '');
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+    const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
+    const [isCustomizeCardsOpen, setIsCustomizeCardsOpen] = useState(false);
     const [isTasksOpen, setIsTasksOpen] = useState(
         localStorage.getItem(`keystimate_tasks_open_${roomId}`) === 'true'
     );
@@ -459,6 +463,7 @@ const Room = () => {
             {/* Unified Navbar */}
             <RoomNavbar 
                 roomId={roomId}
+                roomDescription={roomDescription}
                 socketStatus={socket?.connected}
                 tasksCount={tasks.length}
                 isHost={isMeHost}
@@ -471,7 +476,9 @@ const Room = () => {
                         return next;
                     });
                 }}
-                onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenEditRoom={() => setIsEditRoomOpen(true)}
+                onOpenCustomizeCards={() => setIsCustomizeCardsOpen(true)}
+                onOpenSettings={() => setIsSettingsDialogOpen(true)}
                 onOpenInvite={() => setIsInviteModalOpen(true)}
                 onOpenProfile={() => setIsProfileOpen(true)}
             />
@@ -557,8 +564,8 @@ const Room = () => {
                 roomId={roomId}
             />
             <RoomSettingsModal
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
+                isOpen={false}
+                onClose={() => {}}
                 funFeatures={funFeatures}
                 autoReveal={autoReveal}
                 anonymousMode={anonymousMode}
@@ -566,6 +573,19 @@ const Room = () => {
                 phase={phase}
                 onUpdateSettings={handleUpdateSettings}
                 onEndSession={handleEndSession}
+            />
+            <SettingsDialog
+                isOpen={isSettingsDialogOpen}
+                onClose={() => setIsSettingsDialogOpen(false)}
+                funFeatures={funFeatures}
+                autoReveal={autoReveal}
+                anonymousMode={anonymousMode}
+                onUpdateSettings={handleUpdateSettings}
+                onEndSession={handleEndSession}
+            />
+            <CustomizeCardsDialog
+                isOpen={isCustomizeCardsOpen}
+                onClose={() => setIsCustomizeCardsOpen(false)}
             />
             <EditProfileModal
                 isOpen={isProfileOpen}
