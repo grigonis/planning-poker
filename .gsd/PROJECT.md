@@ -1,36 +1,36 @@
-# Planning Poker Refactoring
+# Project: Keystimate — Online Planning Poker
 
-## Goal
-Completely refactor the room creation and joining experience to match a modern, dedicated-page approach (similar to Kollabe). The landing page should remain strictly a landing page, while `/create` will serve as the dedicated room creation environment featuring the app's navbar and layout.
+## What This Is
 
-## Requirements
+A real-time planning poker app for engineering teams. Teams create a room, share a link, and vote on story point estimates simultaneously. The host controls voting rounds; results are revealed once all participants have voted. Built with React + Vite (client) and Node.js + Socket.io (server).
 
-### Validated
-*(Capabilities carried over from the existing codebase)*
-- ✓ Real-time voting sync via Socket.io
-- ✓ Displaying connected users in a room
-- ✓ Revealing votes to all players simultaneously
-- ✓ Basic room state management
-- ✓ Spectator mode (retain logic and naming exactly as is)
+## Core Value
 
-### Validated
-- ✓ **Dedicated Create Room Page (`/create`)**: Replaces modal with a full-page setup.
-- ✓ **Voting Systems & Scales**: Support for Modified Fibonacci, Presets, and Custom scales.
-- ✓ **Tasks Feature**: Right-side pane for single/bulk task management.
-- ✓ **Modernized UI**: Updated Navbar and Settings menu.
-- ✓ **Average Logic**: Excludes non-numeric cards (☕).
-- ✓ **Split Mode Removal**: Legacy split-mode logic completely purged.
+Frictionless real-time estimation — no signup, join by link, vote together, see results instantly.
 
-### Out of Scope
-- Spectator logic changes (Spectator already exists and fits the needs perfectly).
+## Current State
 
-## Key Decisions
+- M001 complete: dedicated `/create` page, modernized room navbar, voting systems (Fibonacci presets + custom scales), tasks side-pane, room settings (fun features, auto-reveal, anonymous mode)
+- Landing page (`/`) is a full marketing page with a distinct custom design system — preserved as-is
+- Room UI has accumulated visual inconsistencies and a structural token breakage (`banana-*` used 47× but not defined in Tailwind config)
+- M002 in progress: migrating all room-facing UI to shadcn/ui with "claude blu 2" theme
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Voting Systems | Requested User Stories | — Modified Fibonacci Default, Support Customs |
-| Tasks system | requested feature for better session tracking | — Right-side expandable pane |
-| Spectator role | Already implemented | — Keep as is |
+## Architecture / Key Patterns
 
----
-*Last updated: 2026-03-11*
+- **Client:** React 18 + Vite + Tailwind v3 + `darkMode: "class"`. ThemeContext toggles `.dark` on `<html>`. Lives in `client/`.
+- **Server:** Node.js + Socket.io. Lives in `server/`. No database — in-memory room state.
+- **Routing:** React Router v7. Routes: `/` (Landing), `/create` (CreateRoom), `/room/:roomId` (Room).
+- **Design systems (two, intentionally separate):**
+  - Landing: custom carbon/silver/champagne tokens, glassmorphism CSS utilities in `index.css`
+  - Room: shadcn/ui with "claude blu 2" theme (M002 target state)
+- **Components:** Landing in `src/components/home/`. Room in `src/components/Room/`, `src/components/Voting/`. Shared modals at `src/components/`.
+- **shadcn:** `src/components/ui/` for generated components, `src/lib/utils.ts` for `cn()`.
+
+## Capability Contract
+
+See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement status, and coverage mapping.
+
+## Milestone Sequence
+
+- [x] M001: Migration — Dedicated create page, voting systems, tasks pane, modernized room UI
+- [ ] M002: shadcn Room UI Migration — Consistent shadcn component system for all room-facing surfaces

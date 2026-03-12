@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
-import { ArrowRight, X, User, Hash, Code, Bug, Eye } from 'lucide-react';
+import { ArrowRight, User, Hash, Loader2 } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const JoinSessionModal = ({ isOpen, onClose }) => {
     const [step, setStep] = useState(1);
@@ -27,10 +37,7 @@ const JoinSessionModal = ({ isOpen, onClose }) => {
                 return;
             }
             setRoomMode(response.mode || 'STANDARD');
-
-            if (response.mode === 'STANDARD') setRole('DEV');
-            else setRole('DEV');
-
+            setRole('DEV');
             setStep(2);
         });
     };
@@ -66,131 +73,154 @@ const JoinSessionModal = ({ isOpen, onClose }) => {
         });
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="relative w-full max-w-md bg-white dark:bg-[#101010] backdrop-blur-2xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-300">
-                <button
-                    onClick={onClose}
-                    className="absolute right-4 top-4 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
-                >
-                    <X size={24} />
-                </button>
-
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-md">
                 {step === 1 && (
                     <>
-                        <h2 className="text-2xl font-bold  text-gray-900 dark:text-white mb-2">Join Session</h2>
-                        <p className="text-gray-500 dark:text-gray-400 font-light mb-8">Enter the room code to join your team.</p>
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-bold">Join Session</DialogTitle>
+                            <DialogDescription className="font-light">
+                                Enter the room code to join your team.
+                            </DialogDescription>
+                        </DialogHeader>
 
                         <form onSubmit={handleCheckRoom} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold  text-gray-600 dark:text-gray-300">Room Code</label>
+                                <Label htmlFor="roomCode" className="text-sm font-bold">Room Code</Label>
                                 <div className="relative">
-                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-                                        <Hash size={18} />
-                                    </div>
-                                    <input
+                                    <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-muted-foreground" />
+                                    <Input
+                                        id="roomCode"
                                         type="text"
                                         value={roomCode}
                                         onChange={(e) => setRoomCode(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-banana-500 focus:ring-1 focus:ring-banana-500 transition-all  uppercase tracking-wider"
+                                        className="pl-10 uppercase tracking-wider h-12"
                                         placeholder="e.g. ABCD"
                                         autoFocus
+                                        required
                                     />
                                 </div>
                             </div>
 
-                            <button
+                            <Button
                                 type="submit"
                                 disabled={!roomCode.trim() || isLoading}
-                                className="w-full bg-banana-500 hover:bg-banana-400 text-dark-900 font-bold  py-3.5 rounded-xl shadow-lg shadow-banana-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full h-12 font-bold gap-2"
                             >
-                                {isLoading ? 'Checking...' : 'Continue'}
-                                {!isLoading && <ArrowRight size={18} />}
-                            </button>
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="size-4 animate-spin" />
+                                        Checking...
+                                    </>
+                                ) : (
+                                    <>
+                                        Continue
+                                        <ArrowRight className="size-4.5" />
+                                    </>
+                                )}
+                            </Button>
                         </form>
                     </>
                 )}
 
                 {step === 2 && (
                     <>
-                        <h2 className="text-2xl font-bold  text-gray-900 dark:text-white mb-2">Join Room: {roomCode.toUpperCase()}</h2>
-                        <p className="text-gray-500 dark:text-gray-400 font-light mb-6">
-                            {roomMode === 'STANDARD' ? 'Standard Mode (Unified Voting)' : 'Split Mode (Dev & QA)'}
-                        </p>
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-bold">Join Room: {roomCode.toUpperCase()}</DialogTitle>
+                            <DialogDescription className="font-light">
+                                {roomMode === 'STANDARD' ? 'Standard Mode (Unified Voting)' : 'Split Mode (Dev & QA)'}
+                            </DialogDescription>
+                        </DialogHeader>
 
                         <form onSubmit={handleJoin} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold  text-gray-600 dark:text-gray-300">Display Name</label>
+                                <Label htmlFor="joinName" className="text-sm font-bold">Display Name</Label>
                                 <div className="relative">
-                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-                                        <User size={18} />
-                                    </div>
-                                    <input
+                                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-muted-foreground" />
+                                    <Input
+                                        id="joinName"
                                         type="text"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-banana-500 focus:ring-1 focus:ring-banana-500 transition-all "
+                                        className="pl-10 h-12"
                                         placeholder="e.g. Alex Rivera"
                                         autoFocus
+                                        required
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-bold  text-gray-600 dark:text-gray-300">Your Role</label>
-                                <div className={`grid gap-2 p-1 bg-gray-50 dark:bg-white/[0.07] rounded-xl border border-gray-200 dark:border-white/5 ${roomMode === 'SPLIT' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                                <Label className="text-sm font-bold">Your Role</Label>
+                                <div className={`grid gap-2 p-1 bg-muted/50 rounded-xl border ${roomMode === 'SPLIT' ? 'grid-cols-3' : 'grid-cols-2'}`}>
                                     {roomMode === 'SPLIT' ? (
                                         <>
-                                            <button
+                                            <Button
                                                 type="button"
+                                                variant={role === 'DEV' ? "default" : "ghost"}
+                                                size="sm"
                                                 onClick={() => setRole('DEV')}
-                                                className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'DEV' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
+                                                className="h-8 text-xs font-bold"
                                             >
                                                 Developer
-                                            </button>
-                                            <button
+                                            </Button>
+                                            <Button
                                                 type="button"
+                                                variant={role === 'QA' ? "destructive" : "ghost"}
+                                                size="sm"
                                                 onClick={() => setRole('QA')}
-                                                className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'QA' ? 'bg-rose-600 text-white shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
+                                                className="h-8 text-xs font-bold"
                                             >
                                                 QA
-                                            </button>
+                                            </Button>
                                         </>
                                     ) : (
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant={role === 'DEV' ? "default" : "ghost"}
+                                            size="sm"
                                             onClick={() => setRole('DEV')}
-                                            className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'DEV' ? 'bg-banana-500 text-dark-900 shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
+                                            className="h-8 text-xs font-bold"
                                         >
                                             Estimator
-                                        </button>
+                                        </Button>
                                     )}
 
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant={role === 'SPECTATOR' ? "secondary" : "ghost"}
+                                        size="sm"
                                         onClick={() => setRole('SPECTATOR')}
-                                        className={`py-2 rounded-lg text-xs font-bold  transition-all ${role === 'SPECTATOR' ? 'bg-gray-600 dark:bg-gray-700 text-white shadow-md' : 'text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white'}`}
+                                        className="h-8 text-xs font-bold"
                                     >
                                         Spectator
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
-                            <button
+                            <Button
                                 type="submit"
                                 disabled={!name.trim() || isLoading}
-                                className="w-full bg-banana-500 hover:bg-banana-400 text-dark-900 font-bold  py-3.5 rounded-xl shadow-lg shadow-banana-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full h-12 font-bold gap-2"
                             >
-                                {isLoading ? 'Join Session' : 'Enter Room'}
-                                {!isLoading && <ArrowRight size={18} />}
-                            </button>
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="size-4 animate-spin" />
+                                        Joining...
+                                    </>
+                                ) : (
+                                    <>
+                                        Enter Room
+                                        <ArrowRight className="size-4.5" />
+                                    </>
+                                )}
+                            </Button>
                         </form>
                     </>
                 )}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 
