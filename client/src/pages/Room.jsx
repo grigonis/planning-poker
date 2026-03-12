@@ -36,6 +36,8 @@ const Room = () => {
         name: 'Modified Fibonacci',
         values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
     });
+    const [roomName, setRoomName] = useState(location.state?.roomName || '');
+    const [roomDescription, setRoomDescription] = useState(location.state?.roomDescription || '');
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -80,6 +82,8 @@ const Room = () => {
                     if (response.autoReveal !== undefined) setAutoReveal(response.autoReveal);
                     if (response.anonymousMode !== undefined) setAnonymousMode(response.anonymousMode);
                     if (response.votingSystem) setVotingSystem(response.votingSystem);
+                    if (response.roomName !== undefined) setRoomName(response.roomName);
+                    if (response.roomDescription !== undefined) setRoomDescription(response.roomDescription);
                     if (response.tasks) setTasks(response.tasks);
                     if (response.activeTaskId) setActiveTaskId(response.activeTaskId);
 
@@ -269,6 +273,8 @@ const Room = () => {
             if (settings.autoReveal !== undefined) setAutoReveal(settings.autoReveal);
             if (settings.anonymousMode !== undefined) setAnonymousMode(settings.anonymousMode);
             if (settings.votingSystem) setVotingSystem(settings.votingSystem);
+            if (settings.roomName !== undefined) setRoomName(settings.roomName);
+            if (settings.roomDescription !== undefined) setRoomDescription(settings.roomDescription);
         };
 
         const onSessionEnded = () => {
@@ -337,6 +343,8 @@ const Room = () => {
         if (user.autoReveal !== undefined) setAutoReveal(user.autoReveal);
         if (user.anonymousMode !== undefined) setAnonymousMode(user.anonymousMode);
         if (user.votingSystem) setVotingSystem(user.votingSystem);
+        if (user.roomName !== undefined) setRoomName(user.roomName);
+        if (user.roomDescription !== undefined) setRoomDescription(user.roomDescription);
 
         // Note: phase and votes are not passed by GuestJoinModal directly right now,
         // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!

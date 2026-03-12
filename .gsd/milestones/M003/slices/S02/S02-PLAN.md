@@ -49,7 +49,7 @@
 
 ## Tasks
 
-- [ ] **T01: Add roomName/roomDescription to server state and client listener** `est:30m`
+- [x] **T01: Add roomName/roomDescription to server state and client listener** `est:30m`
   - Why: Foundation for all room details features — server must store, broadcast, and return these fields before any dialog can use them
   - Files: `server/handlers/roomHandlers.js`, `client/src/pages/Room.jsx`
   - Do: Add `roomName: ''` and `roomDescription: ''` to room object in `createRoomHandler`. Add field checks in `updateRoomSettingsHandler`. Include both fields in `create_room` and `join_room` callback payloads. In Room.jsx, add `roomName`/`roomDescription` state, initialize from `location.state`, update in `onRoomSettingsUpdated` listener, include in `create_room` callback state extraction.

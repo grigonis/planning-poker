@@ -17,4 +17,4 @@
 - None
 
 ## Next Action
-Execute T01: Add roomName/roomDescription to server state and client listener in slice S02.
+Execute T02: Install DropdownMenu, build host dropdown, and extract SettingsDialog in slice S02.
