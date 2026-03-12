@@ -43,7 +43,7 @@ const RoomNavbar = ({
                 {/* Logo/Room Info */}
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
-                        <h1 className="text-xl font-black text-primary leading-none tracking-tight">BananaPoker</h1>
+                        <h1 className="text-xl font-black text-primary leading-none tracking-tight">Keystimate</h1>
                         {!minimal && roomId ? (
                             <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
                                 <span>Room: <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded ml-0.5 select-all">{roomId}</span></span>

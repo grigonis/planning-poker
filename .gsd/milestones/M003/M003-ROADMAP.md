@@ -53,7 +53,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Branding & Cleanup** `risk:low` `depends:[]`
+- [x] **S01: Branding & Cleanup** `risk:low` `depends:[]`
   > After this: navbar says "Keystimate", all banana_* localStorage keys renamed to keystimate_*, BananaPoker text gone from room-facing UI.
 
 - [ ] **S02: Host Dropdown Menu & Dialogs** `risk:medium` `depends:[S01]`

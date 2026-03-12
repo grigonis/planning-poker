@@ -40,7 +40,7 @@ const Room = () => {
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isTasksOpen, setIsTasksOpen] = useState(
-        localStorage.getItem(`banana_tasks_open_${roomId}`) === 'true'
+        localStorage.getItem(`keystimate_tasks_open_${roomId}`) === 'true'
     );
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -71,7 +71,7 @@ const Room = () => {
                         return;
                     }
                     setViewState('GUEST_INPUT');
-                    localStorage.removeItem(`banana_session_${roomId}`);
+                    localStorage.removeItem(`keystimate_session_${roomId}`);
                 } else {
                     setPhase(response.phase);
                     setUsers(response.users);
@@ -103,7 +103,7 @@ const Room = () => {
                     setCurrentUser(updatedUser);
                     setViewState('ROOM');
 
-                    localStorage.setItem(`banana_session_${roomId}`, JSON.stringify({
+                    localStorage.setItem(`keystimate_session_${roomId}`, JSON.stringify({
                         userId: response.userId,
                         name: updatedUser.name,
                         role: updatedUser.role,
@@ -116,7 +116,7 @@ const Room = () => {
         if (location.state?.userId && location.state?.name) {
             tryJoin(location.state);
         } else {
-            const storedSession = localStorage.getItem(`banana_session_${roomId}`);
+            const storedSession = localStorage.getItem(`keystimate_session_${roomId}`);
             if (storedSession) {
                 try {
                     const sessionData = JSON.parse(storedSession);
@@ -142,7 +142,7 @@ const Room = () => {
                     setCurrentUser(prev => {
                         const next = { ...prev, isHost: me.isHost, role: me.role, name: me.name, avatarSeed: me.avatarSeed };
                         // Persist session info on changes
-                        localStorage.setItem(`banana_session_${roomId}`, JSON.stringify({
+                        localStorage.setItem(`keystimate_session_${roomId}`, JSON.stringify({
                             userId: next.id,
                             name: next.name,
                             role: next.role,
@@ -360,7 +360,7 @@ const Room = () => {
 
         setViewState('ROOM');
         // Persist
-        localStorage.setItem(`banana_session_${roomId}`, JSON.stringify({
+        localStorage.setItem(`keystimate_session_${roomId}`, JSON.stringify({
             userId: user.userId,
             name: user.name,
             role: user.role,
@@ -459,7 +459,7 @@ const Room = () => {
                 onToggleTasks={() => {
                     setIsTasksOpen(prev => {
                         const next = !prev;
-                        localStorage.setItem(`banana_tasks_open_${roomId}`, next);
+                        localStorage.setItem(`keystimate_tasks_open_${roomId}`, next);
                         return next;
                     });
                 }}
@@ -531,7 +531,7 @@ const Room = () => {
                     isOpen={isTasksOpen}
                     onClose={() => {
                         setIsTasksOpen(false);
-                        localStorage.setItem(`banana_tasks_open_${roomId}`, 'false');
+                        localStorage.setItem(`keystimate_tasks_open_${roomId}`, 'false');
                     }}
                     tasks={tasks}
                     activeTaskId={activeTaskId}
