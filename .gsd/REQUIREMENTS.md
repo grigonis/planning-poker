@@ -1,30 +1,204 @@
 # Requirements
 
-## Core Value
-A modernized, intuitive Planning Poker experience with specific features for custom voting scales, streamlined task management, and dedicated room creation flows.
+This file is the explicit capability and coverage contract for the project.
 
-## Requirements
+## Active (M002)
 
-| ID | Description | Status |
-|----|-------------|--------|
-| ARCH-01 | Room creation triggers via dedicated `/create` page instead of a modal | validated |
-| ARCH-02 | Landing page (`/`) serves exclusively as a marketing/entry index | validated |
-| ARCH-03 | Remove all legacy "split mode" averages and logic from backend and frontend | validated |
-| ARCH-04 | Navbar is modernized with additional options mirroring Kollabe functionality | validated |
-| VOTE-01 | Default voting scale is Modified Fibonacci `[0, 0.5, 1, 2, 3, 5, 8, 13, 21, ☕]` | validated |
-| VOTE-02 | Non-numeric cards (e.g., ☕) must be excluded from average calculations | validated |
-| VOTE-03 | Facilitators can switch between Standard Presets (Fibonacci, T-Shirt, Powers of 2) | validated |
-| VOTE-04 | Facilitators can create Custom Scales (numbers, letters, emojis) during setup | validated |
-| VOTE-05 | Changing a scale mid-voting is disabled or prompts a warning | validated |
-| TASK-01 | Right-side expandable/collapsible pane for managing tasks | validated |
-| TASK-02 | Users can vote strictly without tasks if they choose (legacy flow) | validated |
-| TASK-03 | Facilitators can add a single task manually from the side pane | validated |
-| TASK-04 | Facilitators can add multiple tasks bulk-action style | validated |
-| TASK-05 | Modernized UI Settings menu (tailored to current app UI) for room configuration | validated |
-| TASK-06 | Spectator role retained exactly as is (can observe without participating) | validated |
+### R101 — shadcn initialised with "claude blu 2" theme
+- Class: core-capability
+- Status: active
+- Description: `shadcn init` run in `client/`; `components.json` present; "claude blu 2" OKLCH CSS variables applied to `index.css` `:root` and `.dark`; Tailwind v3 `tailwind.config.js` patched with semantic color extensions
+- Why it matters: All downstream shadcn component adds depend on this scaffold; broken init causes every component to use wrong tokens
+- Source: user
+- Primary owning slice: M002/S01
+- Supporting slices: none
+- Validation: unmapped
 
-## v2 Requirements (Deferred)
-- [ ] VOTE-06: Save custom voting scales to a team profile/workspace for future reuse.
+### R102 — cn() utility at canonical path
+- Class: core-capability
+- Status: active
+- Description: `src/lib/utils.ts` exports `cn()` using clsx + tailwind-merge; all shadcn components import from this path
+- Why it matters: shadcn components hardcode the import path; missing utils breaks every generated component
+- Source: user
+- Primary owning slice: M002/S01
+- Supporting slices: none
+- Validation: unmapped
+
+### R103 — Broken banana-* token fully replaced
+- Class: quality-attribute
+- Status: active
+- Description: All 47+ `banana-*` references in room/voting/pages scope removed; replaced with semantic tokens (`text-primary`, `bg-primary`, etc.)
+- Why it matters: `banana-*` is not defined in tailwind.config.js — these classes silently produce no style
+- Source: audit
+- Primary owning slice: M002/S04
+- Supporting slices: M002/S02, M002/S03
+- Validation: unmapped
+- Notes: Verify with `rg "banana-" client/src/components/Room client/src/components/Voting client/src/pages` returning zero hits
+
+### R104 — All room modals use shadcn Dialog
+- Class: primary-user-loop
+- Status: active
+- Description: RoomSettingsModal, EditProfileModal, InviteModal, GuestJoinModal each use Dialog/DialogContent/DialogHeader/DialogTitle
+- Why it matters: Accessibility (focus trap, ARIA roles, keyboard dismiss) and visual consistency
+- Source: audit
+- Primary owning slice: M002/S02
+- Supporting slices: none
+- Validation: unmapped
+
+### R105 — TasksPane uses shadcn Sheet
+- Class: primary-user-loop
+- Status: active
+- Description: TasksPane.jsx rebuilt using Sheet/SheetContent/SheetHeader/SheetTitle (side variant)
+- Why it matters: Consistent side-panel pattern with accessibility; removes hand-rolled fixed-position panel
+- Source: audit
+- Primary owning slice: M002/S03
+- Supporting slices: none
+- Validation: unmapped
+
+### R106 — RoomSettingsModal toggles use shadcn Switch
+- Class: primary-user-loop
+- Status: active
+- Description: Three hand-rolled toggle buttons (Fun Features, Auto Reveal, Anonymous Mode) replaced with shadcn Switch
+- Why it matters: Custom toggles use non-standard fractional Tailwind values that don't resolve; Switch provides accessible boolean input
+- Source: audit
+- Primary owning slice: M002/S02
+- Supporting slices: none
+- Validation: unmapped
+
+### R107 — All room forms use shadcn Input / Label / Textarea / Select
+- Class: primary-user-loop
+- Status: active
+- Description: Raw input/textarea/select in CreateRoom, GuestJoinModal, TasksPane, EditProfileModal, RoomSettingsModal replaced with shadcn primitives using FieldGroup+Field pattern
+- Why it matters: Eliminates per-file bespoke styling inconsistencies
+- Source: audit
+- Primary owning slice: M002/S03
+- Supporting slices: M002/S02
+- Validation: unmapped
+
+### R108 — Role pickers use ToggleGroup
+- Class: primary-user-loop
+- Status: active
+- Description: DEV/QA/Spectator role selection in CreateRoom and GuestJoinModal replaced with ToggleGroup + ToggleGroupItem
+- Why it matters: Eliminates manual active-state button loops; provides accessible toggle semantics
+- Source: audit
+- Primary owning slice: M002/S03
+- Supporting slices: none
+- Validation: unmapped
+
+### R109 — alert()/confirm() replaced with Sonner + AlertDialog
+- Class: primary-user-loop
+- Status: active
+- Description: All 8 window.alert() calls and 1 window.confirm() in room scope replaced with Sonner toast() and shadcn AlertDialog
+- Why it matters: Browser dialogs are blocking, unstyled, and jarring
+- Source: audit
+- Primary owning slice: M002/S04
+- Supporting slices: M002/S02
+- Validation: unmapped
+
+### R110 — VotingOverlay rebuilt with shadcn Card
+- Class: primary-user-loop
+- Status: active
+- Description: VotingOverlay fullscreen card picker rebuilt using shadcn Card for each voting option; selected state uses ring-primary; all broken tokens replaced
+- Why it matters: User requested full shadcn rebuild; removes broken token references from most visually prominent room surface
+- Source: user
+- Primary owning slice: M002/S04
+- Supporting slices: none
+- Validation: unmapped
+
+### R111 — Card.jsx (revealed votes) uses semantic tokens
+- Class: quality-attribute
+- Status: active
+- Description: src/components/Voting/Card.jsx updated to use bg-card, text-card-foreground, border-primary/ring-primary
+- Why it matters: Revealed vote cards are the most-seen element during a session
+- Source: audit
+- Primary owning slice: M002/S04
+- Supporting slices: none
+- Validation: unmapped
+
+### R112 — Room + CreateRoom share a unified RoomNavbar component
+- Class: quality-attribute
+- Status: active
+- Description: Extract shared src/components/Room/RoomNavbar.jsx using shadcn Button for icon actions; both Room.jsx and CreateRoom.jsx import it
+- Why it matters: Two separate hand-built navbars create maintenance divergence
+- Source: audit
+- Primary owning slice: M002/S05
+- Supporting slices: none
+- Validation: unmapped
+
+### R113 — Stale App.css Vite scaffold removed
+- Class: quality-attribute
+- Status: active
+- Description: client/src/App.css default Vite styles removed
+- Why it matters: Dead styles pollute the stylesheet and can conflict with shadcn token-based styles
+- Source: audit
+- Primary owning slice: M002/S01
+- Supporting slices: none
+- Validation: unmapped
+
+### R114 — Landing page entirely untouched
+- Class: constraint
+- Status: active
+- Description: src/pages/Landing.jsx, src/components/home/, and landing-page CSS utilities in index.css must be unchanged after migration
+- Why it matters: User explicitly requires landing page to remain unchanged
+- Source: user
+- Primary owning slice: all (constraint on every slice)
+- Supporting slices: none
+- Validation: unmapped
+
+---
+
+## Validated (M001 — completed)
+
+### ARCH-01 — Dedicated /create page — validated M001/S01
+### ARCH-02 — Landing page as marketing index — validated M001/S01
+### ARCH-03 — Legacy split mode removed — validated M001/S01
+### ARCH-04 — Modernized navbar — validated M001/S02
+### VOTE-01 through VOTE-05 — Voting systems — validated M001/S03
+### TASK-01 through TASK-06 — Tasks pane + settings — validated M001/S04
+
+---
+
+## Deferred
+
+### VOTE-06 — Save custom scales to team profile
+- Class: differentiator
+- Status: deferred
+- Description: Allow teams to persist custom voting scales across sessions
+- Source: user (M001 backlog)
+- Primary owning slice: none
+- Validation: unmapped
+- Notes: Requires auth/team model
+
+---
 
 ## Out of Scope
-- Changes to the Spectator logic mechanism. Existing behavior is retained exactly.
+
+### Spectator logic changes — D003 — preserve as-is
+### Backend changes — client-side UI migration only
+
+---
+
+## Traceability
+
+| ID | Class | Status | Primary owner | Supporting | Proof |
+|---|---|---|---|---|---|
+| R101 | core-capability | active | M002/S01 | none | unmapped |
+| R102 | core-capability | active | M002/S01 | none | unmapped |
+| R103 | quality-attribute | active | M002/S04 | S02, S03 | unmapped |
+| R104 | primary-user-loop | active | M002/S02 | none | unmapped |
+| R105 | primary-user-loop | active | M002/S03 | none | unmapped |
+| R106 | primary-user-loop | active | M002/S02 | none | unmapped |
+| R107 | primary-user-loop | active | M002/S03 | S02 | unmapped |
+| R108 | primary-user-loop | active | M002/S03 | none | unmapped |
+| R109 | primary-user-loop | active | M002/S04 | S02 | unmapped |
+| R110 | primary-user-loop | active | M002/S04 | none | unmapped |
+| R111 | quality-attribute | active | M002/S04 | none | unmapped |
+| R112 | quality-attribute | active | M002/S05 | none | unmapped |
+| R113 | quality-attribute | active | M002/S01 | none | 
+unmapped |
+| R114 | constraint | active | all | none | unmapped |
+
+## Coverage Summary
+- Active requirements: 14
+- Mapped to slices: 14
+- Validated: 0 (M002 not yet started)
