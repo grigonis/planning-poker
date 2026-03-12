@@ -20,3 +20,7 @@
 | D012 | M002 | arch | VotingOverlay migration | Full shadcn Card rebuild | User preference; eliminates broken tokens on most prominent room surface | No |
 | D013 | M002 | arch | PokerTable surface | Keep custom glassmorphism CSS | User preference; unique visual element; only fix tokens inside it | Yes — if full design system unification is requested |
 | D014 | M002 | convention | cn() location | src/lib/utils.ts | shadcn canonical path; all generated components import from here | No |
+| D015 | M002/S01 | convention | CSS variable format | Bare OKLCH channel values (e.g. `0.55 0.15 252`) | Tailwind v3 `oklch(var(--X) / <alpha-value>)` wrapper requires bare channels; wrapping in oklch() in the CSS var produces double-nested invalid CSS | No |
+| D016 | M002/S01 | convention | Inter font loading | Google Fonts `<link>` in index.html | Landing page already uses this pattern for Outfit/Poppins; avoids adding runtime npm dep (@fontsource-variable/inter) | Yes — can switch to npm package if offline support needed |
+| D017 | M002/S01 | arch | body rule in @layer base | Replace existing `bg-slate-50 dark:bg-carbon-950` body rule with `bg-background text-foreground` | shadcn body rule must win for room pages; landing page background handled by page-level wrappers; single body rule is cleaner | Yes — if landing page background regresses |
+| D018 | M002/S01 | arch | shadcn init preset | nova (lucide-react icons) | `lucide-react` already installed; nova is the only preset compatible with existing icon library; maia installs conflicting hugeicons packages | No |

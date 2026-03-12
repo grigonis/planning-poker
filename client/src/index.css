@@ -1,12 +1,75 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0.98 0 0;
+    --foreground: 0.15 0.01 252;
+    --card: 0.97 0 0;
+    --card-foreground: 0.15 0.01 252;
+    --popover: 0.98 0 0;
+    --popover-foreground: 0.15 0.01 252;
+    --primary: 0.55 0.15 252;
+    --primary-foreground: 0.98 0 0;
+    --secondary: 0.94 0.02 252;
+    --secondary-foreground: 0.25 0.05 252;
+    --muted: 0.94 0.01 252;
+    --muted-foreground: 0.50 0.04 252;
+    --accent: 0.92 0.03 252;
+    --accent-foreground: 0.25 0.05 252;
+    --destructive: 0.55 0.20 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.88 0.02 252;
+    --input: 0.88 0.02 252;
+    --ring: 0.55 0.15 252;
+    --radius: 0.5rem;
+    --sidebar-background: 0.97 0.01 252;
+    --sidebar-foreground: 0.25 0.05 252;
+    --sidebar-primary: 0.55 0.15 252;
+    --sidebar-primary-foreground: 0.98 0 0;
+    --sidebar-accent: 0.92 0.03 252;
+    --sidebar-accent-foreground: 0.25 0.05 252;
+    --sidebar-border: 0.88 0.02 252;
+    --sidebar-ring: 0.55 0.15 252;
+  }
+
+  .dark {
+    --background: 0.10 0.02 252;
+    --foreground: 0.95 0.01 252;
+    --card: 0.13 0.02 252;
+    --card-foreground: 0.95 0.01 252;
+    --popover: 0.12 0.02 252;
+    --popover-foreground: 0.95 0.01 252;
+    --primary: 0.66 0.12 252;
+    --primary-foreground: 0.10 0.02 252;
+    --secondary: 0.18 0.03 252;
+    --secondary-foreground: 0.90 0.02 252;
+    --muted: 0.18 0.02 252;
+    --muted-foreground: 0.60 0.04 252;
+    --accent: 0.20 0.04 252;
+    --accent-foreground: 0.90 0.02 252;
+    --destructive: 0.60 0.18 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.25 0.03 252;
+    --input: 0.25 0.03 252;
+    --ring: 0.66 0.12 252;
+    --sidebar-background: 0.12 0.02 252;
+    --sidebar-foreground: 0.90 0.02 252;
+    --sidebar-primary: 0.66 0.12 252;
+    --sidebar-primary-foreground: 0.10 0.02 252;
+    --sidebar-accent: 0.20 0.04 252;
+    --sidebar-accent-foreground: 0.90 0.02 252;
+    --sidebar-border: 0.25 0.03 252;
+    --sidebar-ring: 0.66 0.12 252;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
   body {
-    @apply bg-slate-50 dark:bg-carbon-950 text-slate-700 dark:text-silver-300 antialiased font-sans selection:bg-silver-400/20;
-    transition: background-color 300ms ease-in-out, color 300ms ease-in-out, border-color 300ms ease-in-out;
+    @apply bg-background text-foreground;
   }
 
   /* Vercel-style heading defaults */
@@ -31,6 +94,10 @@
   textarea,
   select {
     @apply transition-colors duration-300 ease-in-out;
+  }
+
+  html {
+    @apply font-sans;
   }
 }
 
@@ -148,7 +215,6 @@
 .presence-dot--offline {
   background-color: #6b7280;
 }
-
 
 /* Bento Grid — Noise Texture (High Performance) */
 .bento-noise::before {
