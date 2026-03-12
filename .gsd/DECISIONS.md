@@ -41,3 +41,5 @@
 | D033 | M003 | convention | Room details broadcast | Live via Socket.io room_settings_updated | Room name/description stored server-side, broadcast on change | No |
 | D034 | M003 | convention | Branding | Keystimate | Replaces BananaPoker in all room-facing UI; landing page untouched (D011) | No |
 | D035 | M003 | convention | localStorage key prefix | keystimate_ | Replaces banana_ prefix; banana-poker-theme → keystimate-theme | No |
+| D036 | M003/S02 | arch | Dialog-from-DropdownMenu pattern | State-driven dialogs rendered outside DropdownMenu tree | Radix DropdownMenu and Dialog share focus/portal internals; nesting Dialog inside DropdownMenuItem causes focus trap conflicts. Menu items set state flags, dialogs render as siblings in Room.jsx. | No |
+| D037 | M003/S02 | convention | Customize Cards placeholder | Minimal placeholder dialog in S02, replaced by real implementation in S03 | S02 needs a working "Customize Cards" menu item per roadmap boundary map; building a placeholder keeps the dropdown complete while deferring interactive card editing to S03 | Yes — replaced in S03 |
