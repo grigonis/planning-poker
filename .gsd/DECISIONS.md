@@ -33,3 +33,11 @@
 | D025 | M002/S04 | convention | Notification placement | Top-center | Standardized placement for all room-facing toasts | Yes |
 | D026 | M002/S05 | arch | Navbar unification strategy | Shared `RoomNavbar` with `minimal` prop | Toggles between create-room (branding only) and active-room (full controls) modes | No |
 | D027 | M002/S05 | arch | Progress bar styling | shadcn `Progress` component | Replaces custom gradient div; uses theme-aware `primary` indicator | No |
+| D028 | M003 | scope | Voting system locking | Lock system type after room creation | Prevents mid-session confusion; only card values customizable in-room | No |
+| D029 | M003 | arch | Settings UI split | Three separate dialogs via DropdownMenu | Edit Room Details, Customize Cards, Settings — replaces monolithic RoomSettingsModal | No |
+| D030 | M003 | arch | Participant panel position | Left-side floating overlay, never overlaps table | Float/overlay approach; hidden below 768px; collapsed by default | Yes — if layout conflicts arise |
+| D031 | M003 | convention | Participant panel reveal ordering | Highest-to-lowest with group dividers | Three groups: numeric voters, non-numeric (☕/?), spectators. Non-numeric pushed to bottom | No |
+| D032 | M003 | convention | Card customization limits | Min 2, max 12 cards | User-specified bounds; prevents broken/absurd decks | No |
+| D033 | M003 | convention | Room details broadcast | Live via Socket.io room_settings_updated | Room name/description stored server-side, broadcast on change | No |
+| D034 | M003 | convention | Branding | Keystimate | Replaces BananaPoker in all room-facing UI; landing page untouched (D011) | No |
+| D035 | M003 | convention | localStorage key prefix | keystimate_ | Replaces banana_ prefix; banana-poker-theme → keystimate-theme | No |
