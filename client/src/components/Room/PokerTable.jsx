@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PlayerAvatar from './PlayerAvatar';
 import Card from '../Voting/Card';
 import { Crown, Eye, RotateCcw, Play } from 'lucide-react';
+import { Progress } from '../ui/progress';
 
 import playerFaceDownSVG from '../../assets/TBD_face_down_player.svg';
 
@@ -333,15 +334,7 @@ const PokerTable = ({
                             {/* Dynamic Progress Bar inline */}
                             {eligibleVotersCount > 0 && (
                                 <div className="flex items-center justify-center gap-3 w-[200px] sm:w-[240px] md:w-[280px] mt-1 animate-in fade-in zoom-in-95 duration-500">
-                                    <div className="flex-1 h-2 bg-gray-200/50 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200/50 dark:border-white/5 shadow-inner backdrop-blur-sm relative">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-primary/80 via-primary to-primary/80 transition-all duration-1000 ease-out shadow-primary/60 relative"
-                                            style={{ width: `${voteProgress}%` }}
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent"></div>
-                                            <div className="absolute top-0 right-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-white/30 animate-pulse"></div>
-                                        </div>
-                                    </div>
+                                    <Progress value={voteProgress} className="h-2" />
                                     <span className="text-[10px] font-bold text-gray-700 dark:text-white bg-white/80 dark:bg-dark-800/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-gray-200/50 dark:border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.1)] uppercase tracking-wider whitespace-nowrap">
                                         {currentVotesCount} / {eligibleVotersCount} Voted
                                     </span>

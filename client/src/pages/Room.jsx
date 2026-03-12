@@ -10,9 +10,7 @@ import RoomSettingsModal from '../components/Room/RoomSettingsModal';
 import EditProfileModal from '../components/Room/EditProfileModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
 import TasksPane from '../components/Room/TasksPane';
-import PlayerAvatar from '../components/Room/PlayerAvatar';
-import { Users, Crown, Settings, LayoutList } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+import RoomNavbar from '../components/Room/RoomNavbar';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -451,75 +449,24 @@ const Room = () => {
             <div className="absolute inset-0 modern-grid z-0" />
 
             {/* Unified Navbar */}
-            <div className="sticky top-0 z-40 bg-white/80 dark:bg-[#101010]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 transition-colors duration-300">
-                <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
-                    {/* Logo/Room Info */}
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
-                            <h1 className="text-xl font-black text-primary leading-none tracking-tight">BananaPoker</h1>
-                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                <span>Room: <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded ml-0.5 select-all">{roomId}</span></span>
-                            </div>
-                        </div>
-                        {/* Divider */}
-                        <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-white/10 ml-2"></div>
-                        
-                        {/* Status (Connected) */}
-                        <div className="hidden md:flex items-center gap-1.5 ml-2">
-                            <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
-                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{socket?.connected ? 'Live' : 'Offline'}</span>
-                        </div>
-                    </div>
-
-                    {/* Actions */}
-                    {validUser && (
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <div 
-                                onClick={() => setIsProfileOpen(true)}
-                                className="flex items-center justify-center transition-transform duration-200 cursor-pointer hover:scale-110 active:scale-95"
-                            >
-                                <div className="pointer-events-none">
-                                    <PlayerAvatar user={{ ...currentUser, connected: true }} size={36} isCurrentUser={false} anonymousMode={false} hideDetails={true} />
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => {
-                                    setIsTasksOpen(prev => {
-                                        const next = !prev;
-                                        localStorage.setItem(`banana_tasks_open_${roomId}`, next);
-                                        return next;
-                                    });
-                                }}
-                                className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-bold text-sm transition-all border ${isTasksOpen ? 'bg-primary/10 border-primary/30 text-primary shadow-sm' : 'bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}
-                            >
-                                <LayoutList size={16} />
-                                <span className="hidden lg:inline">Tasks</span>
-                                {tasks.length > 0 && <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded-md text-[10px] leading-none ml-0.5 shadow-sm">{tasks.length}</span>}
-                            </button>
-
-                            <button
-                                onClick={() => setIsInviteModalOpen(true)}
-                                className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-sm font-bold px-3 lg:px-4 py-2 rounded-full transition-colors flex items-center gap-2"
-                            >
-                                <Users size={16} />
-                                <span className="hidden lg:inline">Invite</span>
-                            </button>
-
-                            <ThemeToggle />
-
-                            {isMeHost && (
-                                <button
-                                    onClick={() => setIsSettingsOpen(true)}
-                                    className="p-2 rounded-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/[0.08] text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm"
-                                >
-                                    <Settings className="w-4.5 h-4.5" />
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
+            <RoomNavbar 
+                roomId={roomId}
+                socketStatus={socket?.connected}
+                tasksCount={tasks.length}
+                isHost={isMeHost}
+                isTasksOpen={isTasksOpen}
+                currentUser={currentUser}
+                onToggleTasks={() => {
+                    setIsTasksOpen(prev => {
+                        const next = !prev;
+                        localStorage.setItem(`banana_tasks_open_${roomId}`, next);
+                        return next;
+                    });
+                }}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenInvite={() => setIsInviteModalOpen(true)}
+                onOpenProfile={() => setIsProfileOpen(true)}
+            />
 
 
             {/* Main Table Area */}

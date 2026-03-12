@@ -57,7 +57,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Voting Overlay + Toasts** `risk:medium` `depends:[S02,S03]`
   > After this: VotingOverlay uses shadcn Card components for voting cards; Card.jsx uses semantic tokens; all alert() calls replaced with Sonner toasts; zero banana-* token references remain in room scope.
 
-- [ ] **S05: Navbar Unification + Cleanup** `risk:low` `depends:[S04]`
+- [x] **S05: Navbar Unification + Cleanup** `risk:low` `depends:[S04]`
   > After this: Room.jsx and CreateRoom.jsx share a single RoomNavbar component using shadcn Button for icon actions; Progress component replaces custom vote progress bar.
 
 ## Boundary Map

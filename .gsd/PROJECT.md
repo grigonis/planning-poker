@@ -13,7 +13,8 @@ Frictionless real-time estimation — no signup, join by link, vote together, se
 - M001 complete: dedicated `/create` page, modernized room navbar, voting systems (Fibonacci presets + custom scales), tasks side-pane, room settings (fun features, auto-reveal, anonymous mode)
 - Landing page (`/`) is a full marketing page with a distinct custom design system — preserved as-is
 - Room UI has accumulated visual inconsistencies and a structural token breakage (`banana-*` used 47× but not defined in Tailwind config)
-- M002 in progress (S04 complete): migrating all room-facing UI to shadcn/ui with "claude blu 2" theme. Modals, forms, sheets, and voting overlay now use shadcn. All banana-* tokens replaced.
+- M002 complete: migrated all room-facing UI to shadcn/ui with "claude blu 2" theme. Modals, forms, sheets, and voting overlay now use shadcn. All banana-* tokens replaced. Room navigation unified.
+- Landing page (/) is a full marketing page with a distinct custom design system — preserved as-is.
 
 ## Architecture / Key Patterns
 
@@ -22,9 +23,9 @@ Frictionless real-time estimation — no signup, join by link, vote together, se
 - **Routing:** React Router v7. Routes: `/` (Landing), `/create` (CreateRoom), `/room/:roomId` (Room).
 - **Design systems (two, intentionally separate):**
   - Landing: custom carbon/silver/champagne tokens, glassmorphism CSS utilities in `index.css`
-  - Room: shadcn/ui with "claude blu 2" theme (M002 target state)
+  - Room: shadcn/ui with "claude blu 2" theme (M002 complete)
 - **Components:** Landing in `src/components/home/`. Room in `src/components/Room/`, `src/components/Voting/`. Shared modals at `src/components/`.
-- **shadcn:** `src/components/ui/` for generated components, `src/lib/utils.ts` for `cn()`.
+- **shadcn:** `src/components/ui/` for generated components, `src/lib/utils.ts` for `cn()`. Sonner for toasts.
 
 ## Capability Contract
 
@@ -33,4 +34,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 ## Milestone Sequence
 
 - [x] M001: Migration — Dedicated create page, voting systems, tasks pane, modernized room UI
-- [ ] M002: shadcn Room UI Migration — Consistent shadcn component system for all room-facing surfaces
+- [x] M002: shadcn Room UI Migration — Consistent shadcn component system for all room-facing surfaces

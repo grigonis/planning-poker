@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useSocket } from '../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+import RoomNavbar from '../components/Room/RoomNavbar';
 import { motion } from 'framer-motion';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -105,16 +106,8 @@ const CreateRoom = () => {
             <div className="absolute inset-0 aurora z-0 opacity-40 blur-sm pointer-events-none" />
             <div className="absolute inset-0 modern-grid z-0 opacity-40 blur-sm pointer-events-none" />
 
-            {/* Dummy Navbar showing branding */}
-            <div className="sticky top-0 z-40 bg-background/50 backdrop-blur-md border-b border-border transition-colors duration-300">
-                <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
-                        <h1 className="text-xl font-bold text-primary leading-none">BananaPoker</h1>
-                        <span className="text-xs text-muted-foreground font-mono mt-1">Online planning poker</span>
-                    </div>
-                    <div><ThemeToggle /></div>
-                </div>
-            </div>
+            {/* Unified Navbar */}
+            <RoomNavbar minimal />
 
             {/* Create Form Container */}
             <main className="flex-1 w-full mx-auto px-4 md:px-6 py-8 relative z-10 flex items-center justify-center">

@@ -31,3 +31,5 @@
 | D023 | M002/S03 | convention | Role selection | ToggleGroup for all role pickers | Eliminates manual button-state logic and provides accessible toggle semantics | No |
 | D024 | M002/S04 | arch | Toast provider | sonner | Modern, rich colors, easy integration with shadcn | No |
 | D025 | M002/S04 | convention | Notification placement | Top-center | Standardized placement for all room-facing toasts | Yes |
+| D026 | M002/S05 | arch | Navbar unification strategy | Shared `RoomNavbar` with `minimal` prop | Toggles between create-room (branding only) and active-room (full controls) modes | No |
+| D027 | M002/S05 | arch | Progress bar styling | shadcn `Progress` component | Replaces custom gradient div; uses theme-aware `primary` indicator | No |

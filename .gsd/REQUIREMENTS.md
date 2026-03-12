@@ -117,13 +117,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R112 — Room + CreateRoom share a unified RoomNavbar component
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Extract shared src/components/Room/RoomNavbar.jsx using shadcn Button for icon actions; both Room.jsx and CreateRoom.jsx import it
 - Why it matters: Two separate hand-built navbars create maintenance divergence
 - Source: audit
 - Primary owning slice: M002/S05
 - Supporting slices: none
-- Validation: unmapped
+- Validation: S05-UAT
 
 ### R113 — Stale App.css Vite scaffold removed
 - Class: quality-attribute
@@ -137,13 +137,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R114 — Landing page entirely untouched
 - Class: constraint
-- Status: active
+- Status: validated
 - Description: src/pages/Landing.jsx, src/components/home/, and landing-page CSS utilities in index.css must be unchanged after migration
 - Why it matters: User explicitly requires landing page to remain unchanged
 - Source: user
 - Primary owning slice: all (constraint on every slice)
 - Supporting slices: none
-- Validation: unmapped
+- Validation: S05-UAT
 
 ---
 
@@ -193,9 +193,9 @@ This file is the explicit capability and coverage contract for the project.
 | R109 | primary-user-loop | validated | M002/S04 | S02 | S04-UAT |
 | R110 | primary-user-loop | validated | M002/S04 | none | S04-UAT |
 | R111 | quality-attribute | validated | M002/S04 | none | S04-UAT |
-| R112 | quality-attribute | active | M002/S05 | none | unmapped |
+| R112 | quality-attribute | validated | M002/S05 | none | S05-UAT |
 | R113 | quality-attribute | validated | M002/S01 | none | S01-UAT |
-| R114 | constraint | active | all | none | unmapped |
+| R114 | constraint | validated | all | none | S05-UAT |
 
 ## Coverage Summary
 - Active requirements: 2
