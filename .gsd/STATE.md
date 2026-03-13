@@ -1,27 +1,27 @@
 # GSD State
 
-**Active Milestone:** M003 — Room UX Restructure
-**Active Slice:** S04 — Participant Panel → **COMPLETE** (1 task done)
-**Phase:** slice-complete — ready for S05 (final slice)
-**Requirements Status:** 0 active · 0 validated · 1 deferred · 0 out of scope
+**Active Milestone:** M003 — Room UX Restructure — **COMPLETE**
+**Phase:** milestone-complete — M003 done, all slices verified
 
 ## Milestone Registry
 - ✅ **M001:** Migration
 - ✅ **M002:** shadcn Room UI Migration
-- 🔄 **M003:** Room UX Restructure (S05 remaining)
+- ✅ **M003:** Room UX Restructure
 
-## Slice S04 Status
-- ✅ T01: ParticipantPanel — collapsible, fixed left, hidden mobile, reveal reordering
-
-## Known Dead Code
-- `RoomSettingsModal.jsx` — rendered with `isOpen={false}` in Room.jsx. Tagged @deprecated. **Remove in S05.**
+## M003 Summary
+All slices complete and verified:
+- S01: Keystimate branding, localStorage key migration
+- S02: Host dropdown menu + Edit Room Details + Settings dialogs
+- S03: Customize Cards dialog (add/remove values, min 2/max 12, live preview)
+- S04: Participant panel (collapsible, fixed left, hidden mobile, reveal reordering)
+- S05: Integration & polish — dead code removed, panel top positioning fixed, full e2e verified
 
 ## Blockers
 - None
 
 ## Next Action
-S04 complete. Proceed to S05: Integration & Polish — remove dead code, final e2e verification.
+M003 complete. Queue next milestone or merge branch to main.
 
-## Layout Note (for S05)
-- ParticipantPanel uses `fixed left-0 top-14 bottom-0 hidden md:flex` — clean coexistence with poker table. No padding offset needed on main content.
-- At smaller md screens (~768-1024px), the panel (w-56 expanded) + the table content may be tight. S05 can verify and adjust if needed.
+## Known Issues (non-blocking)
+- React `forwardRef` warnings from shadcn/Radix UI dialog components — pre-existing, library-level, no functional impact
+- React `Missing Description` warnings on dialog components — pre-existing shadcn accessibility warnings
