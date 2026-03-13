@@ -198,7 +198,7 @@ const CreateRoom = () => {
 
                         <Button
                             type="submit"
-                            disabled={!name.trim() || isLoading}
+                            disabled={!name.trim() || isLoading || !socket}
                             className="w-full h-12 text-base font-bold"
                         >
                             {isLoading ? 'Creating...' : 'Start Session'}
