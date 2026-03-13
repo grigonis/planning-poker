@@ -16,6 +16,8 @@ import TasksPane from '../components/Room/TasksPane';
 import RoomNavbar from '../components/Room/RoomNavbar';
 import ParticipantPanel from '../components/Room/ParticipantPanel';
 import { useProfile } from '../hooks/useProfile';
+import { useAuthContext } from '../context/AuthContext';
+import SignInDialog from '../components/SignInDialog';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -23,6 +25,7 @@ const Room = () => {
     const navigate = useNavigate();
     const { socket, isConnected } = useSocket();
     const { userId: globalUserId, name: globalName, avatarSeed: globalAvatarSeed } = useProfile();
+    const { user: authUser, signOut } = useAuthContext();
 
     const [viewState, setViewState] = useState(
         // userId present = existing session/create-room old flow → go straight to room
@@ -60,6 +63,7 @@ const Room = () => {
         localStorage.getItem(`keystimate_tasks_open_${roomId}`) === 'true'
     );
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSignInOpen, setIsSignInOpen] = useState(false);
 
     // Tasks State
     const [tasks, setTasks] = useState(location.state?.tasks || []);
@@ -565,6 +569,9 @@ const Room = () => {
                 onOpenManageGroups={() => setIsManageGroupsOpen(true)}
                 onOpenInvite={() => setIsInviteModalOpen(true)}
                 onOpenProfile={() => setIsProfileOpen(true)}
+                authUser={authUser}
+                onSignIn={() => setIsSignInOpen(true)}
+                onSignOut={signOut}
             />
 
 
@@ -714,6 +721,11 @@ const Room = () => {
                 onCreateGroup={handleCreateGroup}
                 onDeleteGroup={handleDeleteGroup}
                 onAssignGroup={handleAssignGroup}
+            />
+            {/* Sign-in dialog */}
+            <SignInDialog
+                open={isSignInOpen}
+                onClose={() => setIsSignInOpen(false)}
             />
         </div>
     );

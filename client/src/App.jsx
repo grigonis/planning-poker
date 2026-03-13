@@ -1,30 +1,43 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SocketProvider } from './context/SocketContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
+import { handleEmailSignInLink } from './components/SignInDialog';
 import Landing from './pages/Landing';
 import Room from './pages/Room';
 import CreateRoom from './pages/CreateRoom';
 import Dashboard from './pages/Dashboard';
+
+// Complete email magic-link sign-in if the URL contains an auth link
+function EmailLinkHandler() {
+  useEffect(() => {
+    handleEmailSignInLink();
+  }, []);
+  return null;
+}
 
 function App() {
   return (
     <ThemeProvider>
       <TooltipProvider delayDuration={300}>
         <Toaster position="top-center" richColors />
-        <SocketProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/create" element={<CreateRoom />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/room/:roomId" element={<Room />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BrowserRouter>
-        </SocketProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <BrowserRouter>
+              <EmailLinkHandler />
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/create" element={<CreateRoom />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/room/:roomId" element={<Room />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </SocketProvider>
+        </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
   );

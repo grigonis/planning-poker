@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Settings, LayoutList, Pencil, Layers, UsersRound, LayoutDashboard } from 'lucide-react';
+import {
+    Users, Settings, LayoutList, Pencil, Layers, UsersRound,
+    LogIn, LogOut, UserCog,
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import {
     Tooltip,
@@ -11,41 +14,46 @@ import ThemeToggle from '../ThemeToggle';
 import PlayerAvatar from './PlayerAvatar';
 import KeystimateLogo from '../KeystimateLogo';
 import { cn } from '../../lib/utils';
+import { createAvatar } from '@dicebear/core';
+import { avataaars } from '@dicebear/collection';
 
-/**
- * SettingsDropdown
- *
- * Custom dropdown that avoids the Radix Popper positioning bug inside sticky/backdrop-blur containers.
- * Renders absolutely positioned relative to the trigger button.
- */
-const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGroups, onOpenSettings }) => {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const makeAvatarUri = (seed, size = 32) =>
+    createAvatar(avataaars, {
+        seed,
+        size,
+        backgroundColor: ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'],
+    }).toDataUri();
+
+// Custom dropdown — avoids Radix Popper positioning bug inside sticky/backdrop-blur containers.
+const useDropdown = () => {
     const [open, setOpen] = useState(false);
     const containerRef = useRef(null);
 
-    // Close on outside click
     useEffect(() => {
         if (!open) return;
-        const handleClick = (e) => {
-            if (containerRef.current && !containerRef.current.contains(e.target)) {
-                setOpen(false);
-            }
+        const onClick = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
         };
-        document.addEventListener('mousedown', handleClick);
-        return () => document.removeEventListener('mousedown', handleClick);
+        const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+        document.addEventListener('mousedown', onClick);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', onClick);
+            document.removeEventListener('keydown', onKey);
+        };
     }, [open]);
 
-    // Close on Escape
-    useEffect(() => {
-        if (!open) return;
-        const handleKey = (e) => { if (e.key === 'Escape') setOpen(false); };
-        document.addEventListener('keydown', handleKey);
-        return () => document.removeEventListener('keydown', handleKey);
-    }, [open]);
+    return { open, setOpen, containerRef };
+};
 
-    const handleSelect = (fn) => {
-        setOpen(false);
-        fn?.();
-    };
+// ─── SettingsDropdown ─────────────────────────────────────────────────────────
+
+const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGroups, onOpenSettings }) => {
+    const { open, setOpen, containerRef } = useDropdown();
+
+    const handleSelect = (fn) => { setOpen(false); fn?.(); };
 
     return (
         <div ref={containerRef} className="relative">
@@ -64,39 +72,22 @@ const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGr
             {open && (
                 <div
                     role="menu"
-                    className="absolute right-0 top-full mt-1 w-52 rounded-lg bg-popover border border-border shadow-md ring-1 ring-foreground/10 py-1 z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
-                    style={{ marginTop: '6px' }}
+                    className="absolute right-0 top-full mt-1.5 w-52 rounded-xl bg-popover border border-border shadow-lg ring-1 ring-foreground/5 py-1 z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
                 >
-                    <button
-                        role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
-                        onClick={() => handleSelect(onOpenEditRoom)}
-                    >
+                    <button role="menuitem" className="dropdown-item" onClick={() => handleSelect(onOpenEditRoom)}>
                         <Pencil className="size-4 shrink-0" />
                         Edit Room Details
                     </button>
-                    <button
-                        role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
-                        onClick={() => handleSelect(onOpenCustomizeCards)}
-                    >
+                    <button role="menuitem" className="dropdown-item" onClick={() => handleSelect(onOpenCustomizeCards)}>
                         <Layers className="size-4 shrink-0" />
                         Customize Cards
                     </button>
-                    <button
-                        role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
-                        onClick={() => handleSelect(onOpenManageGroups)}
-                    >
+                    <button role="menuitem" className="dropdown-item" onClick={() => handleSelect(onOpenManageGroups)}>
                         <UsersRound className="size-4 shrink-0" />
                         Manage Groups
                     </button>
-                    <div className="my-1 h-px bg-border -mx-1" role="separator" />
-                    <button
-                        role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
-                        onClick={() => handleSelect(onOpenSettings)}
-                    >
+                    <div className="my-1 h-px bg-border mx-2" role="separator" />
+                    <button role="menuitem" className="dropdown-item" onClick={() => handleSelect(onOpenSettings)}>
                         <Settings className="size-4 shrink-0" />
                         Settings
                     </button>
@@ -106,14 +97,149 @@ const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGr
     );
 };
 
+// ─── UserDropdown ─────────────────────────────────────────────────────────────
 /**
- * RoomNavbar
+ * Single avatar trigger with two menu items:
+ *   1. Avatar + display name — subtitle "User settings" — opens ProfileSetupDialog
+ *   2. Sign in (guest) / Sign out (authenticated) — opens SignInDialog or calls signOut
  *
- * - Logo: KeystimateLogo icon + "Keystimate" text (same as landing page)
- * - Room name + description: shown below logo text, truncated with tooltip
- * - Tasks / Invite: icon + label buttons
- * - Settings: custom dropdown (avoids Radix Popper bug inside sticky/backdrop-blur)
+ * Used in both room mode and dashboard mode.
  */
+const UserDropdown = ({
+    currentUser,        // { id, name, avatarSeed }
+    authUser,           // Firebase User | null
+    onOpenProfile,      // () => void
+    onSignIn,           // () => void
+    onSignOut,          // () => void
+    // Room-mode extras (not used in dashboard, but harmless to pass)
+    isCurrentUser = true,
+}) => {
+    const { open, setOpen, containerRef } = useDropdown();
+
+    const handleSelect = (fn) => { setOpen(false); fn?.(); };
+
+    // Avatar: prefer Firebase photo → dicebear from seed → initials fallback
+    const avatarSeed = currentUser?.avatarSeed;
+    const displayName = authUser?.displayName || currentUser?.name || 'You';
+    const firebasePhoto = authUser?.photoURL;
+
+    return (
+        <div ref={containerRef} className="relative">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={() => setOpen(v => !v)}
+                        aria-expanded={open}
+                        aria-haspopup="menu"
+                        aria-label="Account menu"
+                        className="size-9 rounded-full overflow-hidden border-2 border-transparent hover:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
+                    >
+                        {firebasePhoto ? (
+                            <img
+                                src={firebasePhoto}
+                                alt={displayName}
+                                className="size-full object-cover"
+                            />
+                        ) : avatarSeed ? (
+                            <img
+                                src={makeAvatarUri(avatarSeed, 36)}
+                                alt={displayName}
+                                className="size-full object-cover"
+                            />
+                        ) : (
+                            <div className="size-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+                                {displayName.slice(0, 2).toUpperCase()}
+                            </div>
+                        )}
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>Account</TooltipContent>
+            </Tooltip>
+
+            {open && (
+                <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-1.5 w-60 rounded-xl bg-popover border border-border shadow-lg ring-1 ring-foreground/5 py-1.5 z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
+                >
+                    {/* ── Item 1: Profile / User settings ── */}
+                    <button
+                        role="menuitem"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mx-1 hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors focus:outline-none focus-visible:bg-accent"
+                        style={{ width: 'calc(100% - 8px)' }}
+                        onClick={() => handleSelect(onOpenProfile)}
+                    >
+                        {/* Mini avatar */}
+                        <div className="size-8 rounded-full overflow-hidden shrink-0 border border-border bg-muted">
+                            {firebasePhoto ? (
+                                <img src={firebasePhoto} alt="" className="size-full object-cover" />
+                            ) : avatarSeed ? (
+                                <img src={makeAvatarUri(avatarSeed, 32)} alt="" className="size-full object-cover" />
+                            ) : (
+                                <div className="size-full bg-primary flex items-center justify-center text-primary-foreground text-[10px] font-bold">
+                                    {displayName.slice(0, 2).toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Text */}
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-sm font-semibold truncate leading-tight">
+                                {displayName}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground leading-tight mt-0.5">
+                                User settings
+                            </span>
+                        </div>
+
+                        <UserCog className="size-3.5 text-muted-foreground shrink-0 opacity-60" />
+                    </button>
+
+                    <div className="my-1 h-px bg-border mx-2" role="separator" />
+
+                    {/* ── Item 2: Sign in / Sign out ── */}
+                    {authUser ? (
+                        <button
+                            role="menuitem"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mx-1 hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors focus:outline-none focus-visible:bg-accent text-destructive hover:text-destructive"
+                            style={{ width: 'calc(100% - 8px)' }}
+                            onClick={() => handleSelect(onSignOut)}
+                        >
+                            <div className="size-8 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+                                <LogOut className="size-4 text-destructive" />
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-sm font-semibold leading-tight">Sign out</span>
+                                <span className="text-[11px] text-muted-foreground leading-tight mt-0.5 font-normal text-current opacity-70">
+                                    {authUser.email ?? authUser.displayName}
+                                </span>
+                            </div>
+                        </button>
+                    ) : (
+                        <button
+                            role="menuitem"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mx-1 hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors focus:outline-none focus-visible:bg-accent"
+                            style={{ width: 'calc(100% - 8px)' }}
+                            onClick={() => handleSelect(onSignIn)}
+                        >
+                            <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                <LogIn className="size-4 text-primary" />
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-sm font-semibold leading-tight">Sign in</span>
+                                <span className="text-[11px] text-muted-foreground leading-tight mt-0.5">
+                                    Log in or sign up
+                                </span>
+                            </div>
+                        </button>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ─── RoomNavbar ───────────────────────────────────────────────────────────────
+
 const RoomNavbar = ({
     roomId,
     roomName,
@@ -131,16 +257,40 @@ const RoomNavbar = ({
     onOpenManageGroups,
     onOpenInvite,
     onOpenProfile,
-    mode = 'room' // 'room' or 'dashboard'
+    mode = 'room',       // 'room' | 'dashboard'
+    // Auth props
+    authUser = null,     // Firebase User object or null
+    onSignIn = null,     // () => void
+    onSignOut = null,    // () => void
 }) => {
     const isDashboard = mode === 'dashboard';
     const navigate = useNavigate();
 
     return (
         <div className="sticky top-0 z-40 bg-white/80 dark:bg-[#101010]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 transition-colors duration-300">
+            {/* Global dropdown-item style via a style tag — avoids Tailwind purge issues for dynamic classnames */}
+            <style>{`
+                .dropdown-item {
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 7px 12px;
+                    font-size: 0.875rem;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    text-align: left;
+                    transition: background 0.1s, color 0.1s;
+                }
+                .dropdown-item:hover {
+                    background: hsl(var(--accent));
+                    color: hsl(var(--accent-foreground));
+                }
+            `}</style>
+
             <div className="w-full max-w-7xl mx-auto px-2 md:px-4 py-2 flex items-center justify-between gap-3">
 
-                {/* Logo / Room Name — pushed left */}
+                {/* ── Logo / Room name ── */}
                 <div
                     className="flex items-center gap-2.5 cursor-pointer shrink-0 group min-w-0"
                     onClick={() => navigate('/dashboard')}
@@ -167,38 +317,19 @@ const RoomNavbar = ({
                             </Tooltip>
                         )}
                         {minimal && (
-                            <span className="text-[11px] text-muted-foreground font-mono mt-0.5 leading-none whitespace-nowrap">Online planning poker</span>
+                            <span className="text-[11px] text-muted-foreground font-mono mt-0.5 leading-none whitespace-nowrap">
+                                Online planning poker
+                            </span>
                         )}
                     </div>
                 </div>
 
-                {/* Actions */}
+                {/* ── Actions ── */}
                 <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
+
+                    {/* Room mode: Tasks + Invite buttons */}
                     {!minimal && !isDashboard && currentUser && (
                         <>
-                            {/* Profile/Avatar Button */}
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={onOpenProfile}
-                                        className="rounded-full size-9 p-0 hover:scale-105 active:scale-95 transition-transform"
-                                        aria-label="Edit Profile"
-                                    >
-                                        <PlayerAvatar
-                                            user={{ ...currentUser, connected: true }}
-                                            size={32}
-                                            isCurrentUser={false}
-                                            anonymousMode={false}
-                                            hideDetails={true}
-                                        />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Edit Profile</TooltipContent>
-                            </Tooltip>
-
-                            {/* Tasks Button — icon + label */}
                             <Button
                                 variant={isTasksOpen ? "secondary" : "ghost"}
                                 onClick={onToggleTasks}
@@ -217,7 +348,6 @@ const RoomNavbar = ({
                                 )}
                             </Button>
 
-                            {/* Invite Button — icon + label */}
                             <Button
                                 variant="ghost"
                                 onClick={onOpenInvite}
@@ -233,7 +363,7 @@ const RoomNavbar = ({
                     {/* Theme Toggle */}
                     <ThemeToggle />
 
-                    {/* Settings — custom dropdown (avoids Radix Popper sticky/backdrop-filter bug) */}
+                    {/* Room mode: Settings dropdown (host only) */}
                     {!minimal && !isDashboard && isHost && (
                         <SettingsDropdown
                             onOpenEditRoom={onOpenEditRoom}
@@ -243,28 +373,15 @@ const RoomNavbar = ({
                         />
                     )}
 
-                    {/* Dashboard specific Profile button (if needed, or just show the same one) */}
-                    {isDashboard && currentUser && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={onOpenProfile}
-                                    className="rounded-full size-9 p-0 hover:scale-105 active:scale-95 transition-transform"
-                                    aria-label="Edit Profile"
-                                >
-                                    <PlayerAvatar
-                                        user={{ ...currentUser, connected: true }}
-                                        size={32}
-                                        isCurrentUser={false}
-                                        anonymousMode={false}
-                                        hideDetails={true}
-                                    />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit Profile</TooltipContent>
-                        </Tooltip>
+                    {/* User avatar dropdown — shown whenever we have a user */}
+                    {currentUser && (
+                        <UserDropdown
+                            currentUser={currentUser}
+                            authUser={authUser}
+                            onOpenProfile={onOpenProfile}
+                            onSignIn={onSignIn}
+                            onSignOut={onSignOut}
+                        />
                     )}
                 </div>
             </div>
