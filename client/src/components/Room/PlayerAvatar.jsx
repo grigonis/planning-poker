@@ -3,7 +3,7 @@ import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 import { Crown, RefreshCw } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
-import anonymousMonkeySvg from '../../assets/banana-poker/anonymous-monkey.svg';
+import anonymousMonkeySvg from '../../assets/anonymous-monkey.svg';
 import { Badge } from '../ui/badge';
 
 const MONKEY_ALIASES = [

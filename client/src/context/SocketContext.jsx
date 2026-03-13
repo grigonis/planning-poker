@@ -10,7 +10,7 @@ export const SocketProvider = ({ children }) => {
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const newSocket = io('http://localhost:3000');
+        const newSocket = io('http://localhost:5000');
         setSocket(newSocket);
 
         newSocket.on('connect', () => setIsConnected(true));

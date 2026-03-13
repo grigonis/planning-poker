@@ -30,6 +30,8 @@ module.exports = (io, socket) => {
                 name: 'Modified Fibonacci',
                 values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
             },
+            roomName: '',
+            roomDescription: '',
             tasks: [],
             activeTaskId: null
         };
@@ -65,6 +67,8 @@ module.exports = (io, socket) => {
             autoReveal: room.autoReveal,
             anonymousMode: room.anonymousMode,
             votingSystem: room.votingSystem,
+            roomName: room.roomName,
+            roomDescription: room.roomDescription,
             tasks: room.tasks,
             activeTaskId: room.activeTaskId,
             users: Array.from(room.users.values())
@@ -79,6 +83,8 @@ module.exports = (io, socket) => {
             if (settings.autoReveal !== undefined) room.autoReveal = settings.autoReveal;
             if (settings.anonymousMode !== undefined) room.anonymousMode = settings.anonymousMode;
             if (settings.votingSystem !== undefined) room.votingSystem = settings.votingSystem;
+            if (settings.roomName !== undefined) room.roomName = settings.roomName;
+            if (settings.roomDescription !== undefined) room.roomDescription = settings.roomDescription;
             
             io.to(roomId).emit('room_settings_updated', { settings });
             console.log(`Room ${roomId} settings updated:`, settings);
@@ -144,6 +150,8 @@ module.exports = (io, socket) => {
             autoReveal: room.autoReveal,
             anonymousMode: room.anonymousMode,
             votingSystem: room.votingSystem,
+            roomName: room.roomName,
+            roomDescription: room.roomDescription,
             tasks: room.tasks,
             activeTaskId: room.activeTaskId
         });

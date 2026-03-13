@@ -4,7 +4,15 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
     const [isDark, setIsDark] = useState(() => {
-        const saved = localStorage.getItem('banana-poker-theme');
+        let saved = localStorage.getItem('keystimate-theme');
+        if (saved === null) {
+            // One-time migration from legacy key
+            const legacy = localStorage.getItem('banana-poker-theme');
+            if (legacy !== null) {
+                saved = legacy;
+                localStorage.setItem('keystimate-theme', saved);
+            }
+        }
         const dark = saved !== null
             ? saved === 'dark'
             : window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -15,7 +23,7 @@ export const ThemeProvider = ({ children }) => {
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', isDark);
-        localStorage.setItem('banana-poker-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('keystimate-theme', isDark ? 'dark' : 'light');
     }, [isDark]);
 
     const toggleTheme = () => setIsDark(prev => !prev);

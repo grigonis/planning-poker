@@ -33,3 +33,14 @@
 | D025 | M002/S04 | convention | Notification placement | Top-center | Standardized placement for all room-facing toasts | Yes |
 | D026 | M002/S05 | arch | Navbar unification strategy | Shared `RoomNavbar` with `minimal` prop | Toggles between create-room (branding only) and active-room (full controls) modes | No |
 | D027 | M002/S05 | arch | Progress bar styling | shadcn `Progress` component | Replaces custom gradient div; uses theme-aware `primary` indicator | No |
+| D028 | M003 | scope | Voting system locking | Lock system type after room creation | Prevents mid-session confusion; only card values customizable in-room | No |
+| D029 | M003 | arch | Settings UI split | Three separate dialogs via DropdownMenu | Edit Room Details, Customize Cards, Settings — replaces monolithic RoomSettingsModal | No |
+| D030 | M003 | arch | Participant panel position | Left-side floating overlay, never overlaps table | Float/overlay approach; hidden below 768px; collapsed by default | Yes — if layout conflicts arise |
+| D031 | M003 | convention | Participant panel reveal ordering | Highest-to-lowest with group dividers | Three groups: numeric voters, non-numeric (☕/?), spectators. Non-numeric pushed to bottom | No |
+| D032 | M003 | convention | Card customization limits | Min 2, max 12 cards | User-specified bounds; prevents broken/absurd decks | No |
+| D033 | M003 | convention | Room details broadcast | Live via Socket.io room_settings_updated | Room name/description stored server-side, broadcast on change | No |
+| D034 | M003 | convention | Branding | Keystimate | Replaces BananaPoker in all room-facing UI; landing page untouched (D011) | No |
+| D035 | M003 | convention | localStorage key prefix | keystimate_ | Replaces banana_ prefix; banana-poker-theme → keystimate-theme | No |
+| D036 | M003/S02 | arch | Dialog-from-DropdownMenu pattern | State-driven dialogs rendered outside DropdownMenu tree | Radix DropdownMenu and Dialog share focus/portal internals; nesting Dialog inside DropdownMenuItem causes focus trap conflicts. Menu items set state flags, dialogs render as siblings in Room.jsx. | No |
+| D037 | M003/S02 | convention | Customize Cards placeholder | Minimal placeholder dialog in S02, replaced by real implementation in S03 | S02 needs a working "Customize Cards" menu item per roadmap boundary map; building a placeholder keeps the dropdown complete while deferring interactive card editing to S03 | Yes — replaced in S03 |
+| D038 | M003/S02/T03 | arch | DropdownMenuTrigger must use plain `<button>` not shadcn Button | shadcn Button does not use React.forwardRef; Radix DropdownMenuTrigger uses asChild + Slot.Root which needs a ref-forwarding child to measure trigger position for portal placement. Without forwardRef, the portal transform stays at translate(0,-200%) and the menu renders above the viewport. Fix: replace Button with a raw `<button>` inside DropdownMenuTrigger. | No |
