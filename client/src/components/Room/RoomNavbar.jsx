@@ -1,7 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Settings, LayoutList } from 'lucide-react';
+import { Users, Settings, LayoutList, Pencil, Layers } from 'lucide-react';
 import { Button } from '../ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 import ThemeToggle from '../ThemeToggle';
 import PlayerAvatar from './PlayerAvatar';
 import { cn } from '../../lib/utils';
@@ -11,6 +18,8 @@ import { cn } from '../../lib/utils';
  * 
  * @param {Object} props
  * @param {string} [props.roomId] - The room ID to display.
+ * @param {string} [props.roomName] - The room name to display.
+ * @param {string} [props.roomDescription] - The room description to display.
  * @param {boolean} [props.socketStatus] - Whether the socket is connected.
  * @param {number} [props.tasksCount=0] - Number of tasks to show in the badge.
  * @param {boolean} [props.isHost=false] - Whether the current user is the host.
@@ -18,12 +27,16 @@ import { cn } from '../../lib/utils';
  * @param {Object} [props.currentUser] - Current user object for the avatar.
  * @param {boolean} [props.minimal=false] - If true, only shows branding and ThemeToggle.
  * @param {Function} [props.onToggleTasks] - Handler for toggling the tasks pane.
- * @param {Function} [props.onOpenSettings] - Handler for opening room settings.
+ * @param {Function} [props.onOpenEditRoom] - Handler for opening Edit Room Details dialog.
+ * @param {Function} [props.onOpenCustomizeCards] - Handler for opening Customize Cards dialog.
+ * @param {Function} [props.onOpenSettings] - Handler for opening the Settings dialog.
  * @param {Function} [props.onOpenInvite] - Handler for opening the invite modal.
  * @param {Function} [props.onOpenProfile] - Handler for opening the profile edit modal.
  */
 const RoomNavbar = ({
     roomId,
+    roomName,
+    roomDescription,
     socketStatus,
     tasksCount = 0,
     isHost = false,
@@ -31,6 +44,8 @@ const RoomNavbar = ({
     currentUser,
     minimal = false,
     onToggleTasks,
+    onOpenEditRoom,
+    onOpenCustomizeCards,
     onOpenSettings,
     onOpenInvite,
     onOpenProfile
@@ -45,8 +60,18 @@ const RoomNavbar = ({
                     <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
                         <h1 className="text-xl font-black text-primary leading-none tracking-tight">Keystimate</h1>
                         {!minimal && roomId ? (
-                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                <span>Room: <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded ml-0.5 select-all">{roomId}</span></span>
+                            <div className="flex flex-col gap-0.5 mt-0.5">
+                                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                    {roomName ? (
+                                        <span className="text-gray-900 dark:text-white font-bold max-w-[120px] truncate">{roomName}</span>
+                                    ) : (
+                                        <span>Room:</span>
+                                    )}
+                                    <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded select-all">{roomId}</span>
+                                </div>
+                                {roomDescription && (
+                                    <p className="text-[11px] text-muted-foreground truncate max-w-[200px] md:max-w-[300px]">{roomDescription}</p>
+                                )}
                             </div>
                         ) : minimal && (
                             <span className="text-xs text-muted-foreground font-mono mt-1">Online planning poker</span>
@@ -128,15 +153,31 @@ const RoomNavbar = ({
                     <ThemeToggle />
 
                     {!minimal && isHost && (
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={onOpenSettings}
-                            className="rounded-full bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm"
-                            aria-label="Room Settings"
-                        >
-                            <Settings className="w-4.5 h-4.5" />
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="inline-flex items-center justify-center size-8 rounded-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                                    aria-label="Room Settings"
+                                >
+                                    <Settings className="w-4.5 h-4.5" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" side="bottom" sideOffset={8} avoidCollisions={false} className="w-52">
+                                <DropdownMenuItem onSelect={onOpenEditRoom} className="gap-2 cursor-pointer">
+                                    <Pencil className="size-4" />
+                                    Edit Room Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={onOpenCustomizeCards} className="gap-2 cursor-pointer">
+                                    <Layers className="size-4" />
+                                    Customize Cards
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onSelect={onOpenSettings} className="gap-2 cursor-pointer">
+                                    <Settings className="size-4" />
+                                    Settings
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                 </div>
             </div>

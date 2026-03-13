@@ -6,11 +6,14 @@ import PokerTable from '../components/Room/PokerTable';
 import { toast } from "sonner";
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
-import RoomSettingsModal from '../components/Room/RoomSettingsModal';
+import SettingsDialog from '../components/Room/SettingsDialog';
+import EditRoomDetailsDialog from '../components/Room/EditRoomDetailsDialog';
+import CustomizeCardsDialog from '../components/Room/CustomizeCardsDialog';
 import EditProfileModal from '../components/Room/EditProfileModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
 import TasksPane from '../components/Room/TasksPane';
 import RoomNavbar from '../components/Room/RoomNavbar';
+import ParticipantPanel from '../components/Room/ParticipantPanel';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -36,9 +39,13 @@ const Room = () => {
         name: 'Modified Fibonacci',
         values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
     });
+    const [roomName, setRoomName] = useState(location.state?.roomName || '');
+    const [roomDescription, setRoomDescription] = useState(location.state?.roomDescription || '');
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+    const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
+    const [isCustomizeCardsOpen, setIsCustomizeCardsOpen] = useState(false);
     const [isTasksOpen, setIsTasksOpen] = useState(
         localStorage.getItem(`keystimate_tasks_open_${roomId}`) === 'true'
     );
@@ -80,6 +87,8 @@ const Room = () => {
                     if (response.autoReveal !== undefined) setAutoReveal(response.autoReveal);
                     if (response.anonymousMode !== undefined) setAnonymousMode(response.anonymousMode);
                     if (response.votingSystem) setVotingSystem(response.votingSystem);
+                    if (response.roomName !== undefined) setRoomName(response.roomName);
+                    if (response.roomDescription !== undefined) setRoomDescription(response.roomDescription);
                     if (response.tasks) setTasks(response.tasks);
                     if (response.activeTaskId) setActiveTaskId(response.activeTaskId);
 
@@ -269,6 +278,8 @@ const Room = () => {
             if (settings.autoReveal !== undefined) setAutoReveal(settings.autoReveal);
             if (settings.anonymousMode !== undefined) setAnonymousMode(settings.anonymousMode);
             if (settings.votingSystem) setVotingSystem(settings.votingSystem);
+            if (settings.roomName !== undefined) setRoomName(settings.roomName);
+            if (settings.roomDescription !== undefined) setRoomDescription(settings.roomDescription);
         };
 
         const onSessionEnded = () => {
@@ -337,6 +348,8 @@ const Room = () => {
         if (user.autoReveal !== undefined) setAutoReveal(user.autoReveal);
         if (user.anonymousMode !== undefined) setAnonymousMode(user.anonymousMode);
         if (user.votingSystem) setVotingSystem(user.votingSystem);
+        if (user.roomName !== undefined) setRoomName(user.roomName);
+        if (user.roomDescription !== undefined) setRoomDescription(user.roomDescription);
 
         // Note: phase and votes are not passed by GuestJoinModal directly right now,
         // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!
@@ -451,6 +464,8 @@ const Room = () => {
             {/* Unified Navbar */}
             <RoomNavbar 
                 roomId={roomId}
+                roomName={roomName}
+                roomDescription={roomDescription}
                 socketStatus={socket?.connected}
                 tasksCount={tasks.length}
                 isHost={isMeHost}
@@ -463,11 +478,25 @@ const Room = () => {
                         return next;
                     });
                 }}
-                onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenEditRoom={() => setIsEditRoomOpen(true)}
+                onOpenCustomizeCards={() => setIsCustomizeCardsOpen(true)}
+                onOpenSettings={() => setIsSettingsDialogOpen(true)}
                 onOpenInvite={() => setIsInviteModalOpen(true)}
                 onOpenProfile={() => setIsProfileOpen(true)}
             />
 
+
+            {/* Participant Panel — fixed left-side, hidden below md */}
+            {validUser && (
+                <ParticipantPanel
+                    users={users}
+                    votes={votes}
+                    phase={phase}
+                    currentUser={currentUser}
+                    roomId={roomId}
+                    anonymousMode={anonymousMode}
+                />
+            )}
 
             {/* Main Table Area */}
             <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
@@ -548,16 +577,33 @@ const Room = () => {
                 onClose={() => setIsInviteModalOpen(false)}
                 roomId={roomId}
             />
-            <RoomSettingsModal
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
+            <SettingsDialog
+                isOpen={isSettingsDialogOpen}
+                onClose={() => setIsSettingsDialogOpen(false)}
                 funFeatures={funFeatures}
                 autoReveal={autoReveal}
                 anonymousMode={anonymousMode}
-                votingSystem={votingSystem}
-                phase={phase}
                 onUpdateSettings={handleUpdateSettings}
                 onEndSession={handleEndSession}
+            />
+            <EditRoomDetailsDialog
+                isOpen={isEditRoomOpen}
+                onClose={() => setIsEditRoomOpen(false)}
+                roomName={roomName}
+                roomDescription={roomDescription}
+                onSave={(settings) => {
+                    handleUpdateSettings(settings);
+                    toast.success("Room details updated");
+                }}
+            />
+            <CustomizeCardsDialog
+                isOpen={isCustomizeCardsOpen}
+                onClose={() => setIsCustomizeCardsOpen(false)}
+                votingSystem={votingSystem}
+                onSave={(settings) => {
+                    handleUpdateSettings(settings);
+                    toast.success("Card values updated");
+                }}
             />
             <EditProfileModal
                 isOpen={isProfileOpen}
