@@ -167,4 +167,29 @@ const getHistoryByUserId = async (userId) => {
     }
 };
 
-module.exports = { upsertSession, upsertTask, updateParticipants, closeSession, getHistoryByUserId };
+/**
+ * Create or update a Firebase user record in Firestore.
+ * Called from the socket auth middleware on every authenticated connection.
+ * @param {string} uid - Firebase UID
+ * @param {{ email, displayName, photoURL }} data
+ */
+const upsertUser = async (uid, data) => {
+    try {
+        await db.collection('users').doc(uid).set({
+            uid,
+            email: data.email ?? null,
+            displayName: data.displayName ?? null,
+            photoURL: data.photoURL ?? null,
+            lastSeenAt: new Date().toISOString(),
+        }, { merge: true });
+
+        // Set createdAt only on first write (merge won't overwrite it)
+        await db.collection('users').doc(uid).set({
+            createdAt: new Date().toISOString(),
+        }, { merge: true });
+    } catch (err) {
+        console.error('[Firestore] upsertUser failed:', err.message);
+    }
+};
+
+module.exports = { upsertSession, upsertTask, updateParticipants, closeSession, getHistoryByUserId, upsertUser };

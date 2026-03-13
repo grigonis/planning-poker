@@ -5,7 +5,8 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 
 // Initialize Firebase Admin before any handlers — fails loudly if env vars missing
-require("./firebase");
+const { admin } = require("./firebase");
+const { upsertUser } = require("./firestore");
 
 const app = express();
 app.use(cors());
@@ -25,8 +26,37 @@ const registerVoteHandlers = require("./handlers/voteHandlers");
 const registerTaskHandlers = require("./handlers/taskHandlers");
 const registerGroupHandlers = require("./handlers/groupHandlers");
 
+/**
+ * Optional Firebase auth middleware.
+ * If the client sends a Firebase ID token in socket.handshake.auth.idToken,
+ * we verify it and attach socket.firebaseUid. Otherwise firebaseUid is null
+ * (guest path — completely unchanged behaviour).
+ */
+io.use(async (socket, next) => {
+    const idToken = socket.handshake.auth?.idToken;
+    if (!idToken) {
+        socket.firebaseUid = null;
+        return next();
+    }
+    try {
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        socket.firebaseUid = decoded.uid;
+        // Upsert user record — fire-and-forget
+        upsertUser(decoded.uid, {
+            uid: decoded.uid,
+            email: decoded.email ?? null,
+            displayName: decoded.name ?? null,
+            photoURL: decoded.picture ?? null,
+        }).catch(err => console.error('[Firestore] upsertUser failed:', err.message));
+    } catch (err) {
+        console.warn('[Auth] Invalid ID token — treating as guest:', err.message);
+        socket.firebaseUid = null;
+    }
+    next();
+});
+
 io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.id}`);
+    console.log(`User connected: ${socket.id} firebaseUid=${socket.firebaseUid ?? 'guest'}`);
 
     // Register Handlers
     registerRoomHandlers(io, socket);
@@ -36,9 +66,6 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         console.log(`User disconnected: ${socket.id}`);
-        // Handle cleanup or "grey status" logic here
-        // For now, we rely on "User Left" handler if explicitly called, 
-        // or we can add automatic "idle" marking here.
     });
 });
 
