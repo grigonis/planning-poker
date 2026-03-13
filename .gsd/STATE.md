@@ -1,26 +1,25 @@
 # GSD State
 
-**Active Milestone:** M003 — Room UX Restructure — **COMPLETE**
-**Phase:** milestone-complete — M003 done, all slices verified
+**Active Milestone:** M004 — Player Groups
+**Phase:** planning-complete — roadmap written, ready to start S01
 
 ## Milestone Registry
 - ✅ **M001:** Migration
 - ✅ **M002:** shadcn Room UI Migration
 - ✅ **M003:** Room UX Restructure
+- 🔄 **M004:** Player Groups
 
-## M003 Summary
-All slices complete and verified:
-- S01: Keystimate branding, localStorage key migration
-- S02: Host dropdown menu + Edit Room Details + Settings dialogs
-- S03: Customize Cards dialog (add/remove values, min 2/max 12, live preview)
-- S04: Participant panel (collapsible, fixed left, hidden mobile, reveal reordering)
-- S05: Integration & polish — dead code removed, panel top positioning fixed, full e2e verified
+## M004 Slices
+- [x] S01: Server — Groups data model & socket API
+- [ ] S02: Manage Groups dialog + host assignment
+- [ ] S03: Participant panel assign action + group tags
+- [ ] S04: Join group picker + results group split
 
 ## Blockers
 - None
 
 ## Next Action
-M003 complete. Queue next milestone or merge branch to main.
+S02 — ManageGroupsDialog + host assignment UI.
 
 ## Known Issues (non-blocking)
 - React `forwardRef` warnings from shadcn/Radix UI dialog components — pre-existing, library-level, no functional impact

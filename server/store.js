@@ -28,6 +28,8 @@ module.exports = {
             },
             tasks: [],
             activeTaskId: null,
+            groups: new Map(),   // groupId -> { id, name, color }
+            groupsEnabled: false,
             ...roomConfig
         });
         return rooms.get(roomId);

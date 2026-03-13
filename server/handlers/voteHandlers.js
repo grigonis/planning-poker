@@ -65,14 +65,13 @@ module.exports = (io, socket) => {
     const performReveal = (room, roomId) => {
         room.phase = 'REVEALED';
 
-        // Calculate averages (Arithmetic mean, ignoring non-numeric values)
+        // Calculate overall averages (arithmetic mean, ignoring non-numeric values)
         let total = 0;
         let count = 0;
         
         room.votes.forEach((val, userId) => {
             const u = room.users.get(userId);
             if (u && u.role !== 'SPECTATOR') {
-                // Ignore non-numeric cards (e.g., ☕, ?, symbols)
                 const num = parseFloat(val);
                 if (!isNaN(num)) {
                     total += num;
@@ -82,16 +81,44 @@ module.exports = (io, socket) => {
         });
         
         const averageValue = count > 0 ? (total / count) : 0;
-        // Round to 1 decimal place
         const roundedAverage = Math.round(averageValue * 10) / 10;
 
-        let averages = {
+        const averages = {
             total: roundedAverage,
             count: count
         };
         room.averages = averages;
 
-        // If an active task is selected, save the result to it
+        // Per-group averages (only when groups are enabled and groups exist)
+        const groupAverages = [];
+        if (room.groupsEnabled && room.groups.size > 0) {
+            room.groups.forEach((group) => {
+                let gTotal = 0;
+                let gCount = 0;
+                room.users.forEach((u) => {
+                    if (u.groupId !== group.id) return;
+                    if (u.role === 'SPECTATOR') return;
+                    const voteVal = room.votes.get(u.id);
+                    if (voteVal === undefined) return;
+                    const num = parseFloat(voteVal);
+                    if (!isNaN(num)) {
+                        gTotal += num;
+                        gCount++;
+                    }
+                });
+                const gAvg = gCount > 0 ? Math.round((gTotal / gCount) * 10) / 10 : null;
+                groupAverages.push({
+                    groupId: group.id,
+                    name: group.name,
+                    color: group.color,
+                    average: gAvg,
+                    count: gCount
+                });
+            });
+            console.log(`Room ${roomId} groupAverages:`, JSON.stringify(groupAverages));
+        }
+
+        // If an active task is selected, save the combined result to it
         if (room.activeTaskId) {
             const task = room.tasks.find(t => t.id === room.activeTaskId);
             if (task) {
@@ -103,6 +130,8 @@ module.exports = (io, socket) => {
         io.to(roomId).emit("revealed", {
             votes: Array.from(room.votes.entries()),
             averages,
+            groupAverages,
+            groupsEnabled: room.groupsEnabled,
             tasks: room.tasks
         });
     };

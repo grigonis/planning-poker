@@ -12,15 +12,15 @@
     "pid": 3252
   },
   {
-    "id": "77ad45ea",
+    "id": "4d0bb352",
     "label": "server-dev",
     "command": "cd server && npm run dev",
     "cwd": "D:\\Projects\\planning-poker",
-    "startedAt": 1773391484978,
+    "startedAt": 1773392523894,
     "processType": "server",
     "group": null,
     "readyPattern": null,
     "readyPort": 5000,
-    "pid": 11696
+    "pid": 4272
   }
 ]

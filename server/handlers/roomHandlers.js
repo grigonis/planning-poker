@@ -33,7 +33,9 @@ module.exports = (io, socket) => {
             roomName: '',
             roomDescription: '',
             tasks: [],
-            activeTaskId: null
+            activeTaskId: null,
+            groups: new Map(),   // groupId -> { id, name, color }
+            groupsEnabled: false
         };
 
         // Validate role or default to HOST (which acts as DEV usually)
@@ -48,7 +50,8 @@ module.exports = (io, socket) => {
             role: hostRole,
             isHost: true, // explicit flag for privileges
             socketId: socket.id,
-            connected: true
+            connected: true,
+            groupId: null
         };
 
         room.users.set(userId, host);
@@ -71,7 +74,9 @@ module.exports = (io, socket) => {
             roomDescription: room.roomDescription,
             tasks: room.tasks,
             activeTaskId: room.activeTaskId,
-            users: Array.from(room.users.values())
+            users: Array.from(room.users.values()),
+            groups: Array.from(room.groups.values()),
+            groupsEnabled: room.groupsEnabled
         });
         console.log(`Room created: ${roomId} by ${socket.id} (${name}) as ${hostRole} in ${room.gameMode} mode`);
     };
@@ -85,6 +90,7 @@ module.exports = (io, socket) => {
             if (settings.votingSystem !== undefined) room.votingSystem = settings.votingSystem;
             if (settings.roomName !== undefined) room.roomName = settings.roomName;
             if (settings.roomDescription !== undefined) room.roomDescription = settings.roomDescription;
+            if (settings.groupsEnabled !== undefined) room.groupsEnabled = settings.groupsEnabled;
             
             io.to(roomId).emit('room_settings_updated', { settings });
             console.log(`Room ${roomId} settings updated:`, settings);
@@ -122,7 +128,8 @@ module.exports = (io, socket) => {
                 role: finalRole,
                 isHost: false,
                 socketId: socket.id,
-                connected: true
+                connected: true,
+                groupId: null
             };
             room.users.set(newUserId, user);
         }
@@ -153,7 +160,9 @@ module.exports = (io, socket) => {
             roomName: room.roomName,
             roomDescription: room.roomDescription,
             tasks: room.tasks,
-            activeTaskId: room.activeTaskId
+            activeTaskId: room.activeTaskId,
+            groups: Array.from(room.groups.values()),
+            groupsEnabled: room.groupsEnabled
         });
 
         console.log(`${name} joined ${roomId} as ${user.role} (User ID: ${user.id})`);

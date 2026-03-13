@@ -20,6 +20,7 @@ const PORT = process.env.PORT || 5000;
 const registerRoomHandlers = require("./handlers/roomHandlers");
 const registerVoteHandlers = require("./handlers/voteHandlers");
 const registerTaskHandlers = require("./handlers/taskHandlers");
+const registerGroupHandlers = require("./handlers/groupHandlers");
 
 io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
@@ -28,6 +29,7 @@ io.on("connection", (socket) => {
     registerRoomHandlers(io, socket);
     registerVoteHandlers(io, socket);
     registerTaskHandlers(io, socket);
+    registerGroupHandlers(io, socket);
 
     socket.on("disconnect", () => {
         console.log(`User disconnected: ${socket.id}`);
