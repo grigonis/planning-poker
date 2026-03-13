@@ -1,5 +1,12 @@
-import React, { useMemo, useState, useEffect, useLayoutEffect } from 'react';
+import React, { useMemo, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Check, Clock, Eye, Crown, Users } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 
@@ -46,8 +53,8 @@ function getOrderedGroups(users, votes, phase) {
         }
     }
 
-    // Sort numeric voters highest to lowest
-    groupA.sort((a, b) => Number(votes[b.id]) - Number(votes[a.id]));
+    // Sort voters alphabetically by name
+    groupA.sort((a, b) => a.name.localeCompare(b.name));
 
     const groups = [];
     if (groupA.length > 0) groups.push({ label: 'VOTERS', members: groupA });
@@ -110,13 +117,32 @@ function VoteBadge({ voteVal, anonymousMode, isMe }) {
     );
 }
 
-function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded }) {
+function GroupTag({ user, groups }) {
+    if (!user.groupId || !groups?.length) return null;
+    const group = groups.find(g => g.id === user.groupId);
+    if (!group) return null;
+    return (
+        <span
+            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full border leading-none shrink-0"
+            style={{
+                color: group.color,
+                borderColor: group.color + '50',
+                backgroundColor: group.color + '18',
+            }}
+        >
+            {group.name}
+        </span>
+    );
+}
+
+function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, groups, groupsEnabled, isHost, onAssignGroup }) {
     const isMe = user.id === currentUser?.id;
     const voteVal = votes[user.id];
+    const canAssign = isHost && user.role !== 'SPECTATOR' && groupsEnabled && groups?.length > 0;
 
-    return (
+    const rowContent = (
         <div
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-white/20 dark:hover:bg-white/5 ${isMe ? 'bg-primary/5' : ''}`}
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-white/20 dark:hover:bg-white/5 ${isMe ? 'bg-primary/5' : ''} ${canAssign ? 'cursor-pointer' : ''}`}
         >
             {/* Avatar */}
             <SmallAvatar user={user} size={28} />
@@ -125,16 +151,19 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded }) {
             {expanded && (
                 <>
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 min-w-0">
+                        <div className="flex items-center gap-1 min-w-0 flex-wrap">
                             <span className={`text-xs font-medium truncate ${isMe ? 'text-primary' : 'text-foreground'}`}>
                                 {user.name}
                                 {isMe && <span className="ml-1 text-[9px] text-muted-foreground">(you)</span>}
                             </span>
                             {user.isHost && <Crown className="size-2.5 text-amber-500 shrink-0" />}
                         </div>
-                        {user.role === 'SPECTATOR' && (
-                            <span className="text-[9px] text-muted-foreground uppercase tracking-wide">Spectator</span>
-                        )}
+                        <div className="flex items-center gap-1 mt-0.5">
+                            {user.role === 'SPECTATOR' && (
+                                <span className="text-[9px] text-muted-foreground uppercase tracking-wide">Spectator</span>
+                            )}
+                            {groupsEnabled && <GroupTag user={user} groups={groups} />}
+                        </div>
                     </div>
 
                     {/* Status / vote value */}
@@ -154,11 +183,50 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded }) {
             )}
         </div>
     );
+
+    if (!canAssign || !expanded) return rowContent;
+
+    // Wrap in dropdown for group assign
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                {rowContent}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="start" className="w-44">
+                <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Assign Group
+                </div>
+                <DropdownMenuSeparator />
+                {groups.map(group => (
+                    <DropdownMenuItem
+                        key={group.id}
+                        onSelect={() => onAssignGroup(user.id, group.id)}
+                        className="gap-2 cursor-pointer text-sm"
+                    >
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: group.color }} />
+                        {group.name}
+                        {user.groupId === group.id && <Check className="size-3 ml-auto" />}
+                    </DropdownMenuItem>
+                ))}
+                {user.groupId && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onSelect={() => onAssignGroup(user.id, null)}
+                            className="text-muted-foreground text-sm cursor-pointer"
+                        >
+                            Remove from group
+                        </DropdownMenuItem>
+                    </>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
 }
 
 // ----- main component -----
 
-const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser, roomId, anonymousMode = false }) => {
+const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser, roomId, anonymousMode = false, groups = [], groupsEnabled = false, isHost = false, onAssignGroup }) => {
     const storageKey = `keystimate_panel_open_${roomId}`;
 
     const [isExpanded, setIsExpanded] = useState(() => {
@@ -189,7 +257,7 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
         });
     };
 
-    const groups = useMemo(
+    const orderedGroups = useMemo(
         () => getOrderedGroups(users, votes, phase),
         [users, votes, phase]
     );
@@ -227,7 +295,7 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
 
             {/* User list — scrollable */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden py-1 px-1 space-y-0.5">
-                {groups.map((group, gi) => (
+                {orderedGroups.map((group, gi) => (
                     <React.Fragment key={gi}>
                         {/* Group divider label */}
                         {isExpanded && group.label && phase === 'REVEALED' && (
@@ -244,6 +312,10 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
                                 currentUser={currentUser}
                                 anonymousMode={anonymousMode}
                                 expanded={isExpanded}
+                                groups={groups}
+                                groupsEnabled={groupsEnabled}
+                                isHost={isHost}
+                                onAssignGroup={onAssignGroup}
                             />
                         ))}
                     </React.Fragment>

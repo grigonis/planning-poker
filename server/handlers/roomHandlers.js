@@ -5,7 +5,12 @@ module.exports = (io, socket) => {
     const checkRoomHandler = ({ roomId }, callback) => {
         const room = rooms.get(roomId);
         if (room) {
-            callback({ exists: true, mode: room.gameMode });
+            callback({
+                exists: true,
+                mode: room.gameMode,
+                groups: Array.from(room.groups.values()),
+                groupsEnabled: room.groupsEnabled
+            });
         } else {
             callback({ exists: false });
         }

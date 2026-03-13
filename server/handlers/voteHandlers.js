@@ -91,6 +91,9 @@ module.exports = (io, socket) => {
 
         // Per-group averages (only when groups are enabled and groups exist)
         const groupAverages = [];
+        let groupSum = 0;
+        let hasGroupVotes = false;
+
         if (room.groupsEnabled && room.groups.size > 0) {
             room.groups.forEach((group) => {
                 let gTotal = 0;
@@ -107,6 +110,10 @@ module.exports = (io, socket) => {
                     }
                 });
                 const gAvg = gCount > 0 ? Math.round((gTotal / gCount) * 10) / 10 : null;
+                if (gAvg !== null) {
+                    groupSum += gAvg;
+                    hasGroupVotes = true;
+                }
                 groupAverages.push({
                     groupId: group.id,
                     name: group.name,
@@ -115,6 +122,12 @@ module.exports = (io, socket) => {
                     count: gCount
                 });
             });
+
+            // If groups are enabled, the total is the SUM of group averages (per requirement example 5+3=8)
+            if (hasGroupVotes) {
+                averages.total = Math.round(groupSum * 10) / 10;
+            }
+            
             console.log(`Room ${roomId} groupAverages:`, JSON.stringify(groupAverages));
         }
 

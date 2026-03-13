@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
 import { Users, AlertCircle, Loader2 } from 'lucide-react';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
     Dialog,
     DialogContent,
     DialogHeader,
@@ -16,7 +23,10 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
     const { socket } = useSocket();
     const [name, setName] = useState('');
     const [role, setRole] = useState('DEV');
+    const [selectedGroupId, setSelectedGroupId] = useState('');
     const [gameMode, setGameMode] = useState(null);
+    const [groups, setGroups] = useState([]);
+    const [groupsEnabled, setGroupsEnabled] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -29,6 +39,9 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
             if (response.exists) {
                 setGameMode(response.mode);
                 setRole('DEV');
+                setGroups(response.groups || []);
+                setGroupsEnabled(response.groupsEnabled || false);
+                setSelectedGroupId('');
             } else {
                 setError("Room not found. Please check the URL.");
             }
@@ -43,6 +56,10 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
             if (response.error) {
                 setError(response.error);
             } else {
+                // If a group was selected, assign it immediately after join
+                if (selectedGroupId && response.userId) {
+                    socket.emit('assign_group', { roomId, targetUserId: response.userId, groupId: selectedGroupId });
+                }
                 onJoinSuccess({
                     name,
                     role,
@@ -51,7 +68,9 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                     funFeatures: response.funFeatures,
                     autoReveal: response.autoReveal,
                     anonymousMode: response.anonymousMode,
-                    users: response.users
+                    users: response.users,
+                    groups: response.groups,
+                    groupsEnabled: response.groupsEnabled
                 });
             }
         });
@@ -155,6 +174,30 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Group picker — only shown when groups are enabled and groups exist */}
+                            {groupsEnabled && groups.length > 0 && role !== 'SPECTATOR' && (
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                        Your Group <span className="text-muted-foreground/60 normal-case font-normal">(optional)</span>
+                                    </Label>
+                                    <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                                        <SelectTrigger className="font-bold">
+                                            <SelectValue placeholder="Select a group…" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {groups.map(g => (
+                                                <SelectItem key={g.id} value={g.id} className="text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: g.color }} />
+                                                        {g.name}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
 
                             <Button type="submit" className="w-full h-12 text-lg font-bold">
                                 Join Session

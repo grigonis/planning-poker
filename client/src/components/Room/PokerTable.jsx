@@ -60,52 +60,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
 
 const CARD_SCALE = [0, 0.5, 1, 2, 3, 4, 5];
 
-function computeGroupStats(groupUsers, votes, cardScale) {
-    // 1. Determine active scale (default to Modified Fibonacci if missing)
-    const scale = cardScale || [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕'];
-    
-    // 2. Filter users and find their index in the scale
-    const activeVoters = groupUsers
-        .map(u => ({ 
-            user: u, 
-            value: votes[u.id], 
-            index: scale.indexOf(String(votes[u.id])) === -1 ? scale.indexOf(Number(votes[u.id])) : scale.indexOf(String(votes[u.id]))
-        }))
-        .filter(v => {
-            if (v.value === undefined || v.index === -1) return false;
-            // Ignore non-numeric markers for stats (Coffee, ?, etc)
-            const val = String(v.value).toUpperCase();
-            return val !== '☕' && val !== '?' && val !== 'COFFEE' && val !== 'QUESTIONMARK' && val !== 'QUESTION';
-        });
-
-    if (activeVoters.length === 0) return { highVoters: [], lowVoters: [], isExact: false, isAdjacent: false };
-
-    // 3. Exact Consensus check
-    const indices = activeVoters.map(v => v.index);
-    const maxIdx = Math.max(...indices);
-    const minIdx = Math.min(...indices);
-
-    if (maxIdx === minIdx) {
-        return { 
-            highVoters: [], 
-            lowVoters: [], 
-            isExact: activeVoters.length > 0, 
-            isAdjacent: false 
-        };
-    }
-
-    // 4. Adjacency check (within 1 step on the scale)
-    const isAdjacent = (maxIdx - minIdx) <= 1;
-
-    return {
-        highVoters: activeVoters.filter(v => v.index === maxIdx).map(v => v.user),
-        lowVoters: activeVoters.filter(v => v.index === minIdx).map(v => v.user),
-        isExact: false,
-        isAdjacent
-    };
-}
-
-const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true, voteHighlight = null }) => {
+const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true, groups = [], groupsEnabled = false }) => {
     // Determine dynamic layout direction based on coordinates to point cards towards center of table
     // Extreme left/right edges (x <= 15 or x >= 85) are considered "side" seats
     const isSide = x <= 15 || x >= 85;
@@ -153,7 +108,7 @@ const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style
                     >💨</span>
                 </div>
             )}
-            <PlayerAvatar user={user} roomMode={roomMode} size={avatarSize} isCurrentUser={currentUserId === user.id} activeReaction={activeReaction} anonymousMode={anonymousMode} voteHighlight={voteHighlight} />
+            <PlayerAvatar user={user} roomMode={roomMode} size={avatarSize} isCurrentUser={currentUserId === user.id} activeReaction={activeReaction} anonymousMode={anonymousMode} groups={groups} groupsEnabled={groupsEnabled} />
             <VoteChip user={user} votes={votes} myVote={myVote} phase={phase} currentUserId={currentUserId} />
         </div>
     );
@@ -167,12 +122,15 @@ const PokerTable = ({
     phase,
     roomMode,
     averages = {},
+    groupAverages = [],
+    groupsEnabled = false,
     activeReactions = {},
     anonymousMode = false,
     isHost = false,
     votingSystem = { values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕'] },
     tasks = [],
     activeTaskId = null,
+    groups = [],
     onStartVote,
     onReveal,
     onReset
@@ -241,20 +199,6 @@ const PokerTable = ({
 
     const isSmallTable = allTableUsers.length <= 6;
     const avatarSize = isSmallTable ? 56 : 48;
-
-    // Compute vote highlights and outlier info for REVEALED phase
-    const voteHighlights = {};
-    let stdHighVoters = [], stdLowVoters = [], stdIsExact = false, stdIsAdjacent = false;
-
-    if (phase === 'REVEALED') {
-        const voterUsers = users.filter(u => u.role !== 'SPECTATOR' && votes[u.id] !== undefined);
-        ({ highVoters: stdHighVoters, lowVoters: stdLowVoters, isExact: stdIsExact, isAdjacent: stdIsAdjacent } = computeGroupStats(voterUsers, votes, votingSystem?.values));
-        // Only glow when no consensus
-        if (!stdIsExact && !stdIsAdjacent) {
-            stdHighVoters.forEach(u => { voteHighlights[u.id] = 'highest'; });
-            stdLowVoters.forEach(u => { voteHighlights[u.id] = 'lowest'; });
-        }
-    }
 
     const isVotingPhase = phase === 'VOTING' || phase.startsWith('PARTIAL');
     let eligibleVotersCount = 0;
@@ -353,65 +297,52 @@ const PokerTable = ({
                         </div>
                     )}
 
-                    {phase === 'REVEALED' && (() => {
-                        const OutlierLine = ({ highV, lowV }) => {
-                            if (highV.length === 0 && lowV.length === 0) return null;
-                            return (
-                                <div className="flex items-center justify-center gap-2 text-[9px] text-gray-500 w-full truncate">
-                                    {highV.length > 0 && (
-                                        <span><span className="text-red-400 font-bold">↑</span> {highV.map(u => u.name).join(', ')}</span>
-                                    )}
-                                    {highV.length > 0 && lowV.length > 0 && <span className="text-gray-600">·</span>}
-                                    {lowV.length > 0 && (
-                                        <span><span className="text-green-400 font-bold">↓</span> {lowV.map(u => u.name).join(', ')}</span>
-                                    )}
-                                </div>
-                            );
-                        };
-                        return (
-                            <div className="relative z-10 flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
-                                <div className="flex flex-col items-center gap-1 mb-2">
-                                    <span className="text-primary text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
-                                        Voting Results
-                                    </span>
-                                    <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate max-w-[200px]">
-                                        {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'Task Result') : 'Session Result'}
-                                    </h3>
-                                </div>
-
-                                {stdIsExact ? (
-                                    <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-green-400 bg-green-500/10 border-green-500/20">
-                                        ✓ Consensus
-                                    </div>
-                                ) : stdIsAdjacent ? (
-                                    <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-yellow-400 bg-yellow-500/10 border-yellow-500/20">
-                                        ≈ Near Consensus
-                                    </div>
-                                ) : (stdHighVoters.length > 0 || stdLowVoters.length > 0) ? (
-                                    <div className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">
-                                        No Consensus — Re-vote recommended
-                                    </div>
-                                ) : null}
-                                <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
-                                    <p className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-0.5">Result</p>
-                                    <div className="text-3xl md:text-4xl font-extrabold text-primary leading-none">{averages.total || '—'}</div>
-                                </div>
-                                <OutlierLine highV={stdHighVoters} lowV={stdLowVoters} />
-
-                                {isHost && (
-                                    <div className="flex flex-col items-center gap-2 w-full pt-1">
-                                        <button
-                                            onClick={onReset}
-                                            className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95 w-full justify-center text-sm"
-                                        >
-                                            <RotateCcw size={15} />
-                                            New Round
-                                        </button>
-                                    </div>
-                                )}
+                    {phase === 'REVEALED' && (
+                        <div className="relative z-10 flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
+                            <div className="flex flex-col items-center gap-1 mb-2">
+                                <span className="text-primary text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
+                                    Voting Results
+                                </span>
+                                <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate max-w-[200px]">
+                                    {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'Task Result') : 'Session Result'}
+                                </h3>
                             </div>
-                        );
-                    })()}
+
+                            {/* Per-group breakdown */}
+                            {groupsEnabled && groupAverages.length > 0 && (
+                                <div className="flex flex-wrap justify-center gap-1.5 w-full">
+                                    {groupAverages.map(ga => (
+                                        <div
+                                            key={ga.groupId}
+                                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold"
+                                            style={{ borderColor: ga.color + '40', backgroundColor: ga.color + '15', color: ga.color }}
+                                        >
+                                            <span>{ga.name}:</span>
+                                            <span className="text-sm font-extrabold">{ga.average ?? '—'}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="glass-gold rounded-xl px-4 py-2 text-center w-full">
+                                <p className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-0.5">
+                                    {groupsEnabled && groupAverages.length > 0 ? 'Combined' : 'Result'}
+                                </p>
+                                <div className="text-3xl md:text-4xl font-extrabold text-primary leading-none">{averages.total || '—'}</div>
+                            </div>
+
+                            {isHost && (
+                                <div className="flex flex-col items-center gap-2 w-full pt-1">
+                                    <button
+                                        onClick={onReset}
+                                        className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95 w-full justify-center text-sm"
+                                    >
+                                        <RotateCcw size={15} />
+                                        New Round
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Dynamic Seats Loop */}
@@ -471,7 +402,8 @@ const PokerTable = ({
                                 anonymousMode={anonymousMode}
                                 shuffleState={shuffleState}
                                 isRevealed={i < revealedCount}
-                                voteHighlight={voteHighlights[u.id] || null}
+                                groups={groups}
+                                groupsEnabled={groupsEnabled}
                             />
                         );
                     });

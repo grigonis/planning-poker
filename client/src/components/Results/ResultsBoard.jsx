@@ -13,10 +13,6 @@ function computeGroupStats(groupUserVotes) {
 
     const nums = numeric.map(({ num }) => num);
     const highest = Math.max(...nums);
-    const lowest = Math.min(...nums);
-
-    const highestVoters = numeric.filter(({ num }) => num === highest).map(({ user }) => user);
-    const lowestVoters = numeric.filter(({ num }) => num === lowest).map(({ user }) => user);
 
     const uniqueNums = [...new Set(nums)];
     const isExact = uniqueNums.length === 1;
@@ -34,7 +30,7 @@ function computeGroupStats(groupUserVotes) {
         distribution[vote] = (distribution[vote] || 0) + 1;
     });
 
-    return { result: highest, highest, lowest, highestVoters, lowestVoters, isExact, isAdjacent, distribution };
+    return { result: highest, isExact, isAdjacent, distribution };
 }
 
 const VoteDistribution = ({ distribution }) => {
@@ -76,8 +72,6 @@ const ConsensusBadge = ({ stats }) => {
 };
 
 const GroupBlock = ({ stats, label, accentClass, borderClass, bgClass, labelClass }) => {
-    const showOutliers = stats && !stats.isExact && stats.highest !== stats.lowest;
-
     return (
         <div className={`flex flex-col items-center gap-3 p-5 rounded-2xl border ${borderClass} ${bgClass} flex-1 min-w-[180px]`}>
             {label && (
@@ -93,25 +87,6 @@ const GroupBlock = ({ stats, label, accentClass, borderClass, bgClass, labelClas
                         <div className={`text-5xl font-extrabold ${accentClass} leading-none`}>{stats.result}</div>
                     </div>
 
-                    {showOutliers && (
-                        <div className="w-full space-y-1.5 text-xs">
-                            <div className="flex items-center gap-2 text-gray-400">
-                                <TrendingUp size={12} className="text-green-400 shrink-0" />
-                                <span className="text-gray-500 shrink-0">High:</span>
-                                <span className="text-green-300 font-medium truncate">
-                                    {stats.highestVoters.map(u => u.name).join(', ')}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-400">
-                                <TrendingDown size={12} className="text-rose-400 shrink-0" />
-                                <span className="text-gray-500 shrink-0">Low:</span>
-                                <span className="text-rose-300 font-medium truncate">
-                                    {stats.lowestVoters.map(u => u.name).join(', ')}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
                     <VoteDistribution distribution={stats.distribution} />
                 </>
             ) : (
@@ -124,18 +99,14 @@ const GroupBlock = ({ stats, label, accentClass, borderClass, bgClass, labelClas
     );
 };
 
-const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode }) => {
-    const isStandard = roomMode !== 'SPLIT';
+const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode, groupsEnabled, groups, groupAverages }) => {
+    const isStandard = !groupsEnabled && roomMode !== 'SPLIT';
 
     const getGroupVotes = (roles) =>
         users
             .filter(u => roles.includes(u.role))
             .map(u => ({ user: u, vote: votes[u.id] }))
             .filter(({ vote }) => vote && vote !== 'VOTED');
-
-    const standardStats = isStandard ? computeGroupStats(getGroupVotes(['DEV', 'HOST'])) : null;
-    const devStats = !isStandard ? computeGroupStats(getGroupVotes(['DEV', 'HOST'])) : null;
-    const qaStats = !isStandard ? computeGroupStats(getGroupVotes(['QA'])) : null;
 
     return (
         <div className="w-full max-w-2xl mx-auto px-4 pb-8 animate-in fade-in zoom-in-95 duration-300">
@@ -148,9 +119,24 @@ const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode
 
                 {/* Stats body */}
                 <div className="p-5">
-                    {isStandard ? (
+                    {groupsEnabled && groupAverages?.length > 0 ? (
+                        <div className="flex gap-3 flex-wrap">
+                            {groupAverages.map(ga => (
+                                <GroupBlock
+                                    key={ga.groupId}
+                                    stats={ga.average !== null ? { result: ga.average, distribution: {} } : null} // Minimal stats for now
+                                    label={ga.name}
+                                    accentClass=""
+                                    style={{ color: ga.color }}
+                                    borderClass="border-border"
+                                    bgClass="bg-muted/10"
+                                    labelClass="font-bold"
+                                />
+                            ))}
+                        </div>
+                    ) : isStandard ? (
                         <GroupBlock
-                            stats={standardStats}
+                            stats={computeGroupStats(getGroupVotes(['DEV', 'HOST']))}
                             accentClass="text-primary"
                             borderClass="border-primary/20"
                             bgClass="bg-primary/[0.06]"
@@ -159,7 +145,7 @@ const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode
                     ) : (
                         <div className="flex gap-3 flex-wrap">
                             <GroupBlock
-                                stats={devStats}
+                                stats={computeGroupStats(getGroupVotes(['DEV', 'HOST']))}
                                 label="Developers"
                                 accentClass="text-indigo-400"
                                 borderClass="border-indigo-500/20"
@@ -167,7 +153,7 @@ const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode
                                 labelClass="text-indigo-400/70"
                             />
                             <GroupBlock
-                                stats={qaStats}
+                                stats={computeGroupStats(getGroupVotes(['QA']))}
                                 label="QA"
                                 accentClass="text-rose-400"
                                 borderClass="border-rose-500/20"

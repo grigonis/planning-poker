@@ -44,13 +44,13 @@ This milestone is complete only when all are true:
 - [x] **S01: Server — Groups data model & socket API** `risk:high` `depends:[]`
   > After this: Server stores groups on room, emits them on join/update/reveal; per-group averages computed on reveal.
 
-- [ ] **S02: Manage Groups dialog + host assignment** `risk:medium` `depends:[S01]`
+- [x] **S02: Manage Groups dialog + host assignment** `risk:medium` `depends:[S01]`
   > After this: Host can open Settings → Manage Groups, enable groups, create/delete groups, and assign any participant to a group from the dialog.
 
-- [ ] **S03: Participant panel assign action + group tags** `risk:medium` `depends:[S02]`
+- [x] **S03: Participant panel assign action + group tags** `risk:medium` `depends:[S02]`
   > After this: Any user can click a participant in the panel → Assign Group → pick group; group tags appear on player names in the panel and on the poker table.
 
-- [ ] **S04: Join group picker + results group split** `risk:low` `depends:[S02]`
+- [x] **S04: Join group picker + results group split** `risk:low` `depends:[S02]`
   > After this: New users see a group picker on join (when groups enabled); revealed results split per-group with combined total; full end-to-end scenario passes.
 
 ## Boundary Map

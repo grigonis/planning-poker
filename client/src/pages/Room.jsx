@@ -30,6 +30,7 @@ const Room = () => {
     const [votes, setVotes] = useState({});
     const [myVote, setMyVote] = useState(null);
     const [averages, setAverages] = useState({});
+    const [groupAverages, setGroupAverages] = useState([]);
     const [activeReactions, setActiveReactions] = useState({});
     const [roomMode, setRoomMode] = useState(location.state?.gameMode || 'STANDARD');
     const [funFeatures, setFunFeatures] = useState(location.state?.funFeatures || false);
@@ -204,9 +205,11 @@ const Room = () => {
             }
         };
 
-        const onRevealed = ({ votes: revealedVotes, averages, tasks: updatedTasks, activeTaskId: updatedActiveTaskId }) => {
+        const onRevealed = ({ votes: revealedVotes, averages, groupAverages: ga, groupsEnabled: ge, tasks: updatedTasks, activeTaskId: updatedActiveTaskId }) => {
             setPhase('REVEALED');
             setAverages(averages);
+            if (ga !== undefined) setGroupAverages(ga);
+            if (ge !== undefined) setGroupsEnabled(ge);
             if (updatedTasks) setTasks(updatedTasks);
             if (updatedActiveTaskId !== undefined) setActiveTaskId(updatedActiveTaskId);
             const votesMap = {};
@@ -266,6 +269,7 @@ const Room = () => {
             setMyVote(null);
             setVotes({});
             setAverages({});
+            setGroupAverages([]);
             if (updatedActiveTaskId !== undefined) setActiveTaskId(updatedActiveTaskId);
         };
 
@@ -530,6 +534,10 @@ const Room = () => {
                     currentUser={currentUser}
                     roomId={roomId}
                     anonymousMode={anonymousMode}
+                    groups={groups}
+                    groupsEnabled={groupsEnabled}
+                    isHost={isMeHost}
+                    onAssignGroup={handleAssignGroup}
                 />
             )}
 
@@ -563,6 +571,9 @@ const Room = () => {
                             myVote={myVote}
                             phase={phase}
                             averages={averages}
+                            groupAverages={groupAverages}
+                            groupsEnabled={groupsEnabled}
+                            groups={groups}
                             activeReactions={activeReactions}
                             isHost={isMeHost}
                             funFeatures={funFeatures}

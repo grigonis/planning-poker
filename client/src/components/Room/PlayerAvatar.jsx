@@ -20,7 +20,7 @@ function getMonkeyAlias(userId) {
     return MONKEY_ALIASES[Math.abs(hash)];
 }
 
-const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction, anonymousMode = false, voteHighlight = null, hideDetails = false }) => {
+const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction, anonymousMode = false, hideDetails = false, groups = [], groupsEnabled = false }) => {
     const { socket } = useSocket();
     const isAnon = anonymousMode && !isCurrentUser && user.role !== 'SPECTATOR';
     const displayName = isAnon ? getMonkeyAlias(user.id) : user.name;
@@ -47,13 +47,6 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
         <div className="flex flex-col items-center gap-2 min-w-0">
             {/* Avatar with presence dot */}
             <div className="relative flex-shrink-0 group">
-                {voteHighlight && (
-                    <div className={`absolute inset-[-4px] rounded-full animate-pulse pointer-events-none z-0 ${
-                        voteHighlight === 'highest'
-                            ? 'bg-red-500/20 shadow-[0_0_14px_5px_rgba(239,68,68,0.45)]'
-                            : 'bg-green-500/20 shadow-[0_0_14px_5px_rgba(34,197,94,0.45)]'
-                    }`} />
-                )}
                 <div
                     onClick={handleAvatarClick}
                     className={`rounded-full overflow-hidden border-2 bg-slate-800 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.5)] ${isOnline
@@ -93,22 +86,46 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                         {user.isHost && !isAnon && <Crown size={12} className="text-primary flex-shrink-0" />}
                     </span>
 
-                    <Badge 
-                        variant="secondary" 
-                        className={`
-                            text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm border-none
-                            ${user.role === 'SPECTATOR'
-                                ? 'bg-muted text-muted-foreground'
-                                : roomMode === 'STANDARD'
-                                    ? 'bg-primary/20 text-primary'
-                                    : user.role === 'DEV'
-                                        ? 'bg-indigo-500/20 text-indigo-400'
-                                        : 'bg-rose-500/20 text-rose-400'
-                            }
-                        `}
-                    >
-                        {user.role === 'SPECTATOR' ? 'Spectator' : (roomMode === 'STANDARD' ? 'Estimator' : user.role)}
-                    </Badge>
+                    {(() => {
+                        const group = groupsEnabled && user.groupId ? groups.find(g => g.id === user.groupId) : null;
+                        if (group) {
+                            return (
+                                <span
+                                    className="text-[10px] font-bold px-2.5 py-0.5 rounded-full leading-none shadow-sm border"
+                                    style={{
+                                        color: group.color,
+                                        borderColor: group.color + '50',
+                                        backgroundColor: group.color + '20',
+                                    }}
+                                >
+                                    {group.name}
+                                </span>
+                            );
+                        }
+                        // Only show role badge when groups are disabled
+                        if (!groupsEnabled) {
+                            return (
+                                <Badge 
+                                    variant="secondary" 
+                                    className={`
+                                        text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm border-none
+                                        ${user.role === 'SPECTATOR'
+                                            ? 'bg-muted text-muted-foreground'
+                                            : roomMode === 'STANDARD'
+                                                ? 'bg-primary/20 text-primary'
+                                                : user.role === 'DEV'
+                                                    ? 'bg-indigo-500/20 text-indigo-400'
+                                                    : 'bg-rose-500/20 text-rose-400'
+                                        }
+                                    `}
+                                >
+                                    {user.role === 'SPECTATOR' ? 'Spectator' : (roomMode === 'STANDARD' ? 'Estimator' : user.role)}
+                                </Badge>
+                            );
+                        }
+                        // Groups enabled but user has no group — show nothing
+                        return null;
+                    })()}
                 </>
             )}
         </div>

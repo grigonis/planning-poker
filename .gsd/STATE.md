@@ -1,25 +1,25 @@
 # GSD State
 
-**Active Milestone:** M004 — Player Groups
-**Phase:** planning-complete — roadmap written, ready to start S01
+**Active Milestone:** M004 — Player Groups — **COMPLETE**
+**Phase:** milestone-complete — all slices delivered
 
 ## Milestone Registry
 - ✅ **M001:** Migration
 - ✅ **M002:** shadcn Room UI Migration
 - ✅ **M003:** Room UX Restructure
-- 🔄 **M004:** Player Groups
+- ✅ **M004:** Player Groups
 
-## M004 Slices
-- [x] S01: Server — Groups data model & socket API
-- [ ] S02: Manage Groups dialog + host assignment
-- [ ] S03: Participant panel assign action + group tags
-- [ ] S04: Join group picker + results group split
+## M004 Summary
+- S01: Server data model & socket API
+- S02: Manage Groups dialog
+- S03: Participant panel assign UI & group tags
+- S04: Join picker & Results sum logic
 
 ## Blockers
 - None
 
 ## Next Action
-S02 — ManageGroupsDialog + host assignment UI.
+Milestone complete. Awaiting user input for next objective.
 
 ## Known Issues (non-blocking)
 - React `forwardRef` warnings from shadcn/Radix UI dialog components — pre-existing, library-level, no functional impact
