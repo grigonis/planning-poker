@@ -10,6 +10,7 @@ import SettingsDialog from '../components/Room/SettingsDialog';
 import EditRoomDetailsDialog from '../components/Room/EditRoomDetailsDialog';
 import CustomizeCardsDialog from '../components/Room/CustomizeCardsDialog';
 import EditProfileModal from '../components/Room/EditProfileModal';
+import ManageGroupsDialog from '../components/Room/ManageGroupsDialog';
 import EmojiReactions from '../components/Room/EmojiReactions';
 import TasksPane from '../components/Room/TasksPane';
 import RoomNavbar from '../components/Room/RoomNavbar';
@@ -41,11 +42,14 @@ const Room = () => {
     });
     const [roomName, setRoomName] = useState(location.state?.roomName || '');
     const [roomDescription, setRoomDescription] = useState(location.state?.roomDescription || '');
+    const [groups, setGroups] = useState(location.state?.groups || []);
+    const [groupsEnabled, setGroupsEnabled] = useState(location.state?.groupsEnabled || false);
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
     const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
     const [isCustomizeCardsOpen, setIsCustomizeCardsOpen] = useState(false);
+    const [isManageGroupsOpen, setIsManageGroupsOpen] = useState(false);
     const [isTasksOpen, setIsTasksOpen] = useState(
         localStorage.getItem(`keystimate_tasks_open_${roomId}`) === 'true'
     );
@@ -89,6 +93,8 @@ const Room = () => {
                     if (response.votingSystem) setVotingSystem(response.votingSystem);
                     if (response.roomName !== undefined) setRoomName(response.roomName);
                     if (response.roomDescription !== undefined) setRoomDescription(response.roomDescription);
+                    if (response.groups) setGroups(response.groups);
+                    if (response.groupsEnabled !== undefined) setGroupsEnabled(response.groupsEnabled);
                     if (response.tasks) setTasks(response.tasks);
                     if (response.activeTaskId) setActiveTaskId(response.activeTaskId);
 
@@ -280,6 +286,12 @@ const Room = () => {
             if (settings.votingSystem) setVotingSystem(settings.votingSystem);
             if (settings.roomName !== undefined) setRoomName(settings.roomName);
             if (settings.roomDescription !== undefined) setRoomDescription(settings.roomDescription);
+            if (settings.groupsEnabled !== undefined) setGroupsEnabled(settings.groupsEnabled);
+        };
+
+        const onRoomGroupsUpdated = ({ groups: updatedGroups, groupsEnabled: updatedEnabled }) => {
+            if (updatedGroups !== undefined) setGroups(updatedGroups);
+            if (updatedEnabled !== undefined) setGroupsEnabled(updatedEnabled);
         };
 
         const onSessionEnded = () => {
@@ -315,6 +327,7 @@ const Room = () => {
         socket.on('reset', onReset);
         socket.on('partial_revote', onPartialRevote);
         socket.on('room_settings_updated', onRoomSettingsUpdated);
+        socket.on('room_groups_updated', onRoomGroupsUpdated);
         socket.on('session_ended', onSessionEnded);
         socket.on('show_reaction', onShowReaction);
         socket.on('tasks_updated', onTasksUpdated);
@@ -327,6 +340,7 @@ const Room = () => {
             socket.off('reset', onReset);
             socket.off('partial_revote', onPartialRevote);
             socket.off('room_settings_updated', onRoomSettingsUpdated);
+            socket.off('room_groups_updated', onRoomGroupsUpdated);
             socket.off('session_ended', onSessionEnded);
             socket.off('show_reaction', onShowReaction);
             socket.off('tasks_updated', onTasksUpdated);
@@ -350,6 +364,8 @@ const Room = () => {
         if (user.votingSystem) setVotingSystem(user.votingSystem);
         if (user.roomName !== undefined) setRoomName(user.roomName);
         if (user.roomDescription !== undefined) setRoomDescription(user.roomDescription);
+        if (user.groups) setGroups(user.groups);
+        if (user.groupsEnabled !== undefined) setGroupsEnabled(user.groupsEnabled);
 
         // Note: phase and votes are not passed by GuestJoinModal directly right now,
         // but it doesn't matter because once viewState === 'ROOM', tryJoin is triggered!
@@ -368,6 +384,8 @@ const Room = () => {
                     response.votes.forEach(([uid, val]) => { votesMap[uid] = val; });
                     setVotes(votesMap);
                 }
+                if (response.groups) setGroups(response.groups);
+                if (response.groupsEnabled !== undefined) setGroupsEnabled(response.groupsEnabled);
             }
         });
 
@@ -404,6 +422,22 @@ const Room = () => {
 
     const handleUpdateSettings = (settings) => {
         socket.emit('update_room_settings', { roomId, settings });
+    };
+
+    const handleToggleGroups = (enabled) => {
+        socket.emit('update_room_settings', { roomId, settings: { groupsEnabled: enabled } });
+    };
+
+    const handleCreateGroup = (name) => {
+        socket.emit('manage_groups', { roomId, action: 'CREATE', name });
+    };
+
+    const handleDeleteGroup = (groupId) => {
+        socket.emit('manage_groups', { roomId, action: 'DELETE', groupId });
+    };
+
+    const handleAssignGroup = (targetUserId, groupId) => {
+        socket.emit('assign_group', { roomId, targetUserId, groupId: groupId || null });
     };
 
     const handleUpdateProfile = ({ name, avatarSeed }) => {
@@ -481,6 +515,7 @@ const Room = () => {
                 onOpenEditRoom={() => setIsEditRoomOpen(true)}
                 onOpenCustomizeCards={() => setIsCustomizeCardsOpen(true)}
                 onOpenSettings={() => setIsSettingsDialogOpen(true)}
+                onOpenManageGroups={() => setIsManageGroupsOpen(true)}
                 onOpenInvite={() => setIsInviteModalOpen(true)}
                 onOpenProfile={() => setIsProfileOpen(true)}
             />
@@ -610,6 +645,18 @@ const Room = () => {
                 onClose={() => setIsProfileOpen(false)}
                 currentUser={currentUser}
                 onUpdateProfile={handleUpdateProfile}
+            />
+            <ManageGroupsDialog
+                isOpen={isManageGroupsOpen}
+                onClose={() => setIsManageGroupsOpen(false)}
+                groups={groups}
+                groupsEnabled={groupsEnabled}
+                users={users}
+                currentUser={currentUser}
+                onToggleGroups={handleToggleGroups}
+                onCreateGroup={handleCreateGroup}
+                onDeleteGroup={handleDeleteGroup}
+                onAssignGroup={handleAssignGroup}
             />
         </div>
     );

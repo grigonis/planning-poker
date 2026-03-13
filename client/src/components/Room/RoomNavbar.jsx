@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Settings, LayoutList, Pencil, Layers } from 'lucide-react';
+import { Users, Settings, LayoutList, Pencil, Layers, UsersRound } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
     DropdownMenu,
@@ -47,6 +47,7 @@ const RoomNavbar = ({
     onOpenEditRoom,
     onOpenCustomizeCards,
     onOpenSettings,
+    onOpenManageGroups,
     onOpenInvite,
     onOpenProfile
 }) => {
@@ -170,6 +171,10 @@ const RoomNavbar = ({
                                 <DropdownMenuItem onSelect={onOpenCustomizeCards} className="gap-2 cursor-pointer">
                                     <Layers className="size-4" />
                                     Customize Cards
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={onOpenManageGroups} className="gap-2 cursor-pointer">
+                                    <UsersRound className="size-4" />
+                                    Manage Groups
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onSelect={onOpenSettings} className="gap-2 cursor-pointer">
