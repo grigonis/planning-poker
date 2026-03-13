@@ -26,7 +26,7 @@ const CARDS = [
     {
         value: '0',
         title: 'Already Done or Not Needed',
-        desc: "This story brings no additional effort. It's either completed, duplicated, or no longer relevant. In Scrum terms: we save time by not building what doesn't create value.",
+        desc: "This story brings no additional effort. It&apos;s either completed, duplicated, or no longer relevant. In Scrum terms: we save time by not building what doesn&apos;t create value.",
     },
     {
         value: '0.5',
@@ -54,7 +54,7 @@ const FAN_ROTATIONS = [-12, -6, 0, 6, 12];
 const FLOAT_DELAYS = [0, 0.7, 1.4, 0.35, 1.05];
 const SPOTLIGHT_EASING = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 const PARTICLE_COUNT = 12;
-const CENTER_INDEX = 2; // middle of 5 cards
+
 
 // Generate stable particle configs once — no delay, stagger via duration variety
 const generateParticles = () =>

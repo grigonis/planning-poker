@@ -99,7 +99,7 @@ const GroupBlock = ({ stats, label, accentClass, borderClass, bgClass, labelClas
     );
 };
 
-const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode, groupsEnabled, groups, groupAverages }) => {
+const ResultsBoard = ({ votes, users, onReset, onRevotePartial, isHost, roomMode, groupsEnabled, groupAverages }) => {
     const isStandard = !groupsEnabled && roomMode !== 'SPLIT';
 
     const getGroupVotes = (roles) =>

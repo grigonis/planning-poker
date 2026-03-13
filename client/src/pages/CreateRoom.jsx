@@ -3,7 +3,7 @@ import { ArrowRight, User, Users, Eye } from 'lucide-react';
 import { toast } from "sonner";
 import { useSocket } from '../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
-import ThemeToggle from '../components/ThemeToggle';
+
 import RoomNavbar from '../components/Room/RoomNavbar';
 import { motion } from 'framer-motion';
 import { Input } from '../components/ui/input';

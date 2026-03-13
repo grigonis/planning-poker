@@ -15,7 +15,7 @@ const Pricing = () => {
                 </h2>
 
                 <p className="text-xl text-gray-500 dark:text-gray-400 font-light  leading-relaxed mb-6">
-                    Scrumky is completely free of use. We don't collect, sell, or use any of your user data. The estimation table is yours.
+                    Scrumky is completely free of use. We don&apos;t collect, sell, or use any of your user data. The estimation table is yours.
                 </p>
 
                 <p className="text-lg text-gray-500 dark:text-gray-400 font-light  leading-relaxed mb-10">

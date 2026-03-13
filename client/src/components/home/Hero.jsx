@@ -157,7 +157,7 @@ const Hero = ({ onCreateSession }) => {
 
                     {/* Subtext */}
                     <p className="text-base md:text-lg text-slate-500 dark:text-neutral-400 font-normal max-w-lg leading-relaxed mt-2">
-                        Scrum meetings don't have to be boring. Transform your team's velocity with Keystimate — designed for speed, engagement, and actually keeping it fun
+                        Scrum meetings don&apos;t have to be boring. Transform your team&apos;s velocity with Keystimate — designed for speed, engagement, and actually keeping it fun
                     </p>
 
                     {/* Trust signals */}

@@ -183,7 +183,7 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess }) => {
                                     </Label>
                                     <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
                                         <SelectTrigger className="font-bold">
-                                            <SelectValue placeholder="Select a group…" />
+                                            <SelectValue placeholder="Select a group..." />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {groups.map(g => (

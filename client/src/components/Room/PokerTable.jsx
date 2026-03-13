@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PlayerAvatar from './PlayerAvatar';
 import Card from '../Voting/Card';
-import { Crown, Eye, RotateCcw, Play } from 'lucide-react';
+import { Eye, RotateCcw, Play } from 'lucide-react';
 import { Progress } from '../ui/progress';
 
 import playerFaceDownSVG from '../../assets/TBD_face_down_player.svg';
@@ -58,7 +58,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
     );
 };
 
-const CARD_SCALE = [0, 0.5, 1, 2, 3, 4, 5];
+
 
 const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true, groups = [], groupsEnabled = false }) => {
     // Determine dynamic layout direction based on coordinates to point cards towards center of table

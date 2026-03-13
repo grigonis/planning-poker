@@ -176,7 +176,7 @@ const Room = () => {
             setVotes({});
         };
 
-        const onVoteUpdate = ({ userId, hasVoted }) => {
+        const onVoteUpdate = ({ userId }) => {
             setVotes(prev => ({ ...prev, [userId]: 'VOTED' }));
 
             // Play a soft sound when someone votes (if funFeatures is enabled)
@@ -579,6 +579,7 @@ const Room = () => {
                             funFeatures={funFeatures}
                             autoReveal={autoReveal}
                             anonymousMode={anonymousMode}
+                            roomMode={roomMode}
                             votingSystem={votingSystem}
                             tasks={tasks}
                             activeTaskId={activeTaskId}

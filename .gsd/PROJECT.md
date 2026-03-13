@@ -34,4 +34,5 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 - [x] M001: Migration — Dedicated create page, voting systems, tasks pane, modernized room UI
 - [x] M002: shadcn Room UI Migration — Consistent shadcn component system for all room-facing surfaces
-- [ ] M003: Room UX Restructure — Keystimate branding, host dropdown menu, card customization, participant panel
+- [x] M003: Room UX Restructure — Keystimate branding, host dropdown menu, card customization, participant panel
+- [x] M004: Player Groups — Multi-team estimation support
