@@ -6,7 +6,6 @@ import PokerTable from '../components/Room/PokerTable';
 import { toast } from "sonner";
 import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
-import RoomSettingsModal from '../components/Room/RoomSettingsModal';
 import SettingsDialog from '../components/Room/SettingsDialog';
 import EditRoomDetailsDialog from '../components/Room/EditRoomDetailsDialog';
 import CustomizeCardsDialog from '../components/Room/CustomizeCardsDialog';
@@ -14,6 +13,7 @@ import EditProfileModal from '../components/Room/EditProfileModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
 import TasksPane from '../components/Room/TasksPane';
 import RoomNavbar from '../components/Room/RoomNavbar';
+import ParticipantPanel from '../components/Room/ParticipantPanel';
 
 const Room = () => {
     const { roomId } = useParams();
@@ -486,6 +486,18 @@ const Room = () => {
             />
 
 
+            {/* Participant Panel — fixed left-side, hidden below md */}
+            {validUser && (
+                <ParticipantPanel
+                    users={users}
+                    votes={votes}
+                    phase={phase}
+                    currentUser={currentUser}
+                    roomId={roomId}
+                    anonymousMode={anonymousMode}
+                />
+            )}
+
             {/* Main Table Area */}
             <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
 
@@ -565,17 +577,6 @@ const Room = () => {
                 onClose={() => setIsInviteModalOpen(false)}
                 roomId={roomId}
             />
-            <RoomSettingsModal
-                isOpen={false}
-                onClose={() => {}}
-                funFeatures={funFeatures}
-                autoReveal={autoReveal}
-                anonymousMode={anonymousMode}
-                votingSystem={votingSystem}
-                phase={phase}
-                onUpdateSettings={handleUpdateSettings}
-                onEndSession={handleEndSession}
-            />
             <SettingsDialog
                 isOpen={isSettingsDialogOpen}
                 onClose={() => setIsSettingsDialogOpen(false)}
@@ -598,6 +599,11 @@ const Room = () => {
             <CustomizeCardsDialog
                 isOpen={isCustomizeCardsOpen}
                 onClose={() => setIsCustomizeCardsOpen(false)}
+                votingSystem={votingSystem}
+                onSave={(settings) => {
+                    handleUpdateSettings(settings);
+                    toast.success("Card values updated");
+                }}
             />
             <EditProfileModal
                 isOpen={isProfileOpen}

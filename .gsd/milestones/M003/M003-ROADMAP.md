@@ -56,13 +56,13 @@ This milestone is complete only when all are true:
 - [x] **S01: Branding & Cleanup** `risk:low` `depends:[]`
   > After this: navbar says "Keystimate", all banana_* localStorage keys renamed to keystimate_*, BananaPoker text gone from room-facing UI.
 
-- [ ] **S02: Host Dropdown Menu & Dialogs** `risk:medium` `depends:[S01]`
+- [x] **S02: Host Dropdown Menu & Dialogs** `risk:medium` `depends:[S01]`
   > After this: host clicks gear icon → dropdown with 3 options. Edit Room Details saves name/description and broadcasts live. Settings dialog has 3 toggles + end session. Room description shows under room ID in navbar. Server stores and broadcasts room name/description.
 
-- [ ] **S03: Customize Cards Dialog** `risk:medium` `depends:[S02]`
+- [x] **S03: Customize Cards Dialog** `risk:medium` `depends:[S02]`
   > After this: host opens Customize Cards → interactive add/remove of individual card values with live preview, min 2 / max 12 enforced. Voting system type selector removed from room. Changes broadcast to all participants.
 
-- [ ] **S04: Participant Panel** `risk:high` `depends:[S01]`
+- [x] **S04: Participant Panel** `risk:high` `depends:[S01]`
   > After this: left-side transparent panel shows all room participants with avatar + voting status. Collapsible (collapsed default) / expandable. After reveal, reorders highest-to-lowest with group dividers (voters / non-numeric / spectators). Shows vote values after reveal. Hidden below 768px. Never overlaps poker table.
 
 - [ ] **S05: Integration & Polish** `risk:low` `depends:[S01,S02,S03,S04]`
