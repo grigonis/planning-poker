@@ -56,7 +56,7 @@ This milestone is complete only when all are true:
 - [ ] **S02: Dashboard Reads from Firestore** `risk:medium` `depends:[S01]`
   > After this: Dashboard session history loads from Firestore (not in-memory). Guest users see their history by UUID. `store.js` history Map and `addHistory` removed. History survives server restart end-to-end visible in the UI.
 
-- [ ] **S03: Optional Firebase Auth (Google + GitHub OAuth)** `risk:medium` `depends:[S02]`
+- [x] **S03: Optional Firebase Auth (Google + GitHub OAuth)** `risk:medium` `depends:[S02]`
   > After this: Users can sign in with Google or GitHub from the dashboard. Signed-in users have profile stored in Firestore `users/{uid}` and history queryable by Firebase UID. Guest flow is completely unchanged.
 
 - [ ] **S04: Profile Sync & Identity Linking** `risk:low` `depends:[S03]`

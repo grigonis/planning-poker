@@ -1,9 +1,9 @@
 # GSD State
 
 **Active Milestone:** M007 — Firebase Integration — Persistence & Optional Auth
-**Active Slice:** S03 — Optional Firebase Auth (Google + GitHub OAuth)
+**Active Slice:** S04 — Profile Sync & Identity Linking
 **Phase:** milestone-execution
-**Next Action:** Begin S03 — Firebase client SDK, useAuth hook, optional sign-in UI on dashboard
+**Next Action:** Begin S04 — store guest UUID on Firebase user record, load profile from Firestore on sign-in, update history query to use firebaseUid when authenticated
 
 ## Milestone Registry
 
