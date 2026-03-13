@@ -224,7 +224,7 @@ const Dashboard = () => {
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-4 text-sm text-muted-foreground font-medium">
-                                                                {new Date(session.endedAt).toLocaleDateString(undefined, {
+                                                                {new Date(session.endedAt || session.createdAt).toLocaleDateString(undefined, {
                                                                     month: 'short',
                                                                     day: 'numeric',
                                                                     year: 'numeric'
@@ -251,7 +251,7 @@ const Dashboard = () => {
                                                             </TableCell>
                                                             <TableCell className="py-4 text-right pr-6">
                                                                 <Badge variant="outline" className="font-mono font-bold tracking-tight">
-                                                                    {session.tasks.filter(t => t.resolved).length} / {session.tasks.length}
+                                                                    {session.tasks.filter(t => t.resolved || t.status === 'COMPLETED').length} / {session.tasks.length}
                                                                 </Badge>
                                                             </TableCell>
                                                         </motion.tr>

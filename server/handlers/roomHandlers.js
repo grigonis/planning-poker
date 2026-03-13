@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { rooms, getActiveRoomsByUserId } = require('../store');
-const { upsertSession, updateParticipants, closeSession } = require('../firestore');
+const { upsertSession, updateParticipants, closeSession, getHistoryByUserId } = require('../firestore');
 
 module.exports = (io, socket) => {
     const checkRoomHandler = ({ roomId }, callback) => {
@@ -254,10 +254,10 @@ module.exports = (io, socket) => {
         }
     };
 
-    const getUserHistoryHandler = ({ userId }, callback) => {
-        // Temporary stub — S02 replaces this with a Firestore query
+    const getUserHistoryHandler = async ({ userId }, callback) => {
         if (!userId) return callback([]);
-        callback([]);
+        const history = await getHistoryByUserId(userId);
+        callback(history);
     };
 
     const getUserActiveRoomsHandler = ({ userId }, callback) => {
