@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Settings, LayoutList, Pencil, Layers, UsersRound, LayoutDashboard } from 'lucide-react';
+import { Users, Settings, LayoutList, Pencil, Layers, UsersRound, LayoutDashboard, LogIn, LogOut, Chrome } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
     Tooltip,
@@ -107,6 +107,96 @@ const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGr
 };
 
 /**
+ * AuthMenu
+ *
+ * Shows "Sign in" button when no Firebase user is signed in,
+ * or a user dropdown (display name + sign-out) when signed in.
+ * Only used in dashboard mode — never in room mode.
+ */
+const AuthMenu = ({ authUser, onSignIn, onSignOut }) => {
+    const [open, setOpen] = useState(false);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (!open) return;
+        const handleClick = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [open]);
+
+    useEffect(() => {
+        if (!open) return;
+        const handleKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+        document.addEventListener('keydown', handleKey);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [open]);
+
+    if (!authUser) {
+        return (
+            <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full h-9 px-4 gap-1.5 text-sm font-medium"
+                onClick={onSignIn}
+            >
+                <LogIn className="size-3.5 shrink-0" />
+                Sign in
+            </Button>
+        );
+    }
+
+    const initials = authUser.displayName
+        ? authUser.displayName.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
+        : authUser.email?.slice(0, 2).toUpperCase() ?? '??';
+
+    return (
+        <div ref={containerRef} className="relative">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={() => setOpen(v => !v)}
+                        aria-expanded={open}
+                        aria-haspopup="menu"
+                        aria-label="Account menu"
+                        className="size-9 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring overflow-hidden"
+                    >
+                        {authUser.photoURL
+                            ? <img src={authUser.photoURL} alt={authUser.displayName ?? 'profile'} className="size-full object-cover" />
+                            : initials
+                        }
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>{authUser.displayName || authUser.email}</TooltipContent>
+            </Tooltip>
+
+            {open && (
+                <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-2 w-52 rounded-lg bg-popover border border-border shadow-md ring-1 ring-foreground/10 py-1 z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
+                >
+                    <div className="px-3 py-2 border-b border-border mb-1">
+                        <p className="text-sm font-semibold truncate">{authUser.displayName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{authUser.email}</p>
+                    </div>
+                    <button
+                        role="menuitem"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors text-destructive hover:text-destructive"
+                        onClick={() => { setOpen(false); onSignOut?.(); }}
+                    >
+                        <LogOut className="size-4 shrink-0" />
+                        Sign out
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/**
  * RoomNavbar
  *
  * - Logo: KeystimateLogo icon + "Keystimate" text (same as landing page)
@@ -131,7 +221,11 @@ const RoomNavbar = ({
     onOpenManageGroups,
     onOpenInvite,
     onOpenProfile,
-    mode = 'room' // 'room' or 'dashboard'
+    mode = 'room', // 'room' or 'dashboard'
+    // Auth props — only relevant in dashboard mode
+    authUser = null,         // Firebase User object or null
+    onSignIn = null,         // () => void — open sign-in dialog
+    onSignOut = null,        // () => void
 }) => {
     const isDashboard = mode === 'dashboard';
     const navigate = useNavigate();
@@ -243,28 +337,35 @@ const RoomNavbar = ({
                         />
                     )}
 
-                    {/* Dashboard specific Profile button (if needed, or just show the same one) */}
+                    {/* Dashboard: profile avatar + auth menu */}
                     {isDashboard && currentUser && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={onOpenProfile}
-                                    className="rounded-full size-9 p-0 hover:scale-105 active:scale-95 transition-transform"
-                                    aria-label="Edit Profile"
-                                >
-                                    <PlayerAvatar
-                                        user={{ ...currentUser, connected: true }}
-                                        size={32}
-                                        isCurrentUser={false}
-                                        anonymousMode={false}
-                                        hideDetails={true}
-                                    />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit Profile</TooltipContent>
-                        </Tooltip>
+                        <>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={onOpenProfile}
+                                        className="rounded-full size-9 p-0 hover:scale-105 active:scale-95 transition-transform"
+                                        aria-label="Edit Profile"
+                                    >
+                                        <PlayerAvatar
+                                            user={{ ...currentUser, connected: true }}
+                                            size={32}
+                                            isCurrentUser={false}
+                                            anonymousMode={false}
+                                            hideDetails={true}
+                                        />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Profile</TooltipContent>
+                            </Tooltip>
+                            <AuthMenu
+                                authUser={authUser}
+                                onSignIn={onSignIn}
+                                onSignOut={onSignOut}
+                            />
+                        </>
                     )}
                 </div>
             </div>

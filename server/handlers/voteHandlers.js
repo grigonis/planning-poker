@@ -1,4 +1,5 @@
 const { rooms } = require("../store");
+const { upsertTask } = require("../firestore");
 
 const getUser = (socket) => {
     const roomId = socket.data.roomId;
@@ -137,6 +138,16 @@ module.exports = (io, socket) => {
             if (task) {
                 task.votes = averages.total;
                 task.status = 'COMPLETED';
+
+                // Persist resolved task to Firestore immediately (fire-and-forget)
+                const participantSnapshot = Array.from(room.users.values()).map(u => ({
+                    id: u.id,
+                    name: u.name,
+                    role: u.role,
+                    avatarSeed: u.avatarSeed || null,
+                }));
+                upsertTask(roomId, task, participantSnapshot)
+                    .catch(err => console.error('[Firestore] performReveal upsertTask failed:', err.message));
             }
         }
 
