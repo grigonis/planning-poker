@@ -23,6 +23,9 @@ const Room = () => {
     const { socket, isConnected } = useSocket();
 
     const [viewState, setViewState] = useState(
+        // userId present = existing session/create-room old flow → go straight to room
+        // hostUserId present = host just created room, needs profile setup → GUEST_INPUT
+        // Neither = new visitor, check localStorage → LOADING
         location.state?.userId ? 'ROOM' : 'LOADING'
     ); // 'LOADING' | 'GUEST_INPUT' | 'ROOM'
     const [users, setUsers] = useState(location.state?.users || []);
@@ -99,10 +102,16 @@ const Room = () => {
                     if (response.tasks) setTasks(response.tasks);
                     if (response.activeTaskId) setActiveTaskId(response.activeTaskId);
 
-                    if (response.phase === 'REVEALED' && response.votes) {
+                    // Restore vote state on rejoin (both VOTING masked votes and REVEALED real votes)
+                    if (response.votes && response.votes.length > 0) {
                         const votesMap = {};
                         response.votes.forEach(([uid, val]) => votesMap[uid] = val);
                         setVotes(votesMap);
+                        // If we were already in voting phase and had cast a vote, restore myVote
+                        // to a sentinel so the overlay doesn't re-appear
+                        if (response.phase !== 'IDLE' && votesMap[response.userId] !== undefined) {
+                            setMyVote('VOTED');
+                        }
                     }
 
                     const serverMe = response.users.find(u => u.id === response.userId);
@@ -123,6 +132,7 @@ const Room = () => {
                         userId: response.userId,
                         name: updatedUser.name,
                         role: updatedUser.role,
+                        avatarSeed: updatedUser.avatarSeed,
                         roomId
                     }));
                 }
@@ -130,7 +140,11 @@ const Room = () => {
         };
 
         if (location.state?.userId && location.state?.name) {
+            // Legacy create-room flow that passed userId+name directly
             tryJoin(location.state);
+        } else if (location.state?.hostUserId) {
+            // New create-room flow: host needs to enter profile first
+            setViewState('GUEST_INPUT');
         } else {
             const storedSession = localStorage.getItem(`keystimate_session_${roomId}`);
             if (storedSession) {
@@ -162,6 +176,7 @@ const Room = () => {
                             userId: next.id,
                             name: next.name,
                             role: next.role,
+                            avatarSeed: next.avatarSeed,
                             roomId
                         }));
                         return next;
@@ -357,7 +372,8 @@ const Room = () => {
             name: user.name,
             role: user.role,
             id: user.userId,
-            isHost: false
+            isHost: user.isHost || false,
+            avatarSeed: user.avatarSeed || user.name,
         });
 
         if (user.users) setUsers(user.users);
@@ -383,10 +399,13 @@ const Room = () => {
         }, (response) => {
             if (!response.error) {
                 setPhase(response.phase);
-                if (response.votes && response.phase === 'REVEALED') {
+                if (response.votes && response.votes.length > 0) {
                     const votesMap = {};
                     response.votes.forEach(([uid, val]) => { votesMap[uid] = val; });
                     setVotes(votesMap);
+                    if (response.phase !== 'IDLE' && votesMap[response.userId] !== undefined) {
+                        setMyVote('VOTED');
+                    }
                 }
                 if (response.groups) setGroups(response.groups);
                 if (response.groupsEnabled !== undefined) setGroupsEnabled(response.groupsEnabled);
@@ -399,6 +418,7 @@ const Room = () => {
             userId: user.userId,
             name: user.name,
             role: user.role,
+            avatarSeed: user.avatarSeed,
             roomId
         }));
     };
@@ -544,11 +564,13 @@ const Room = () => {
             {/* Main Table Area */}
             <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
 
-                {/* Guest Modal */}
+                {/* Profile Setup / Guest Join Modal */}
                 <GuestJoinModal
                     isOpen={needsGuestJoin}
                     roomId={roomId}
                     onJoinSuccess={handleGuestJoinSuccess}
+                    hostUserId={location.state?.hostUserId || null}
+                    hostRole={location.state?.hostRole || 'DEV'}
                 />
 
                 {validUser && (

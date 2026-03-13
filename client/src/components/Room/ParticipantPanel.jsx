@@ -53,7 +53,6 @@ function getOrderedGroups(users, votes, phase) {
         }
     }
 
-    // Sort voters alphabetically by name
     groupA.sort((a, b) => a.name.localeCompare(b.name));
 
     const groups = [];
@@ -70,7 +69,6 @@ function SmallAvatar({ user, size = 28 }) {
     const svgContent = useMemo(() => getAvatarSvg(user), [user?.avatarSeed]);
 
     if (!svgContent) {
-        // Fallback: initials
         const initials = (user?.name || '?')[0].toUpperCase();
         return (
             <div
@@ -91,6 +89,29 @@ function SmallAvatar({ user, size = 28 }) {
     );
 }
 
+/** Small dot/icon overlaid at bottom-right of the avatar in collapsed mode */
+function StatusDot({ user, votes, phase }) {
+    if (user.role === 'SPECTATOR') {
+        return (
+            <span className="absolute bottom-0 right-0 size-3 rounded-full bg-background flex items-center justify-center">
+                <Eye className="size-2 text-muted-foreground" />
+            </span>
+        );
+    }
+    const hasVoted = votes[user.id] !== undefined;
+    if (phase === 'REVEALED') {
+        return hasVoted ? (
+            <span className="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border border-background" />
+        ) : (
+            <span className="absolute bottom-0 right-0 size-3 rounded-full bg-muted border border-background" />
+        );
+    }
+    if (hasVoted) {
+        return <span className="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border border-background" />;
+    }
+    return <span className="absolute bottom-0 right-0 size-3 rounded-full bg-muted-foreground/30 border border-background animate-pulse" />;
+}
+
 function StatusIcon({ user, votes, phase }) {
     if (user.role === 'SPECTATOR') {
         return <Eye className="size-3.5 text-muted-foreground" />;
@@ -100,7 +121,6 @@ function StatusIcon({ user, votes, phase }) {
             ? <Check className="size-3.5 text-green-500" />
             : <span className="text-[10px] text-muted-foreground">–</span>;
     }
-    // Voting / Idle phase
     if (votes[user.id] !== undefined) {
         return <Check className="size-3.5 text-green-500" />;
     }
@@ -140,6 +160,18 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
     const voteVal = votes[user.id];
     const canAssign = isHost && user.role !== 'SPECTATOR' && groupsEnabled && groups?.length > 0;
 
+    // Collapsed: avatar centered with status dot overlay
+    if (!expanded) {
+        return (
+            <div className="flex items-center justify-center py-1">
+                <div className="relative">
+                    <SmallAvatar user={user} size={28} />
+                    <StatusDot user={user} votes={votes} phase={phase} />
+                </div>
+            </div>
+        );
+    }
+
     const rowContent = (
         <div
             className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-white/20 dark:hover:bg-white/5 ${isMe ? 'bg-primary/5' : ''} ${canAssign ? 'cursor-pointer' : ''}`}
@@ -147,43 +179,31 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
             {/* Avatar */}
             <SmallAvatar user={user} size={28} />
 
-            {/* Name + icons (only when expanded) */}
-            {expanded && (
-                <>
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 min-w-0 flex-wrap">
-                            <span className={`text-xs font-medium truncate ${isMe ? 'text-primary' : 'text-foreground'}`}>
-                                {user.name}
-                                {isMe && <span className="ml-1 text-[9px] text-muted-foreground">(you)</span>}
-                            </span>
-                            {user.isHost && <Crown className="size-2.5 text-amber-500 shrink-0" />}
-                        </div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                            {groupsEnabled && <GroupTag user={user} groups={groups} />}
-                        </div>
-                    </div>
-
-                    {/* Status / vote value */}
-                    {phase !== 'REVEALED' ? (
-                        <StatusIcon user={user} votes={votes} phase={phase} />
-                    ) : (
-                        <VoteBadge voteVal={voteVal} anonymousMode={anonymousMode} isMe={isMe} />
-                    )}
-                </>
-            )}
-
-            {/* Collapsed: just status dot */}
-            {!expanded && (
-                <div className="flex-1 flex justify-center">
-                    <StatusIcon user={user} votes={votes} phase={phase} />
+            {/* Name + icons */}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 min-w-0 flex-wrap">
+                    <span className={`text-xs font-medium truncate ${isMe ? 'text-primary' : 'text-foreground'}`}>
+                        {user.name}
+                        {isMe && <span className="ml-1 text-[9px] text-muted-foreground">(you)</span>}
+                    </span>
+                    {user.isHost && <Crown className="size-2.5 text-amber-500 shrink-0" />}
                 </div>
+                <div className="flex items-center gap-1 mt-0.5">
+                    {groupsEnabled && <GroupTag user={user} groups={groups} />}
+                </div>
+            </div>
+
+            {/* Status / vote value */}
+            {phase !== 'REVEALED' ? (
+                <StatusIcon user={user} votes={votes} phase={phase} />
+            ) : (
+                <VoteBadge voteVal={voteVal} anonymousMode={anonymousMode} isMe={isMe} />
             )}
         </div>
     );
 
-    if (!canAssign || !expanded) return rowContent;
+    if (!canAssign) return rowContent;
 
-    // Wrap in dropdown for group assign
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -234,7 +254,6 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
         }
     });
 
-    // Track navbar height so the panel never starts behind it
     const [navbarTop, setNavbarTop] = useState(56);
     useLayoutEffect(() => {
         const navbar = document.querySelector('.sticky.top-0.z-40');
@@ -294,7 +313,6 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
             <div className="flex-1 overflow-y-auto overflow-x-hidden py-1 px-1 space-y-0.5">
                 {orderedGroups.map((group, gi) => (
                     <React.Fragment key={gi}>
-                        {/* Group divider label */}
                         {isExpanded && group.label && phase === 'REVEALED' && (
                             <div className="px-2 pt-2 pb-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70 select-none">
                                 {group.label}

@@ -1,37 +1,118 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Settings, LayoutList, Pencil, Layers, UsersRound } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '../ui/tooltip';
 import ThemeToggle from '../ThemeToggle';
 import PlayerAvatar from './PlayerAvatar';
+import KeystimateLogo from '../KeystimateLogo';
 import { cn } from '../../lib/utils';
 
 /**
- * Unified RoomNavbar component for room creation and active sessions.
- * 
- * @param {Object} props
- * @param {string} [props.roomId] - The room ID to display.
- * @param {string} [props.roomName] - The room name to display.
- * @param {string} [props.roomDescription] - The room description to display.
- * @param {boolean} [props.socketStatus] - Whether the socket is connected.
- * @param {number} [props.tasksCount=0] - Number of tasks to show in the badge.
- * @param {boolean} [props.isHost=false] - Whether the current user is the host.
- * @param {boolean} [props.isTasksOpen=false] - Whether the tasks pane is open.
- * @param {Object} [props.currentUser] - Current user object for the avatar.
- * @param {boolean} [props.minimal=false] - If true, only shows branding and ThemeToggle.
- * @param {Function} [props.onToggleTasks] - Handler for toggling the tasks pane.
- * @param {Function} [props.onOpenEditRoom] - Handler for opening Edit Room Details dialog.
- * @param {Function} [props.onOpenCustomizeCards] - Handler for opening Customize Cards dialog.
- * @param {Function} [props.onOpenSettings] - Handler for opening the Settings dialog.
- * @param {Function} [props.onOpenInvite] - Handler for opening the invite modal.
- * @param {Function} [props.onOpenProfile] - Handler for opening the profile edit modal.
+ * SettingsDropdown
+ *
+ * Custom dropdown that avoids the Radix Popper positioning bug inside sticky/backdrop-blur containers.
+ * Renders absolutely positioned relative to the trigger button.
+ */
+const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGroups, onOpenSettings }) => {
+    const [open, setOpen] = useState(false);
+    const containerRef = useRef(null);
+
+    // Close on outside click
+    useEffect(() => {
+        if (!open) return;
+        const handleClick = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [open]);
+
+    // Close on Escape
+    useEffect(() => {
+        if (!open) return;
+        const handleKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+        document.addEventListener('keydown', handleKey);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [open]);
+
+    const handleSelect = (fn) => {
+        setOpen(false);
+        fn?.();
+    };
+
+    return (
+        <div ref={containerRef} className="relative">
+            <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full size-9"
+                aria-label="Room Settings"
+                aria-expanded={open}
+                aria-haspopup="menu"
+                onClick={() => setOpen(v => !v)}
+            >
+                <Settings className="size-4" />
+            </Button>
+
+            {open && (
+                <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-1 w-52 rounded-lg bg-popover border border-border shadow-md ring-1 ring-foreground/10 py-1 z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
+                    style={{ marginTop: '6px' }}
+                >
+                    <button
+                        role="menuitem"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
+                        onClick={() => handleSelect(onOpenEditRoom)}
+                    >
+                        <Pencil className="size-4 shrink-0" />
+                        Edit Room Details
+                    </button>
+                    <button
+                        role="menuitem"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
+                        onClick={() => handleSelect(onOpenCustomizeCards)}
+                    >
+                        <Layers className="size-4 shrink-0" />
+                        Customize Cards
+                    </button>
+                    <button
+                        role="menuitem"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
+                        onClick={() => handleSelect(onOpenManageGroups)}
+                    >
+                        <UsersRound className="size-4 shrink-0" />
+                        Manage Groups
+                    </button>
+                    <div className="my-1 h-px bg-border -mx-1" role="separator" />
+                    <button
+                        role="menuitem"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
+                        onClick={() => handleSelect(onOpenSettings)}
+                    >
+                        <Settings className="size-4 shrink-0" />
+                        Settings
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/**
+ * RoomNavbar
+ *
+ * - Logo: KeystimateLogo icon + "Keystimate" text (same as landing page)
+ * - Room name + description: shown below logo text, truncated with tooltip
+ * - Tasks / Invite: icon + label buttons
+ * - Settings: custom dropdown (avoids Radix Popper bug inside sticky/backdrop-blur)
  */
 const RoomNavbar = ({
     roomId,
@@ -55,134 +136,109 @@ const RoomNavbar = ({
 
     return (
         <div className="sticky top-0 z-40 bg-white/80 dark:bg-[#101010]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 transition-colors duration-300">
-            <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
-                {/* Logo/Room Info */}
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col cursor-pointer" onClick={() => navigate('/')}>
-                        <h1 className="text-xl font-black text-primary leading-none tracking-tight">Keystimate</h1>
-                        {!minimal && roomId ? (
-                            <div className="flex flex-col gap-0.5 mt-0.5">
-                                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                    {roomName ? (
-                                        <span className="text-gray-900 dark:text-white font-bold max-w-[120px] truncate">{roomName}</span>
-                                    ) : (
-                                        <span>Room:</span>
-                                    )}
-                                    <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded select-all">{roomId}</span>
-                                </div>
-                                {roomDescription && (
-                                    <p className="text-[11px] text-muted-foreground truncate max-w-[200px] md:max-w-[300px]">{roomDescription}</p>
-                                )}
-                            </div>
-                        ) : minimal && (
-                            <span className="text-xs text-muted-foreground font-mono mt-1">Online planning poker</span>
+            <div className="w-full max-w-7xl mx-auto px-2 md:px-4 py-2 flex items-center justify-between gap-3">
+
+                {/* Logo / Room Name — pushed left */}
+                <div
+                    className="flex items-center gap-2.5 cursor-pointer shrink-0 group min-w-0"
+                    onClick={() => navigate('/')}
+                >
+                    <KeystimateLogo className="w-auto h-8 shrink-0" />
+                    <div className="flex flex-col justify-center leading-none min-w-0">
+                        <span
+                            className="text-xl tracking-tight text-neutral-800 dark:text-neutral-200 transition-all duration-300 flex items-center whitespace-nowrap"
+                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                        >
+                            <span className="font-semibold">Key</span><span className="font-normal">stimate</span>
+                        </span>
+                        {!minimal && roomName && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span className="text-[11px] font-semibold text-muted-foreground truncate max-w-[130px] sm:max-w-[200px] md:max-w-[300px] leading-none mt-0.5 cursor-default block">
+                                        {roomDescription ? `${roomName} — ${roomDescription}` : roomName}
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="max-w-[360px] text-xs">
+                                    <p className="font-bold">{roomName}</p>
+                                    {roomDescription && <p className="text-muted-foreground mt-0.5">{roomDescription}</p>}
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
+                        {minimal && (
+                            <span className="text-[11px] text-muted-foreground font-mono mt-0.5 leading-none whitespace-nowrap">Online planning poker</span>
                         )}
                     </div>
-
-                    {!minimal && (
-                        <>
-                            {/* Divider */}
-                            <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-white/10 ml-2"></div>
-                            
-                            {/* Status (Connected) */}
-                            <div className="hidden md:flex items-center gap-1.5 ml-2">
-                                <div className={cn(
-                                    "w-2 h-2 rounded-full",
-                                    socketStatus ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-                                )}></div>
-                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-                                    {socketStatus ? 'Live' : 'Offline'}
-                                </span>
-                            </div>
-                        </>
-                    )}
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
                     {!minimal && currentUser && (
                         <>
                             {/* Profile/Avatar Button */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={onOpenProfile}
-                                className="rounded-full w-9 h-9 p-0 hover:scale-110 active:scale-95 transition-transform"
-                                aria-label="Edit Profile"
-                            >
-                                <PlayerAvatar 
-                                    user={{ ...currentUser, connected: true }} 
-                                    size={36} 
-                                    isCurrentUser={false} 
-                                    anonymousMode={false} 
-                                    hideDetails={true} 
-                                />
-                            </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={onOpenProfile}
+                                        className="rounded-full size-9 p-0 hover:scale-105 active:scale-95 transition-transform"
+                                        aria-label="Edit Profile"
+                                    >
+                                        <PlayerAvatar
+                                            user={{ ...currentUser, connected: true }}
+                                            size={32}
+                                            isCurrentUser={false}
+                                            anonymousMode={false}
+                                            hideDetails={true}
+                                        />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Profile</TooltipContent>
+                            </Tooltip>
 
-                            {/* Tasks Button */}
+                            {/* Tasks Button — icon + label */}
                             <Button
-                                variant={isTasksOpen ? "secondary" : "outline"}
-                                size="sm"
+                                variant={isTasksOpen ? "secondary" : "ghost"}
                                 onClick={onToggleTasks}
                                 className={cn(
-                                    "rounded-full font-bold text-sm gap-2 px-3 lg:px-4",
-                                    isTasksOpen && "bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+                                    "rounded-full h-9 px-3 gap-1.5 text-sm font-medium relative",
+                                    isTasksOpen && "bg-primary/10 text-primary hover:bg-primary/20"
                                 )}
+                                aria-label="Toggle Tasks"
                             >
-                                <LayoutList size={16} />
-                                <span className="hidden lg:inline">Tasks</span>
+                                <LayoutList className="size-4 shrink-0" />
+                                <span className="hidden sm:inline">Tasks</span>
                                 {tasksCount > 0 && (
-                                    <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded-md text-[10px] leading-none ml-0.5 shadow-sm">
-                                        {tasksCount}
+                                    <span className="bg-primary text-primary-foreground text-[9px] font-black leading-none size-4 rounded-full flex items-center justify-center shadow-sm shrink-0">
+                                        {tasksCount > 9 ? '9+' : tasksCount}
                                     </span>
                                 )}
                             </Button>
 
-                            {/* Invite Button */}
+                            {/* Invite Button — icon + label */}
                             <Button
-                                variant="outline"
-                                size="sm"
+                                variant="ghost"
                                 onClick={onOpenInvite}
-                                className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 rounded-full font-bold gap-2 px-3 lg:px-4"
+                                className="rounded-full h-9 px-3 gap-1.5 text-sm font-medium text-primary hover:bg-primary/10"
+                                aria-label="Invite players"
                             >
-                                <Users size={16} />
-                                <span className="hidden lg:inline">Invite</span>
+                                <Users className="size-4 shrink-0" />
+                                <span className="hidden sm:inline">Invite</span>
                             </Button>
                         </>
                     )}
 
+                    {/* Theme Toggle */}
                     <ThemeToggle />
 
+                    {/* Settings — custom dropdown (avoids Radix Popper sticky/backdrop-filter bug) */}
                     {!minimal && isHost && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button
-                                    className="inline-flex items-center justify-center size-8 rounded-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                                    aria-label="Room Settings"
-                                >
-                                    <Settings className="w-4.5 h-4.5" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" side="bottom" sideOffset={8} avoidCollisions={false} className="w-52">
-                                <DropdownMenuItem onSelect={onOpenEditRoom} className="gap-2 cursor-pointer">
-                                    <Pencil className="size-4" />
-                                    Edit Room Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={onOpenCustomizeCards} className="gap-2 cursor-pointer">
-                                    <Layers className="size-4" />
-                                    Customize Cards
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={onOpenManageGroups} className="gap-2 cursor-pointer">
-                                    <UsersRound className="size-4" />
-                                    Manage Groups
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onSelect={onOpenSettings} className="gap-2 cursor-pointer">
-                                    <Settings className="size-4" />
-                                    Settings
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <SettingsDropdown
+                            onOpenEditRoom={onOpenEditRoom}
+                            onOpenCustomizeCards={onOpenCustomizeCards}
+                            onOpenManageGroups={onOpenManageGroups}
+                            onOpenSettings={onOpenSettings}
+                        />
                     )}
                 </div>
             </div>
