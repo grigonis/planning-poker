@@ -1,26 +1,26 @@
 [
   {
-    "id": "4d0bb352",
+    "id": "423b5240",
     "label": "server-dev",
     "command": "cd server && npm run dev",
     "cwd": "D:\\Projects\\planning-poker",
-    "startedAt": 1773392523894,
+    "startedAt": 1773398362062,
     "processType": "server",
-    "group": null,
+    "group": "my-stack",
     "readyPattern": null,
     "readyPort": 5000,
-    "pid": 4272
+    "pid": 436
   },
   {
-    "id": "1e62e607",
+    "id": "a7717352",
     "label": "client-dev",
-    "command": "cd client && npx vite --force",
+    "command": "cd client && npm run dev",
     "cwd": "D:\\Projects\\planning-poker",
-    "startedAt": 1773393300083,
+    "startedAt": 1773398362569,
     "processType": "server",
-    "group": null,
+    "group": "my-stack",
     "readyPattern": null,
     "readyPort": 5173,
-    "pid": 20796
+    "pid": 22952
   }
 ]

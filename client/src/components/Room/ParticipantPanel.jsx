@@ -159,9 +159,6 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
                             {user.isHost && <Crown className="size-2.5 text-amber-500 shrink-0" />}
                         </div>
                         <div className="flex items-center gap-1 mt-0.5">
-                            {user.role === 'SPECTATOR' && (
-                                <span className="text-[9px] text-muted-foreground uppercase tracking-wide">Spectator</span>
-                            )}
                             {groupsEnabled && <GroupTag user={user} groups={groups} />}
                         </div>
                     </div>

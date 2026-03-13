@@ -102,28 +102,9 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                                 </span>
                             );
                         }
-                        // Only show role badge when groups are disabled
-                        if (!groupsEnabled) {
-                            return (
-                                <Badge 
-                                    variant="secondary" 
-                                    className={`
-                                        text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-bold leading-none shadow-sm border-none
-                                        ${user.role === 'SPECTATOR'
-                                            ? 'bg-muted text-muted-foreground'
-                                            : roomMode === 'STANDARD'
-                                                ? 'bg-primary/20 text-primary'
-                                                : user.role === 'DEV'
-                                                    ? 'bg-indigo-500/20 text-indigo-400'
-                                                    : 'bg-rose-500/20 text-rose-400'
-                                        }
-                                    `}
-                                >
-                                    {user.role === 'SPECTATOR' ? 'Spectator' : (roomMode === 'STANDARD' ? 'Estimator' : user.role)}
-                                </Badge>
-                            );
-                        }
-                        // Groups enabled but user has no group — show nothing
+                        // Only show role badge for spectators when groups are disabled (optional, but usually helpful)
+                        // If "remove completely" is literal, we remove the whole block.
+                        // I will remove it since the user was very specific about "remove from code completely".
                         return null;
                     })()}
                 </>
