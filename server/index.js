@@ -4,6 +4,9 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 
+// Initialize Firebase Admin before any handlers — fails loudly if env vars missing
+require("./firebase");
+
 const app = express();
 app.use(cors());
 
