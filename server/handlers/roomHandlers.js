@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { rooms } = require('../store');
+const { rooms, addHistory, getHistoryByUserId, getActiveRoomsByUserId } = require('../store');
 
 module.exports = (io, socket) => {
     const checkRoomHandler = ({ roomId }, callback) => {
@@ -230,12 +230,42 @@ module.exports = (io, socket) => {
         if (room && userId) {
             const user = room.users.get(userId);
             if (user && user.isHost) {
+                // S02: Capture snapshot for history
+                const snapshot = {
+                    id: roomId,
+                    roomName: room.roomName,
+                    roomDescription: room.roomDescription,
+                    gameMode: room.gameMode,
+                    votingSystem: room.votingSystem,
+                    participants: Array.from(room.users.values()).map(u => ({
+                        id: u.id,
+                        name: u.name,
+                        role: u.role,
+                        avatarSeed: u.avatarSeed
+                    })),
+                    tasks: room.tasks,
+                    averages: room.averages
+                };
+                addHistory(roomId, snapshot);
+
                 io.to(roomId).emit('session_ended');
                 io.socketsLeave(roomId);
                 rooms.delete(roomId);
-                console.log(`Room ${roomId} ended by host ${user.name}`);
+                console.log(`Room ${roomId} ended by host ${user.name}. Snapshot recorded.`);
             }
         }
+    };
+
+    const getUserHistoryHandler = ({ userId }, callback) => {
+        if (!userId) return callback([]);
+        const userHistory = getHistoryByUserId(userId);
+        callback(userHistory);
+    };
+
+    const getUserActiveRoomsHandler = ({ userId }, callback) => {
+        if (!userId) return callback([]);
+        const activeRooms = getActiveRoomsByUserId(userId);
+        callback(activeRooms);
     };
 
     socket.on("check_room", checkRoomHandler);
@@ -248,4 +278,6 @@ module.exports = (io, socket) => {
     socket.on("update_avatar", updateProfileHandler); // fallback for existing UI
     socket.on("update_profile", updateProfileHandler);
     socket.on("end_session", endSessionHandler);
+    socket.on("get_user_history", getUserHistoryHandler);
+    socket.on("get_active_rooms", getUserActiveRoomsHandler);
 };

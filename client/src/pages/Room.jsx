@@ -15,12 +15,14 @@ import EmojiReactions from '../components/Room/EmojiReactions';
 import TasksPane from '../components/Room/TasksPane';
 import RoomNavbar from '../components/Room/RoomNavbar';
 import ParticipantPanel from '../components/Room/ParticipantPanel';
+import { useProfile } from '../hooks/useProfile';
 
 const Room = () => {
     const { roomId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const { socket, isConnected } = useSocket();
+    const { userId: globalUserId, name: globalName, avatarSeed: globalAvatarSeed } = useProfile();
 
     const [viewState, setViewState] = useState(
         // userId present = existing session/create-room old flow → go straight to room
@@ -146,31 +148,31 @@ const Room = () => {
         };
 
         if (location.state?.userId && location.state?.name) {
-            // Legacy flow
+            // Priority 1: Navigation state (passed from /create)
             tryJoin(location.state);
         } else {
             const storedSession = localStorage.getItem(`keystimate_session_${roomId}`);
-            const globalProfile = localStorage.getItem('keystimate_user_profile');
 
             if (storedSession) {
+                // Priority 2: Active session for this specific room
                 try {
                     tryJoin(JSON.parse(storedSession));
                 } catch (e) {
                     setViewState('GUEST_INPUT');
                 }
-            } else if (globalProfile) {
-                // Auto-join using global identity
+            } else if (globalName) {
+                // Priority 3: Global identity auto-join
                 try {
-                    const profile = JSON.parse(globalProfile);
                     const hostUserId = location.state?.hostUserId;
                     const hostRole = location.state?.hostRole || 'DEV';
 
                     // Use hostUserId if we are the host (just redirected from /create)
+                    // Otherwise use globalUserId so history is linked
                     tryJoin({
-                        name: profile.name,
+                        name: globalName,
                         role: hostUserId ? hostRole : 'DEV',
-                        userId: hostUserId || undefined,
-                        avatarSeed: profile.avatarSeed
+                        userId: hostUserId || globalUserId,
+                        avatarSeed: globalAvatarSeed || globalName
                     });
                 } catch (e) {
                     setViewState('GUEST_INPUT');

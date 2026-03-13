@@ -20,6 +20,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSocket } from '../context/SocketContext';
+import { useProfile } from '../hooks/useProfile';
 import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -196,6 +197,7 @@ const ProfileSetupDialog = ({
     prefetchError = null,
 }) => {
     const { socket } = useSocket();
+    const { userId: globalUserId, updateProfile } = useProfile();
 
     // ── State ──
     const [name, setName] = useState('');
@@ -318,11 +320,12 @@ const ProfileSetupDialog = ({
         // join mode
         setSubmitting(true);
         // When hostUserId is provided, pass it so server reconnects the pre-registered host slot
+        // Otherwise use our globalUserId so history is linked across rooms
         const joinPayload = {
             roomId,
             name: name.trim(),
             role: hostUserId ? hostRole : 'DEV',
-            ...(hostUserId ? { userId: hostUserId } : {}),
+            userId: hostUserId || globalUserId,
         };
         socket.emit('join_room', joinPayload, (response) => {
             if (response.error) {
@@ -342,10 +345,7 @@ const ProfileSetupDialog = ({
             socket.emit('update_profile', { roomId, name: name.trim(), avatarSeed: selectedSeed });
 
             // Save to global profile for cross-room identity
-            localStorage.setItem('keystimate_user_profile', JSON.stringify({
-                name: name.trim(),
-                avatarSeed: selectedSeed
-            }));
+            updateProfile({ name: name.trim(), avatarSeed: selectedSeed });
 
             setSubmitting(false);
             onJoinSuccess?.({

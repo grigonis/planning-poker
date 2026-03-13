@@ -58,11 +58,43 @@ This file is the explicit capability and coverage contract for the project.
 
 ---
 
+## M006 — Team Management & Dashboard (Pending)
+
+### DASH-01 — User Dashboard initialization
+- Status: active
+### [x] DASH-01: Persistent Dashboard Hub
+Users have a centralized home base to manage their profile and rooms.
+**Validated:** M006
+
+### [x] DASH-02: Global Profile Persistence
+User identity (name, avatar, settings) is preserved across sessions and rooms.
+**Validated:** M006
+
+### [x] DASH-03: Session History Archive
+Completed rooms are captured as history snapshots with tasks and results.
+**Validated:** M006
+
+### [x] DASH-04: Multi-Room Management
+Users can track and rejoin several active rooms from one dashboard.
+**Validated:** M006
+
+### [x] DASH-05: Premium Dashboard UI
+The dashboard follows high-end aesthetic standards (shadcn/ui layout).
+**Validated:** M006
+(M005 — completed)
+
+### R401 — Avatar-first identity flow — validated M005
+### R402 — ProfileSetupDialog shared component — validated M005
+### R403 — Room configuration decoupled from host entry — validated M005
+### R404 — Auto-join for repeat visitors — validated M005
+
+---
+
 ## Deferred
 
-### VOTE-06 — Save custom scales to team profile
+### VOTE-06 — Save custom scales to team profile — M006 requirement
 - Class: differentiator
-- Status: deferred
+- Status: active (Promoted in M006)
 - Description: Allow teams to persist custom voting scales across sessions
 - Source: user (M001 backlog)
 - Primary owning slice: none

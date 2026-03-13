@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Settings, LayoutList, Pencil, Layers, UsersRound } from 'lucide-react';
+import { Users, Settings, LayoutList, Pencil, Layers, UsersRound, LayoutDashboard } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
     Tooltip,
@@ -141,7 +141,7 @@ const RoomNavbar = ({
                 {/* Logo / Room Name — pushed left */}
                 <div
                     className="flex items-center gap-2.5 cursor-pointer shrink-0 group min-w-0"
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                 >
                     <KeystimateLogo className="w-auto h-8 shrink-0" />
                     <div className="flex flex-col justify-center leading-none min-w-0">
