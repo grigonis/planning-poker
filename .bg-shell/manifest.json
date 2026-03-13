@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "3176714a",
+    "label": "vite-dev",
+    "command": "cd /d/Projects/planning-poker/client && npm run dev -- --host --port 5175",
+    "cwd": "D:\\Projects\\planning-poker",
+    "startedAt": 1773414586553,
+    "processType": "server",
+    "group": null,
+    "readyPattern": null,
+    "readyPort": 5175,
+    "pid": 15800
+  }
+]

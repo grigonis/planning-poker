@@ -4,7 +4,11 @@ import { avataaars } from '@dicebear/collection';
 import { Crown, RefreshCw } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 import anonymousMonkeySvg from '../../assets/anonymous-monkey.svg';
-import { Badge } from '../ui/badge';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '../ui/tooltip';
 
 const MONKEY_ALIASES = [
     'Bonobo', 'Macaque', 'Tamarin', 'Capuchin', 'Gibbon',
@@ -70,7 +74,7 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                 {/* Active Emoji Reaction Overlay */}
                 {activeReaction?.icon && (
                     <div
-                        key={activeReaction.id} // Force animation restart on new reaction
+                        key={activeReaction.id}
                         className="absolute -top-4 -right-2 text-3xl md:text-4xl animate-in zoom-in-50 spin-in-12 duration-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.6)] pointer-events-none z-50 origin-bottom-left filter drop-shadow hover:scale-125 transition-transform"
                     >
                         {activeReaction.icon}
@@ -81,10 +85,18 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
             {/* Details */}
             {!hideDetails && (
                 <>
-                    <span className="font-bold text-foreground text-[13px] md:text-sm leading-tight text-center truncate max-w-[100px] flex items-center justify-center gap-1.5 drop-shadow-md">
-                        {displayName}
-                        {user.isHost && !isAnon && <Crown size={12} className="text-primary flex-shrink-0" />}
-                    </span>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="font-bold text-foreground text-[13px] md:text-sm leading-tight text-center flex items-center justify-center gap-1 drop-shadow-md cursor-default max-w-[80px]">
+                                <span className="truncate block min-w-0">{displayName}</span>
+                                {user.isHost && !isAnon && <Crown size={12} className="text-primary flex-shrink-0" />}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs font-semibold">
+                            {displayName}
+                            {user.isHost && !isAnon && ' 👑'}
+                        </TooltipContent>
+                    </Tooltip>
 
                     {(() => {
                         const group = groupsEnabled && user.groupId ? groups.find(g => g.id === user.groupId) : null;
@@ -102,9 +114,6 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                                 </span>
                             );
                         }
-                        // Only show role badge for spectators when groups are disabled (optional, but usually helpful)
-                        // If "remove completely" is literal, we remove the whole block.
-                        // I will remove it since the user was very specific about "remove from code completely".
                         return null;
                     })()}
                 </>

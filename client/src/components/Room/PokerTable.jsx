@@ -236,12 +236,12 @@ const PokerTable = ({
 
                     {/* Phase-aware center content */}
                     {phase === 'IDLE' && (
-                        <div className="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
+                        <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-5 md:px-8 text-center">
                             <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
                                 {activeTaskId ? 'Up Next' : 'Planning Poker'}
                             </span>
                             <div className="flex flex-col items-center gap-2">
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-tight">
+                                <h3 className="text-base sm:text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-tight">
                                     {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'Task Selection Error') : 'Waiting for round...'}
                                 </h3>
                                 {!activeTaskId && isHost && (
@@ -254,7 +254,7 @@ const PokerTable = ({
                                 <div className="flex flex-col items-center gap-4 mt-2">
                                     <button
                                         onClick={onStartVote}
-                                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 md:px-10 py-3 md:py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-primary/20 active:scale-95"
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-bold text-sm md:text-base flex items-center gap-2 transition-all shadow-primary/20 active:scale-95"
                                     >
                                         <Play size={18} />
                                         {activeTaskId ? 'Start Voting Task' : 'Quick Start Round'}
@@ -264,20 +264,20 @@ const PokerTable = ({
                         </div>
                     )}
                     {isVotingPhase && (
-                        <div className="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
+                        <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-5 md:px-8 text-center">
                             <div className="flex items-center gap-3">
                                 <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
                                     Currently Estimating
                                 </span>
                             </div>
 
-                            <p className="text-xl md:text-3xl font-black text-gray-900 dark:text-white leading-tight">
+                            <p className="text-base sm:text-xl md:text-3xl font-black text-gray-900 dark:text-white leading-tight">
                                 {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'General Estimation') : 'General Pointing'}
                             </p>
 
                             {/* Dynamic Progress Bar inline */}
                             {eligibleVotersCount > 0 && (
-                                <div className="flex items-center justify-center gap-3 w-[200px] sm:w-[240px] md:w-[280px] mt-1 animate-in fade-in zoom-in-95 duration-500">
+                                <div className="flex items-center justify-center gap-3 w-full max-w-[240px] mt-1 animate-in fade-in zoom-in-95 duration-500">
                                     <Progress value={voteProgress} className="h-2" />
                                     <span className="text-[10px] font-bold text-gray-700 dark:text-white bg-white/80 dark:bg-dark-800/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-gray-200/50 dark:border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.1)] uppercase tracking-wider whitespace-nowrap">
                                         {currentVotesCount} / {eligibleVotersCount} Voted

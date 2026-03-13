@@ -20,6 +20,14 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess, hostUserId = null, host
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // Restore saved session data for pre-filling the profile form
+    const savedSession = React.useMemo(() => {
+        try {
+            const raw = localStorage.getItem(`keystimate_session_${roomId}`);
+            return raw ? JSON.parse(raw) : null;
+        } catch { return null; }
+    }, [roomId]);
+
     useEffect(() => {
         if (!isOpen || !socket || !roomId) return;
 
@@ -60,6 +68,9 @@ const GuestJoinModal = ({ isOpen, roomId, onJoinSuccess, hostUserId = null, host
             initialGameMode={gameMode}
             loading={loading}
             prefetchError={error}
+            // Pre-fill from saved session so re-joins feel seamless
+            initialName={savedSession?.name || ''}
+            initialAvatarSeed={savedSession?.avatarSeed || null}
         />
     );
 };
