@@ -102,10 +102,16 @@ const Room = () => {
                     if (response.tasks) setTasks(response.tasks);
                     if (response.activeTaskId) setActiveTaskId(response.activeTaskId);
 
-                    if (response.phase === 'REVEALED' && response.votes) {
+                    // Restore vote state on rejoin (both VOTING masked votes and REVEALED real votes)
+                    if (response.votes && response.votes.length > 0) {
                         const votesMap = {};
                         response.votes.forEach(([uid, val]) => votesMap[uid] = val);
                         setVotes(votesMap);
+                        // If we were already in voting phase and had cast a vote, restore myVote
+                        // to a sentinel so the overlay doesn't re-appear
+                        if (response.phase !== 'IDLE' && votesMap[response.userId] !== undefined) {
+                            setMyVote('VOTED');
+                        }
                     }
 
                     const serverMe = response.users.find(u => u.id === response.userId);
@@ -126,6 +132,7 @@ const Room = () => {
                         userId: response.userId,
                         name: updatedUser.name,
                         role: updatedUser.role,
+                        avatarSeed: updatedUser.avatarSeed,
                         roomId
                     }));
                 }
@@ -169,6 +176,7 @@ const Room = () => {
                             userId: next.id,
                             name: next.name,
                             role: next.role,
+                            avatarSeed: next.avatarSeed,
                             roomId
                         }));
                         return next;
@@ -391,10 +399,13 @@ const Room = () => {
         }, (response) => {
             if (!response.error) {
                 setPhase(response.phase);
-                if (response.votes && response.phase === 'REVEALED') {
+                if (response.votes && response.votes.length > 0) {
                     const votesMap = {};
                     response.votes.forEach(([uid, val]) => { votesMap[uid] = val; });
                     setVotes(votesMap);
+                    if (response.phase !== 'IDLE' && votesMap[response.userId] !== undefined) {
+                        setMyVote('VOTED');
+                    }
                 }
                 if (response.groups) setGroups(response.groups);
                 if (response.groupsEnabled !== undefined) setGroupsEnabled(response.groupsEnabled);
@@ -407,6 +418,7 @@ const Room = () => {
             userId: user.userId,
             name: user.name,
             role: user.role,
+            avatarSeed: user.avatarSeed,
             roomId
         }));
     };

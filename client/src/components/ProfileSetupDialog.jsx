@@ -15,8 +15,7 @@
  *  onUpdateProfile ({ name, avatarSeed }) => void      edit mode callback
  *  onClose      () => void                             edit mode only
  *
- * Avatar layout: 12 items — index 0–5 are male seeds, 6–11 are female seeds.
- * Seeds are randomly assigned once per dialog open and shuffled on demand.
+ * Avatar layout: 12 items in a flat 6×2 grid (6 male seeds, 6 female seeds).
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -57,52 +56,27 @@ const makeAvatarUri = (seed, sex, size = 64) => {
 
 const AvatarGrid = React.memo(({ seeds, selectedSeed, onSelect }) => {
     const { male: maleSeeds, female: femaleSeeds } = seeds;
+    // Flat 6×2 grid — no gender labels shown
+    const allSeeds = [
+        ...maleSeeds.map(seed => ({ seed, sex: 'male' })),
+        ...femaleSeeds.map(seed => ({ seed, sex: 'female' })),
+    ];
 
     return (
-        <div className="flex flex-col gap-3">
-            {/* Male row */}
-            <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-0.5">
-                    Male
-                </p>
-                <div className="grid grid-cols-6 gap-2">
-                    {maleSeeds.map((seed) => {
-                        const uri = makeAvatarUri(seed, 'male', 64);
-                        const isSelected = selectedSeed === seed;
-                        return (
-                            <AvatarButton
-                                key={seed}
-                                seed={seed}
-                                uri={uri}
-                                isSelected={isSelected}
-                                onSelect={onSelect}
-                            />
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Female row */}
-            <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-0.5">
-                    Female
-                </p>
-                <div className="grid grid-cols-6 gap-2">
-                    {femaleSeeds.map((seed) => {
-                        const uri = makeAvatarUri(seed, 'female', 64);
-                        const isSelected = selectedSeed === seed;
-                        return (
-                            <AvatarButton
-                                key={seed}
-                                seed={seed}
-                                uri={uri}
-                                isSelected={isSelected}
-                                onSelect={onSelect}
-                            />
-                        );
-                    })}
-                </div>
-            </div>
+        <div className="grid grid-cols-6 gap-2">
+            {allSeeds.map(({ seed, sex }) => {
+                const uri = makeAvatarUri(seed, sex, 64);
+                const isSelected = selectedSeed === seed;
+                return (
+                    <AvatarButton
+                        key={seed}
+                        seed={seed}
+                        uri={uri}
+                        isSelected={isSelected}
+                        onSelect={onSelect}
+                    />
+                );
+            })}
         </div>
     );
 });
@@ -207,6 +181,9 @@ const ProfileSetupDialog = ({
     initialGroups = [],
     initialGroupsEnabled = false,
     initialGameMode = null,
+    // Pre-fill from saved session (name + avatarSeed)
+    initialName = '',
+    initialAvatarSeed = null,
     // Host reclaim — when set, join_room uses this userId so server reconnects host
     hostUserId = null,
     hostRole = 'DEV',
@@ -274,14 +251,21 @@ const ProfileSetupDialog = ({
                 setSelectedSex('male');
             }
         } else {
-            // join mode
-            setName('');
+            // join mode — pre-fill from saved session if available
+            setName(initialName || '');
             setSubmitting(false);
             setSelectedGroupId('');
             const newSeeds = generateSeeds();
             setSeeds(newSeeds);
-            setSelectedSeed(newSeeds.male[0]);
-            setSelectedSex('male');
+            if (initialAvatarSeed) {
+                // Slot saved seed into position 0 so it's visible and selected
+                newSeeds.male[0] = initialAvatarSeed;
+                setSeeds({ ...newSeeds });
+                setSelectedSeed(initialAvatarSeed);
+            } else {
+                setSelectedSeed(newSeeds.male[0]);
+                setSelectedSex('male');
+            }
 
             // Only do room check if wrapper didn't prefetch
             if (!initialGameMode && roomId && socket) {

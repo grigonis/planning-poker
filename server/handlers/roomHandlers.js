@@ -154,7 +154,8 @@ module.exports = (io, socket) => {
         callback({
             users: usersList,
             phase: room.phase,
-            votes: room.phase === 'REVEALED' ? votesList : [], // Hide votes if hidden
+            // During VOTING: send which users voted (masked as 'VOTED') so rejoining clients know their vote state
+            votes: room.phase === 'REVEALED' ? votesList : votesList.map(([uid]) => [uid, 'VOTED']),
             // Send back their own userId so they can save it
             userId: user.id,
             mode: room.gameMode,
