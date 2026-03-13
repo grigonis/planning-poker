@@ -38,10 +38,14 @@ import { cn } from '../lib/utils';
 const MALE_BASES = ['Oliver', 'Ethan', 'Marcus', 'Noah', 'Finn', 'Luca'];
 const FEMALE_BASES = ['Sofia', 'Aria', 'Chloe', 'Zoe', 'Mia', 'Nora'];
 
-const generateSeeds = () => ({
-    male: MALE_BASES.map(b => `${b}-${Math.random().toString(36).slice(2, 6)}`),
-    female: FEMALE_BASES.map(b => `${b}-${Math.random().toString(36).slice(2, 6)}`),
-});
+const generateSeeds = () => {
+    // Truly random seeds every time
+    const rand = () => Math.random().toString(36).slice(2, 8);
+    return {
+        male: MALE_BASES.map(b => `${b}-${rand()}`),
+        female: FEMALE_BASES.map(b => `${b}-${rand()}`),
+    };
+};
 
 const makeAvatarUri = (seed, sex, size = 64) => {
     return createAvatar(avataaars, {
@@ -336,6 +340,12 @@ const ProfileSetupDialog = ({
 
             // Set avatar + final name on the server user object
             socket.emit('update_profile', { roomId, name: name.trim(), avatarSeed: selectedSeed });
+
+            // Save to global profile for cross-room identity
+            localStorage.setItem('keystimate_user_profile', JSON.stringify({
+                name: name.trim(),
+                avatarSeed: selectedSeed
+            }));
 
             setSubmitting(false);
             onJoinSuccess?.({

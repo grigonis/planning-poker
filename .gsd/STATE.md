@@ -1,14 +1,14 @@
 # GSD State
 
-**Active Milestone:** M005 — UI Polish — **IN PROGRESS (round 2)**
-**Phase:** ui-fixes-applied
+**Active Milestone:** M006 — Team Management — **PENDING**
+**Phase:** milestone-complete
 
 ## Milestone Registry
 - ✅ **M001:** Migration
 - ✅ **M002:** shadcn Room UI Migration
 - ✅ **M003:** Room UX Restructure
 - ✅ **M004:** Player Groups
-- 🔄 **M005:** UI Polish
+- ✅ **M005:** UI Polish
 
 ## M005 Changes Applied (round 2)
 
@@ -36,6 +36,8 @@
 
 ### 7. Room name/description truncated with tooltip
 - `RoomNavbar.jsx`: Room subtitle shows `roomName — roomDescription` (if description exists), truncated with `max-w-[130px] sm:max-w-[200px] md:max-w-[300px]`. Tooltip on hover shows full name + description in separate lines.
+- `client/src/components/ProfileSetupDialog.jsx`: Truly random avatar seeds; global profile persistence in `localStorage`.
+- `client/src/pages/Room.jsx`: Auto-join logic if global profile exists (bypasses dialog).
 
 ## Files Changed (round 2)
 - `client/src/components/Room/RoomNavbar.jsx` — complete rewrite

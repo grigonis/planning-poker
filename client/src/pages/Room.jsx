@@ -72,7 +72,7 @@ const Room = () => {
         if (!socket || !isConnected) return; // Wait for connection
 
         const tryJoin = (userData) => {
-            const { name, role, userId } = userData;
+            const { name, role, userId, avatarSeed } = userData;
             socket.emit('join_room', {
                 roomId,
                 name,
@@ -115,6 +115,12 @@ const Room = () => {
                     }
 
                     const serverMe = response.users.find(u => u.id === response.userId);
+                    
+                    // Sync avatar to server if we have a seed and server doesn't match
+                    if (avatarSeed && serverMe && serverMe.avatarSeed !== avatarSeed) {
+                        socket.emit('update_profile', { roomId, name, avatarSeed });
+                    }
+
                     const updatedUser = {
                         name: serverMe?.name || name,
                         role: serverMe?.role || role,
@@ -122,7 +128,7 @@ const Room = () => {
                         isHost: serverMe?.isHost || false,
                         gameMode: response.mode,
                         funFeatures: response.funFeatures,
-                        avatarSeed: serverMe?.avatarSeed || name
+                        avatarSeed: serverMe?.avatarSeed || avatarSeed || name
                     };
 
                     setCurrentUser(updatedUser);
@@ -140,17 +146,32 @@ const Room = () => {
         };
 
         if (location.state?.userId && location.state?.name) {
-            // Legacy create-room flow that passed userId+name directly
+            // Legacy flow
             tryJoin(location.state);
-        } else if (location.state?.hostUserId) {
-            // New create-room flow: host needs to enter profile first
-            setViewState('GUEST_INPUT');
         } else {
             const storedSession = localStorage.getItem(`keystimate_session_${roomId}`);
+            const globalProfile = localStorage.getItem('keystimate_user_profile');
+
             if (storedSession) {
                 try {
-                    const sessionData = JSON.parse(storedSession);
-                    tryJoin(sessionData);
+                    tryJoin(JSON.parse(storedSession));
+                } catch (e) {
+                    setViewState('GUEST_INPUT');
+                }
+            } else if (globalProfile) {
+                // Auto-join using global identity
+                try {
+                    const profile = JSON.parse(globalProfile);
+                    const hostUserId = location.state?.hostUserId;
+                    const hostRole = location.state?.hostRole || 'DEV';
+
+                    // Use hostUserId if we are the host (just redirected from /create)
+                    tryJoin({
+                        name: profile.name,
+                        role: hostUserId ? hostRole : 'DEV',
+                        userId: hostUserId || undefined,
+                        avatarSeed: profile.avatarSeed
+                    });
                 } catch (e) {
                     setViewState('GUEST_INPUT');
                 }

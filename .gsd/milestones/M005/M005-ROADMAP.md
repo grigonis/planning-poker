@@ -18,11 +18,11 @@
 
 ## Slices
 
-- [ ] **S01: Server & Create Room page** `risk:high` `depends:[]`
+- [x] **S01: Server & Create Room page** `risk:high` `depends:[]`
   > After this: create_room accepts roomName; CreateRoom.jsx shows room-name field, voting system, and Options collapse with spectator switch; room is created correctly and host is redirected with hostUserId in state
-- [ ] **S02: ProfileSetupDialog — shared identity component** `risk:medium` `depends:[S01]`
+- [x] **S02: ProfileSetupDialog — shared identity component** `risk:medium` `depends:[S01]`
   > After this: ProfileSetupDialog renders 12 generated avatars (6M/6F), name input, Continue CTA; used for host entry, guest entry, and toolbar avatar edit; group picker shown when groups present
-- [ ] **S03: Wire everything together + polish** `risk:low` `depends:[S02]`
+- [x] **S03: Wire everything together + polish** `risk:low` `depends:[S02]`
   > After this: full end-to-end flow works — create, profile setup, room view; guest join works; toolbar edit works; all three paths use ProfileSetupDialog
 
 ## Milestone Definition of Done
