@@ -16,7 +16,7 @@ module.exports = (io, socket) => {
         }
     };
 
-    const createRoomHandler = ({ name, role, gameMode, presetParams }, callback) => {
+    const createRoomHandler = ({ roomName, role, gameMode, presetParams }, callback) => {
         const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
         const userId = uuidv4();
 
@@ -35,7 +35,7 @@ module.exports = (io, socket) => {
                 name: 'Modified Fibonacci',
                 values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
             },
-            roomName: '',
+            roomName: roomName || '',
             roomDescription: '',
             tasks: [],
             activeTaskId: null,
@@ -43,20 +43,20 @@ module.exports = (io, socket) => {
             groupsEnabled: false
         };
 
-        // Validate role or default to HOST (which acts as DEV usually)
-        // If user explicitly selected SPECTATOR, we respect that.
-        // If they selected DEV/QA, we respect that.
-        // If nothing, 'HOST' (legacy) or 'DEV'.
-        const hostRole = role || 'DEV';
+        // Host role: DEV (estimator) unless spectator was explicitly chosen.
+        const hostRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV';
 
+        // Host is created without a name — the client will call update_profile
+        // immediately after the ProfileSetupDialog is completed.
         const host = {
             id: userId,
-            name: name || "Host",
+            name: '',
             role: hostRole,
-            isHost: true, // explicit flag for privileges
+            isHost: true,
             socketId: socket.id,
             connected: true,
-            groupId: null
+            groupId: null,
+            avatarSeed: null
         };
 
         room.users.set(userId, host);
@@ -83,7 +83,7 @@ module.exports = (io, socket) => {
             groups: Array.from(room.groups.values()),
             groupsEnabled: room.groupsEnabled
         });
-        console.log(`Room created: ${roomId} by ${socket.id} (${name}) as ${hostRole} in ${room.gameMode} mode`);
+        console.log(`Room created: ${roomId} by ${socket.id} as ${hostRole} in ${room.gameMode} mode (roomName: "${room.roomName}")`);
     };
 
     const updateRoomSettingsHandler = ({ roomId, settings }) => {
