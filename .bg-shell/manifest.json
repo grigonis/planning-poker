@@ -1,14 +1,26 @@
 [
   {
-    "id": "3d70b38a",
-    "label": "vite",
-    "command": "cd D:/Projects/planning-poker/client && npx vite --port 5173",
+    "id": "48d9538e",
+    "label": "client-dev",
+    "command": "cd client && npm run dev",
     "cwd": "D:\\Projects\\planning-poker",
-    "startedAt": 1773350269645,
+    "startedAt": 1773386026218,
     "processType": "server",
-    "group": "dev",
+    "group": null,
     "readyPattern": null,
-    "readyPort": 5173,
-    "pid": 12100
+    "readyPort": 3000,
+    "pid": 17508
+  },
+  {
+    "id": "6ae9c624",
+    "label": "server-dev",
+    "command": "cd server && npm run dev",
+    "cwd": "D:\\Projects\\planning-poker",
+    "startedAt": 1773386164556,
+    "processType": "server",
+    "group": null,
+    "readyPattern": null,
+    "readyPort": 5000,
+    "pid": 2824
   }
 ]

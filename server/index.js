@@ -15,7 +15,7 @@ const io = new Server(server, {
     }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 5000;
 
 const registerRoomHandlers = require("./handlers/roomHandlers");
 const registerVoteHandlers = require("./handlers/voteHandlers");

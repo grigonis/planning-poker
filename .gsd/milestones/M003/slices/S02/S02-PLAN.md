@@ -63,7 +63,7 @@
   - Verify: `rg "DropdownMenu" client/src/components/Room/RoomNavbar.jsx` → present. `SettingsDialog.jsx` exists with Switch components. `CustomizeCardsDialog.jsx` exists. Room.jsx has three dialog open states. `cd client && npx vite build --mode development 2>&1 | tail -3` → no errors.
   - Done when: Host sees dropdown with 3 items. Settings dialog opens with 3 toggles + end session. Customize Cards opens placeholder. Non-hosts see no dropdown trigger.
 
-- [ ] **T03: Build EditRoomDetailsDialog and add navbar description display** `est:45m`
+- [x] **T03: Build EditRoomDetailsDialog and add navbar description display** `est:45m`
   - Why: Closes the loop — host can edit room name/description via dialog (R204), and description shows under room ID in navbar (R205). Wires the server foundation from T01 to the UI from T02.
   - Files: `client/src/components/Room/EditRoomDetailsDialog.jsx` (new), `client/src/components/Room/RoomNavbar.jsx`, `client/src/pages/Room.jsx`
   - Do: Create `EditRoomDetailsDialog.jsx` with two fields (name via Input, description via Textarea), save button calls `onUpdateSettings({ roomName, roomDescription })`. Initialize fields from current values on open. In RoomNavbar, add `roomDescription` prop and display it as a truncated muted line under the room ID when set. Also add `roomName` display — if set, show it alongside or replacing the Room: code display. In Room.jsx, pass `roomName`/`roomDescription` state and the `handleUpdateSettings` function to the new dialog and navbar.

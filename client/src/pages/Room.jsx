@@ -8,6 +8,7 @@ import InviteModal from '../components/InviteModal';
 import GuestJoinModal from '../components/GuestJoinModal';
 import RoomSettingsModal from '../components/Room/RoomSettingsModal';
 import SettingsDialog from '../components/Room/SettingsDialog';
+import EditRoomDetailsDialog from '../components/Room/EditRoomDetailsDialog';
 import CustomizeCardsDialog from '../components/Room/CustomizeCardsDialog';
 import EditProfileModal from '../components/Room/EditProfileModal';
 import EmojiReactions from '../components/Room/EmojiReactions';
@@ -463,6 +464,7 @@ const Room = () => {
             {/* Unified Navbar */}
             <RoomNavbar 
                 roomId={roomId}
+                roomName={roomName}
                 roomDescription={roomDescription}
                 socketStatus={socket?.connected}
                 tasksCount={tasks.length}
@@ -582,6 +584,16 @@ const Room = () => {
                 anonymousMode={anonymousMode}
                 onUpdateSettings={handleUpdateSettings}
                 onEndSession={handleEndSession}
+            />
+            <EditRoomDetailsDialog
+                isOpen={isEditRoomOpen}
+                onClose={() => setIsEditRoomOpen(false)}
+                roomName={roomName}
+                roomDescription={roomDescription}
+                onSave={(settings) => {
+                    handleUpdateSettings(settings);
+                    toast.success("Room details updated");
+                }}
             />
             <CustomizeCardsDialog
                 isOpen={isCustomizeCardsOpen}

@@ -18,6 +18,8 @@ import { cn } from '../../lib/utils';
  * 
  * @param {Object} props
  * @param {string} [props.roomId] - The room ID to display.
+ * @param {string} [props.roomName] - The room name to display.
+ * @param {string} [props.roomDescription] - The room description to display.
  * @param {boolean} [props.socketStatus] - Whether the socket is connected.
  * @param {number} [props.tasksCount=0] - Number of tasks to show in the badge.
  * @param {boolean} [props.isHost=false] - Whether the current user is the host.
@@ -33,6 +35,7 @@ import { cn } from '../../lib/utils';
  */
 const RoomNavbar = ({
     roomId,
+    roomName,
     roomDescription,
     socketStatus,
     tasksCount = 0,
@@ -59,7 +62,12 @@ const RoomNavbar = ({
                         {!minimal && roomId ? (
                             <div className="flex flex-col gap-0.5 mt-0.5">
                                 <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                    <span>Room: <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded ml-0.5 select-all">{roomId}</span></span>
+                                    {roomName ? (
+                                        <span className="text-gray-900 dark:text-white font-bold max-w-[120px] truncate">{roomName}</span>
+                                    ) : (
+                                        <span>Room:</span>
+                                    )}
+                                    <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded select-all">{roomId}</span>
                                 </div>
                                 {roomDescription && (
                                     <p className="text-[11px] text-muted-foreground truncate max-w-[200px] md:max-w-[300px]">{roomDescription}</p>
@@ -147,16 +155,14 @@ const RoomNavbar = ({
                     {!minimal && isHost && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="rounded-full bg-white dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm"
+                                <button
+                                    className="inline-flex items-center justify-center size-8 rounded-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                                     aria-label="Room Settings"
                                 >
                                     <Settings className="w-4.5 h-4.5" />
-                                </Button>
+                                </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-52">
+                            <DropdownMenuContent align="end" side="bottom" sideOffset={8} avoidCollisions={false} className="w-52">
                                 <DropdownMenuItem onSelect={onOpenEditRoom} className="gap-2 cursor-pointer">
                                     <Pencil className="size-4" />
                                     Edit Room Details
