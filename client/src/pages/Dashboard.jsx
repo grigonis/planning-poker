@@ -1,365 +1,292 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useProfile } from '../hooks/useProfile';
-import { useSocket } from '../context/SocketContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
-} from '@/components/ui/table';
-import { 
-    LayoutDashboard, 
-    History, 
-    Settings, 
-    PlusCircle, 
-    User,
-    LogOut,
-    ExternalLink,
+    Clock, 
+    ChevronRight, 
+    Search, 
+    History,
     Users,
-    Calendar,
-    ChevronRight,
-    Search,
-    Play,
-    Zap
+    Activity,
+    Trophy,
+    Target
 } from 'lucide-react';
+import { useSocket } from '../context/SocketContext';
+import { useProfile } from '../hooks/useProfile';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { cn } from '../lib/utils';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "../components/ui/table";
+import { 
+    Card, 
+    CardContent, 
+    CardDescription, 
+    CardHeader, 
+    CardTitle 
+} from "../components/ui/card";
+import RoomNavbar from '../components/Room/RoomNavbar';
+import ProfileSetupDialog from '../components/ProfileSetupDialog';
+import PlayerAvatar from '../components/Room/PlayerAvatar';
+import { Skeleton } from "../components/ui/skeleton";
 
 const Dashboard = () => {
-    const navigate = useNavigate();
-    const { socket, isConnected } = useSocket();
     const { userId, name, avatarSeed, updateProfile } = useProfile();
-    const [tempName, setTempName] = useState(name);
+    const { socket } = useSocket();
+    
     const [history, setHistory] = useState([]);
     const [activeRooms, setActiveRooms] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+    // Fetch history and active rooms
     useEffect(() => {
-        if (isConnected && socket && userId) {
-            setLoading(true);
-            // Fetch History
-            socket.emit('get_user_history', { userId }, (data) => {
-                setHistory(data || []);
-            });
-            // Fetch Active Rooms
-            socket.emit('get_active_rooms', { userId }, (data) => {
-                setActiveRooms(data || []);
-                setLoading(false);
-            });
-        }
-    }, [isConnected, socket, userId]);
+        if (!socket || !userId) return;
 
-    // Update tempName when profile name becomes available or changes
-    useEffect(() => {
-        setTempName(name);
-    }, [name]);
+        setIsLoading(true);
 
-    const handleSaveProfile = () => {
-        updateProfile({ name: tempName });
-    };
+        // Fetch session history
+        socket.emit('get_user_history', { userId }, (response) => {
+            if (Array.isArray(response)) {
+                setHistory(response);
+            }
+        });
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'Unknown';
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('en-US', { 
-            month: 'short', 
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
-    };
+        // Fetch currently active rooms for the user
+        socket.emit('get_active_rooms', { userId }, (response) => {
+            if (Array.isArray(response)) {
+                setActiveRooms(response);
+            }
+            setIsLoading(false);
+        });
 
-    const filteredHistory = history.filter(item => 
-        item.roomName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.id?.toLowerCase().includes(searchQuery.toLowerCase())
+    }, [socket, userId]);
+
+    // Derived stats
+    const stats = useMemo(() => {
+        const totalSessions = history.length;
+        const totalVotes = history.reduce((acc, session) => acc + (session.tasks?.length || 0), 0);
+        const uniqueRooms = new Set(history.map(s => s.roomName)).size;
+        
+        return [
+            { label: 'Total Sessions', value: totalSessions, icon: History, color: 'text-blue-500' },
+            { label: 'Total Votes', value: totalVotes, icon: Target, iconColor: 'text-purple-500' },
+            { label: 'Rooms Joined', value: uniqueRooms, icon: Users, iconColor: 'text-emerald-500' },
+            { label: 'Active Tasks', value: activeRooms.length, icon: Activity, iconColor: 'text-orange-500' },
+        ];
+    }, [history, activeRooms]);
+
+    const filteredHistory = history.filter(session => 
+        session.roomName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.id.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const handleUpdateProfile = (data) => {
+        updateProfile(data);
+    };
+
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-carbon-950 transition-colors duration-300">
-            {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-200 dark:border-white/10 bg-white dark:bg-carbon-950 flex flex-col shrink-0">
-                <div className="p-6">
-                    <div className="flex items-center gap-2 mb-8">
-                        <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">K</div>
-                        <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                            Keystimate
-                        </span>
-                    </div>
+        <div className="min-h-screen bg-background flex flex-col relative">
+            {/* Background elements */}
+            <div className="absolute inset-0 aurora z-0 opacity-20 pointer-events-none" />
+            <div className="absolute inset-0 modern-grid z-0 opacity-20 pointer-events-none" />
 
-                    <nav className="flex flex-col gap-2">
-                        <Button variant="ghost" className="justify-start gap-2 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white">
-                            <LayoutDashboard className="size-4" />
-                            Dashboard
-                        </Button>
-                        <Button variant="ghost" className="justify-start gap-2 text-slate-500 hover:text-slate-900 dark:text-silver-400 dark:hover:text-white">
-                            <History className="size-4" />
-                            History
-                        </Button>
-                        <Button variant="ghost" className="justify-start gap-2 text-slate-500 hover:text-slate-900 dark:text-silver-400 dark:hover:text-white">
-                            <Settings className="size-4" />
-                            Settings
-                        </Button>
-                    </nav>
-                </div>
+            {/* Top Navigation */}
+            <RoomNavbar 
+                mode="dashboard"
+                currentUser={{ id: userId, name, avatarSeed }}
+                onOpenProfile={() => setIsProfileOpen(true)}
+            />
 
-                <div className="mt-auto p-6 border-t border-slate-200 dark:border-white/10">
-                    <Button variant="ghost" className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10" onClick={() => navigate('/')}>
-                        <LogOut className="size-4" />
-                        Exit to Landing
-                    </Button>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-y-auto p-8">
-                <div className="max-w-5xl mx-auto flex flex-col gap-8">
-                    {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-                                Welcome back, {name || 'Ninja'}!
+            <main className="flex-1 overflow-y-auto relative z-10">
+                <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12 flex flex-col gap-10">
+                    
+                    {/* Welcome Header */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="space-y-1"
+                        >
+                            <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3">
+                                Welcome back, {name || 'Estimator'}!
+                                <span className="inline-block animate-bounce-subtle text-2xl">👋</span>
                             </h1>
-                            <p className="text-slate-500 dark:text-silver-400">
-                                {history.length > 0 
-                                    ? `You've participated in ${history.length} estimation sessions.` 
-                                    : "You haven't joined any rooms yet."}
+                            <p className="text-muted-foreground text-lg font-light max-w-2xl">
+                                Track your voting history, manage your sessions, and refine your estimates.
                             </p>
+                        </motion.div>
+
+                        <div className="flex items-center gap-3">
+                            <Button variant="outline" className="rounded-xl h-11 px-6 font-bold" asChild>
+                                <Link to="/join">Join Room</Link>
+                            </Button>
+                            <Button className="rounded-xl h-11 px-8 font-black shadow-lg shadow-primary/20" asChild>
+                                <Link to="/create">Create Room</Link>
+                            </Button>
                         </div>
-                        <Button onClick={() => navigate('/create')} className="gap-2 h-11 px-6 shadow-lg shadow-primary/20">
-                            <PlusCircle className="size-4" />
-                            New Room
-                        </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Profile Card */}
-                        <Card className="lg:col-span-1 border-slate-200 dark:border-white/10 shadow-sm overflow-hidden bg-white dark:bg-carbon-900/50 backdrop-blur-sm h-fit">
-                            <CardHeader className="pb-4">
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <User className="size-4 text-primary" />
-                                    Your Profile
-                                </CardTitle>
-                                <CardDescription>Personalize your workspace identity.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-col gap-6">
-                                <div className="flex justify-center">
-                                    <div className="relative group">
-                                        <Avatar className="size-24 border-4 border-slate-100 dark:border-white/5 shadow-xl transition-transform duration-300 group-hover:scale-105">
-                                            {avatarSeed && (
-                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`} />
-                                            )}
-                                            <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-                                                {name?.charAt(0) || 'U'}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
-                                            <span className="text-white text-xs font-bold">Change</span>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {stats.map((stat, idx) => (
+                            <motion.div
+                                key={stat.label}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.1 }}
+                            >
+                                <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                    <CardContent className="p-6 flex items-center gap-4">
+                                        <div className={cn("p-2.5 rounded-xl bg-background border border-border shadow-inner shrink-0", stat.color)}>
+                                            <stat.icon size={20} />
                                         </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-medium text-slate-700 dark:text-silver-300">Display Name</label>
-                                    <Input 
-                                        value={tempName} 
-                                        onChange={(e) => setTempName(e.target.value)}
-                                        className="bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 focus-visible:ring-primary"
-                                        placeholder="Enter your name"
-                                    />
-                                </div>
-                            </CardContent>
-                            <CardFooter className="pt-2">
-                                <Button 
-                                    className="w-full" 
-                                    disabled={tempName === name} 
-                                    onClick={handleSaveProfile}
-                                >
-                                    Save Changes
-                                </Button>
-                            </CardFooter>
-                        </Card>
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+                                            <p className="text-2xl font-black">{stat.value}</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        ))}
+                    </div>
 
-                        {/* Sessions List */}
-                        <Card className="lg:col-span-2 border-slate-200 dark:border-white/10 shadow-sm bg-white dark:bg-carbon-900/50 backdrop-blur-sm overflow-hidden">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                                <div>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <History className="size-4 text-primary" />
-                                        Session History
-                                    </CardTitle>
-                                    <CardDescription>Rooms you've participated in.</CardDescription>
+                    {/* Main Content Area */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* History Section */}
+                        <div className="lg:col-span-12 space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                    <History className="text-primary size-5" />
+                                    <h2 className="text-xl font-bold">Session History</h2>
+                                    {history.length > 0 && (
+                                        <Badge variant="secondary" className="rounded-full px-2 h-5 font-bold">
+                                            {history.length}
+                                        </Badge>
+                                    )}
                                 </div>
-                                <div className="relative w-48">
-                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-                                    <Input
-                                        placeholder="Search history..."
-                                        className="pl-9 h-9 text-xs"
+
+                                <div className="relative w-full sm:w-72">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                                    <Input 
+                                        placeholder="Search sessions..." 
+                                        className="pl-9 h-10 rounded-xl"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                {loading ? (
-                                    <div className="flex items-center justify-center py-20">
-                                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+
+                            <Card className="border-border/50 bg-card/40 backdrop-blur-xl shadow-xl overflow-hidden">
+                                {isLoading ? (
+                                    <div className="p-8 space-y-4">
+                                        <Skeleton className="h-10 w-full" />
+                                        <Skeleton className="h-10 w-full" />
+                                        <Skeleton className="h-10 w-full" />
                                     </div>
                                 ) : filteredHistory.length > 0 ? (
-                                    <Table>
-                                        <TableHeader className="bg-slate-50/50 dark:bg-white/5">
-                                            <TableRow className="hover:bg-transparent">
-                                                <TableHead className="font-bold">Room</TableHead>
-                                                <TableHead className="font-bold">Date</TableHead>
-                                                <TableHead className="font-bold text-center">Tasks</TableHead>
-                                                <TableHead className="font-bold text-center">Team</TableHead>
-                                                <TableHead></TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {filteredHistory.map((item) => (
-                                                <TableRow 
-                                                    key={item.id} 
-                                                    className="group cursor-pointer hover:bg-slate-50/80 dark:hover:bg-white/5 transition-colors border-slate-100 dark:border-white/5"
-                                                    onClick={() => navigate(`/room/${item.id}`)}
-                                                >
-                                                    <TableCell className="py-4">
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
-                                                                {item.roomName || 'Untitled Room'}
-                                                            </span>
-                                                            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">
-                                                                ID: {item.id}
-                                                            </span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-slate-500 dark:text-silver-400 text-sm py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <Calendar className="size-3 opacity-60" />
-                                                            {formatDate(item.endedAt)}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-center py-4">
-                                                        <span className="inline-flex items-center justify-center size-7 bg-slate-100 dark:bg-white/5 rounded-full text-xs font-bold text-slate-600 dark:text-silver-300">
-                                                            {item.tasks?.length || 0}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="text-center py-4">
-                                                        <div className="flex items-center justify-center -space-x-2">
-                                                            {item.participants?.slice(0, 3).map((p, i) => (
-                                                                <Avatar key={p.id} className="size-7 border-2 border-white dark:border-carbon-900 ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-                                                                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.avatarSeed || p.name}`} />
-                                                                    <AvatarFallback className="text-[10px] font-bold">{p.name?.[0]}</AvatarFallback>
-                                                                </Avatar>
-                                                            ))}
-                                                            {item.participants?.length > 3 && (
-                                                                <div className="size-7 rounded-full bg-slate-100 dark:bg-white/10 border-2 border-white dark:border-carbon-900 flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-silver-400">
-                                                                    +{item.participants.length - 3}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-right py-4">
-                                                        <ChevronRight className="size-5 text-slate-300 dark:text-white/20 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                                                    </TableCell>
+                                    <div className="overflow-x-auto">
+                                        <Table>
+                                            <TableHeader className="bg-muted/30">
+                                                <TableRow className="hover:bg-transparent">
+                                                    <TableHead className="w-[300px] font-bold py-4">Room Name</TableHead>
+                                                    <TableHead className="font-bold py-4">Date</TableHead>
+                                                    <TableHead className="font-bold py-4">Participants</TableHead>
+                                                    <TableHead className="font-bold py-4 text-right pr-6">Resolved Tasks</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                <AnimatePresence mode="popLayout">
+                                                    {filteredHistory.map((session) => (
+                                                        <motion.tr 
+                                                            key={session.id}
+                                                            initial={{ opacity: 0 }}
+                                                            animate={{ opacity: 1 }}
+                                                            exit={{ opacity: 0 }}
+                                                            className="group hover:bg-muted/20 transition-colors"
+                                                        >
+                                                            <TableCell className="py-4">
+                                                                <div className="flex flex-col gap-0.5">
+                                                                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">
+                                                                        {session.roomName}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-muted-foreground font-mono uppercase">
+                                                                        ID: {session.id}
+                                                                    </span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="py-4 text-sm text-muted-foreground font-medium">
+                                                                {new Date(session.endedAt).toLocaleDateString(undefined, {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    year: 'numeric'
+                                                                })}
+                                                            </TableCell>
+                                                            <TableCell className="py-4">
+                                                                <div className="flex items-center -space-x-2">
+                                                                    {session.participants.slice(0, 5).map((p, i) => (
+                                                                        <div key={i} className="rounded-full border-2 border-card overflow-hidden size-7 bg-muted">
+                                                                            <PlayerAvatar 
+                                                                                user={p} 
+                                                                                size={24} 
+                                                                                hideDetails 
+                                                                                connected={true}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+                                                                    {session.participants.length > 5 && (
+                                                                        <div className="size-7 rounded-full border-2 border-card bg-muted flex items-center justify-center text-[10px] font-bold">
+                                                                            +{session.participants.length - 5}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="py-4 text-right pr-6">
+                                                                <Badge variant="outline" className="font-mono font-bold tracking-tight">
+                                                                    {session.tasks.filter(t => t.resolved).length} / {session.tasks.length}
+                                                                </Badge>
+                                                            </TableCell>
+                                                        </motion.tr>
+                                                    ))}
+                                                </AnimatePresence>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-                                        <div className="size-16 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center">
-                                            <History className="size-8 text-slate-200 dark:text-white/10" />
+                                    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                                        <div className="bg-muted p-4 rounded-full">
+                                            <History className="size-8 text-muted-foreground opacity-40" />
                                         </div>
-                                        <div className="max-w-[240px]">
-                                            <p className="text-slate-900 dark:text-white font-bold">No sessions found</p>
-                                            <p className="text-sm text-slate-500 dark:text-silver-400 mt-1">
-                                                {searchQuery ? "We couldn't find any rooms matching your search." : "Join or create a room to start tracking your estimation history."}
+                                        <div className="space-y-1">
+                                            <h3 className="font-bold text-lg">No sessions found</h3>
+                                            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                                                {searchQuery ? `No sessions matching "${searchQuery}"` : "You haven't participated in any planning sessions yet."}
                                             </p>
                                         </div>
-                                        <Button variant="outline" className="mt-2" onClick={() => navigate('/create')}>
-                                            Start new room
-                                        </Button>
                                     </div>
                                 )}
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Active Sessions Grid */}
-                    <div className="flex flex-col gap-6">
-                        <div className="flex items-center gap-4">
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight shrink-0">Workspace Quick Access</h2>
-                            <Separator className="flex-1 opacity-10" />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* Active Rooms */}
-                            {activeRooms.map((room) => (
-                                <Card 
-                                    key={room.id}
-                                    className="border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/[0.05] transition-all cursor-pointer group shadow-sm relative overflow-hidden"
-                                    onClick={() => navigate(`/room/${room.id}`)}
-                                >
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-                                    <CardContent className="p-6">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="size-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                                                <Zap className="size-5 text-primary animate-pulse" />
-                                            </div>
-                                            <div className="flex items-center gap-1 bg-green-500/10 text-green-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
-                                                <span className="size-1.5 bg-green-500 rounded-full animate-ping" />
-                                                Active
-                                            </div>
-                                        </div>
-                                        <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">
-                                            {room.roomName || 'Untitled Room'}
-                                        </h3>
-                                        <p className="text-xs text-slate-500 dark:text-silver-400 mt-1 line-clamp-1">
-                                            {room.roomDescription || 'Ongoing estimation session'}
-                                        </p>
-                                        
-                                        <div className="flex items-center justify-between mt-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-1 text-slate-400 dark:text-silver-500 text-xs font-medium">
-                                                    <Users className="size-3" />
-                                                    {room.participantCount}
-                                                </div>
-                                                <div className="text-[10px] bg-slate-100 dark:bg-white/5 text-slate-500 px-2 py-0.5 rounded font-bold uppercase">
-                                                    {room.phase}
-                                                </div>
-                                            </div>
-                                            <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                                Rejoin
-                                                <Play className="size-3 fill-current" />
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-
-                            {/* Create New Card */}
-                            <Card className="border-dashed border-2 border-slate-200 dark:border-white/10 bg-transparent hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-all cursor-pointer group shadow-none" onClick={() => navigate('/create')}>
-                                <CardContent className="p-6 flex flex-col items-center justify-center gap-3 h-[180px]">
-                                    <div className="size-12 bg-primary/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <PlusCircle className="size-6 text-primary" />
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-bold text-slate-900 dark:text-white">New Workspace</p>
-                                        <p className="text-xs text-slate-500 dark:text-silver-400">Launch a new voting session</p>
-                                    </div>
-                                </CardContent>
                             </Card>
                         </div>
                     </div>
                 </div>
             </main>
+
+            {/* Profile Dialog */}
+            <ProfileSetupDialog 
+                isOpen={isProfileOpen}
+                mode="edit"
+                currentUser={{ id: userId, name, avatarSeed }}
+                onUpdateProfile={handleUpdateProfile}
+                onClose={() => setIsProfileOpen(false)}
+            />
         </div>
     );
 };

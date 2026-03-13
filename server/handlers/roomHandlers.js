@@ -16,9 +16,9 @@ module.exports = (io, socket) => {
         }
     };
 
-    const createRoomHandler = ({ roomName, role, gameMode, presetParams }, callback) => {
+    const createRoomHandler = ({ roomName, role, gameMode, presetParams, userId: passedUserId }, callback) => {
         const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const userId = uuidv4();
+        const userId = passedUserId || uuidv4();
 
         const room = {
             id: roomId,
@@ -123,7 +123,7 @@ module.exports = (io, socket) => {
 
         } else {
             // NEW JOIN
-            const newUserId = uuidv4();
+            const newUserId = userId || uuidv4();
             // Enforce STANDARD roles 
             let finalRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV'; // Map all estimators to DEV
 
@@ -246,6 +246,7 @@ module.exports = (io, socket) => {
                     tasks: room.tasks,
                     averages: room.averages
                 };
+                // Save to history before deletion
                 addHistory(roomId, snapshot);
 
                 io.to(roomId).emit('session_ended');

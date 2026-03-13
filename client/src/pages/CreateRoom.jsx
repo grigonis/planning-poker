@@ -3,6 +3,7 @@ import { ArrowRight, ChevronDown, Eye, Hash, Settings2 } from 'lucide-react';
 import { toast } from "sonner";
 import { useSocket } from '../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
+import { useProfile } from '../hooks/useProfile';
 
 import RoomNavbar from '../components/Room/RoomNavbar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -52,6 +53,7 @@ const CreateRoom = () => {
 
     const navigate = useNavigate();
     const { socket } = useSocket();
+    const { userId } = useProfile();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -82,7 +84,8 @@ const CreateRoom = () => {
             roomName: roomName.trim(),
             role,
             gameMode: 'STANDARD',
-            presetParams: { votingSystem: finalVotingSystem }
+            presetParams: { votingSystem: finalVotingSystem },
+            userId
         }, (response) => {
             setIsLoading(false);
             if (response.error) {

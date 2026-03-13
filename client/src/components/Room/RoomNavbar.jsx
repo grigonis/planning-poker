@@ -130,8 +130,10 @@ const RoomNavbar = ({
     onOpenSettings,
     onOpenManageGroups,
     onOpenInvite,
-    onOpenProfile
+    onOpenProfile,
+    mode = 'room' // 'room' or 'dashboard'
 }) => {
+    const isDashboard = mode === 'dashboard';
     const navigate = useNavigate();
 
     return (
@@ -172,7 +174,7 @@ const RoomNavbar = ({
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
-                    {!minimal && currentUser && (
+                    {!minimal && !isDashboard && currentUser && (
                         <>
                             {/* Profile/Avatar Button */}
                             <Tooltip>
@@ -232,13 +234,37 @@ const RoomNavbar = ({
                     <ThemeToggle />
 
                     {/* Settings — custom dropdown (avoids Radix Popper sticky/backdrop-filter bug) */}
-                    {!minimal && isHost && (
+                    {!minimal && !isDashboard && isHost && (
                         <SettingsDropdown
                             onOpenEditRoom={onOpenEditRoom}
                             onOpenCustomizeCards={onOpenCustomizeCards}
                             onOpenManageGroups={onOpenManageGroups}
                             onOpenSettings={onOpenSettings}
                         />
+                    )}
+
+                    {/* Dashboard specific Profile button (if needed, or just show the same one) */}
+                    {isDashboard && currentUser && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={onOpenProfile}
+                                    className="rounded-full size-9 p-0 hover:scale-105 active:scale-95 transition-transform"
+                                    aria-label="Edit Profile"
+                                >
+                                    <PlayerAvatar
+                                        user={{ ...currentUser, connected: true }}
+                                        size={32}
+                                        isCurrentUser={false}
+                                        anonymousMode={false}
+                                        hideDetails={true}
+                                    />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit Profile</TooltipContent>
+                        </Tooltip>
                     )}
                 </div>
             </div>
