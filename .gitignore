@@ -81,3 +81,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# ── GSD baseline (auto-generated) ──
+target/
+vendor/

@@ -25,7 +25,9 @@ import { useAuthContext } from '../context/AuthContext';
 import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, RefreshCw, Loader2, AlertCircle, Check, ShieldCheck } from 'lucide-react';
+import { ArrowRight, RefreshCw, Loader2, AlertCircle, Check, ShieldCheck, Camera, X } from 'lucide-react';
+import { storage } from '../lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import {
     Dialog,
     DialogContent,
@@ -34,6 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from '../lib/utils';
+import { toast } from 'sonner';
 
 // ─── Avatar seed generation ───────────────────────────────────────────────────
 
@@ -215,6 +218,9 @@ const ProfileSetupDialog = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const fileInputRef = React.useRef(null);
 
     // ── Seed → sex lookup (flat list: 0-5 male, 6-11 female) ──
     const getSex = useCallback((seed) => {
@@ -240,8 +246,8 @@ const ProfileSetupDialog = ({
         setError(prefetchError);
 
         if (mode === 'edit') {
-            // Auth name takes precedence when logged in
-            setName(authUser?.displayName || currentUser?.name || '');
+            // User can edit their name. Pre-fill with currentUser name or auth name.
+            setName(currentUser?.name || authUser?.displayName || '');
             setSubmitting(false);
             // Re-use existing avatar seed if available; otherwise pick a random one
             const existingSeed = currentUser?.avatarSeed;
@@ -306,6 +312,64 @@ const ProfileSetupDialog = ({
         setSelectedSex('male');
     };
 
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validation
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file.');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image must be smaller than 2MB.');
+            return;
+        }
+
+        setUploading(true);
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${globalUserId || 'guest'}_${Date.now()}.${fileExt}`;
+            const storageRef = ref(storage, `avatars/${fileName}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    setUploadProgress(progress);
+                }, 
+                (err) => {
+                    console.error('Upload failed:', err);
+                    toast.error('Upload failed. Please try again.');
+                    setUploading(false);
+                }, 
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    
+                    // Update current user locally and globally
+                    updateProfile({ avatarPhotoURL: downloadURL });
+                    
+                    setUploading(false);
+                    setUploadProgress(0);
+                    toast.success('Avatar uploaded successfully!');
+                }
+            );
+        } catch (err) {
+            console.error('Upload init failed:', err);
+            toast.error('Upload failed to initialize.');
+            setUploading(false);
+        }
+    };
+
+    const handleRemovePhoto = () => {
+        updateProfile({ avatarPhotoURL: null });
+    };
+
     const handleSelectSeed = (seed) => {
         setSelectedSeed(seed);
     };
@@ -315,9 +379,9 @@ const ProfileSetupDialog = ({
         if (!name.trim() || !selectedSeed) return;
 
         if (mode === 'edit') {
-            // When authenticated, use locked auth name and forward the OAuth photo URL
-            const photoURL = authUser?.photoURL || null;
-            const finalName = (authUser?.displayName || name).trim();
+            // When authenticated, use the current photo URL (custom or OAuth)
+            const photoURL = currentUser?.avatarPhotoURL || authUser?.photoURL || null;
+            const finalName = name.trim();
             onUpdateProfile?.({ name: finalName, avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
             onClose?.();
             return;
@@ -379,8 +443,8 @@ const ProfileSetupDialog = ({
     const isEditMode = mode === 'edit';
     const title = isEditMode ? 'Edit Profile' : 'Join Session';
 
-    // When authenticated in edit mode, name is locked to auth name — always valid
-    const effectiveName = (isEditMode && authUser?.displayName) ? authUser.displayName : name;
+    // When authenticated in edit mode, name is no longer locked to auth name
+    const effectiveName = name;
     const canSubmit = effectiveName.trim().length > 0 && !!selectedSeed && !submitting;
 
     return (
@@ -413,12 +477,23 @@ const ProfileSetupDialog = ({
                             <AlertCircle className="size-8 text-destructive" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold mb-1">Unable to Join</h2>
+                            <h2 className="text-lg font-bold mb-1">
+                                {isEditMode ? 'Something went wrong' : 'Unable to Join'}
+                            </h2>
                             <p className="text-sm text-muted-foreground">{error}</p>
                         </div>
-                        <Button asChild variant="link" className="font-bold text-primary">
-                            <a href="/">Return to Home</a>
-                        </Button>
+                        <div className="flex flex-col gap-2 w-full">
+                            <Button 
+                                type="button" 
+                                onClick={() => setError(null)}
+                                className="font-bold"
+                            >
+                                Dismiss
+                            </Button>
+                            <Button asChild variant="link" className="font-bold text-primary">
+                                <a href="/">Return to Home</a>
+                            </Button>
+                        </div>
                     </div>
                 )}
 
@@ -428,8 +503,8 @@ const ProfileSetupDialog = ({
                         {/* Header */}
                         <div className="px-6 pt-6 pb-5 border-b border-border bg-muted/20">
                             <div className="flex items-center gap-4">
-                                {/* Preview avatar — OAuth photo takes precedence in edit mode when authed */}
-                                {isEditMode && authUser?.photoURL ? (
+                                {/* Preview avatar — Custom photoURL or auth photo takes precedence */}
+                                {(isEditMode && (currentUser?.avatarPhotoURL || authUser?.photoURL)) ? (
                                     <motion.div
                                         initial={{ scale: 0.85, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
@@ -437,7 +512,7 @@ const ProfileSetupDialog = ({
                                         className="size-[72px] rounded-full overflow-hidden border-[3px] border-background shadow-xl ring-[3px] ring-primary/25 shrink-0"
                                     >
                                         <img
-                                            src={authUser.photoURL}
+                                            src={currentUser?.avatarPhotoURL || authUser.photoURL}
                                             alt="Your profile photo"
                                             className="size-full object-cover"
                                             referrerPolicy="no-referrer"
@@ -463,33 +538,30 @@ const ProfileSetupDialog = ({
                                     >
                                         Display Name <span className="text-destructive">*</span>
                                     </label>
-                                    {/* When authenticated, name is locked to OAuth name */}
-                                    {isEditMode && authUser?.displayName ? (
-                                        <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-border bg-muted/50">
-                                            <span className="font-semibold text-sm flex-1 truncate">{authUser.displayName}</span>
-                                            <ShieldCheck className="size-4 text-primary shrink-0" aria-label="Verified via sign-in" />
-                                        </div>
-                                    ) : (
-                                        <div className="relative">
-                                            <Input
-                                                id="profile-name"
-                                                type="text"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                placeholder="Your name…"
-                                                className="font-semibold h-10 pr-12"
-                                                maxLength={24}
-                                                autoFocus
-                                                autoComplete="off"
-                                            />
-                                            <span className={cn(
-                                                "absolute right-3 top-1/2 -translate-y-1/2 text-[10px] tabular-nums transition-colors",
-                                                name.length > 20 ? "text-destructive" : "text-muted-foreground/50"
-                                            )}>
-                                                {name.length}/24
-                                            </span>
-                                        </div>
-                                    )}
+                                    <div className="relative">
+                                        <Input
+                                            id="profile-name"
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            placeholder="Your name…"
+                                            className="font-semibold h-10 pr-12"
+                                            maxLength={24}
+                                            autoFocus
+                                            autoComplete="off"
+                                        />
+                                        <span className={cn(
+                                            "absolute right-3 top-1/2 -translate-y-1/2 text-[10px] tabular-nums transition-colors",
+                                            name.length > 20 ? "text-destructive" : "text-muted-foreground/50"
+                                        )}>
+                                            {name.length}/24
+                                        </span>
+                                        {authUser && (
+                                            <div className="absolute -top-6 right-0">
+                                                <ShieldCheck className="size-3 text-primary" aria-label="Verified via sign-in" />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -498,24 +570,62 @@ const ProfileSetupDialog = ({
                         <div className="px-6 py-5 flex flex-col gap-4">
                             <div className="flex items-center justify-between">
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                                    {isEditMode && authUser?.photoURL ? 'Fallback Avatar' : 'Choose Avatar'}
+                                    {isEditMode && (currentUser?.avatarPhotoURL || authUser?.photoURL) ? 'Fallback Avatar' : 'Choose Avatar'}
                                 </p>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleShuffle}
-                                    className="h-7 gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground px-2"
-                                >
-                                    <RefreshCw className="size-3" />
-                                    Shuffle
-                                </Button>
+                                <div className="flex items-center gap-1">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        accept="image/*"
+                                        className="hidden"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleUploadClick}
+                                        disabled={uploading}
+                                        className="h-7 gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground px-2"
+                                    >
+                                        {uploading ? (
+                                            <Loader2 className="size-3 animate-spin" />
+                                        ) : (
+                                            <Camera className="size-3" />
+                                        )}
+                                        {uploading ? `${Math.round(uploadProgress)}%` : 'Upload'}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleShuffle}
+                                        className="h-7 gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground px-2"
+                                    >
+                                        <RefreshCw className="size-3" />
+                                        Shuffle
+                                    </Button>
+                                </div>
                             </div>
 
-                            {isEditMode && authUser?.photoURL && (
-                                <p className="text-[11px] text-muted-foreground -mt-1">
-                                    Used when not signed in or photo unavailable.
-                                </p>
+                            {isEditMode && (currentUser?.avatarPhotoURL || authUser?.photoURL) && (
+                                <div className="flex items-center justify-between -mt-2">
+                                    <p className="text-[11px] text-muted-foreground">
+                                        Used when not signed in or photo unavailable.
+                                    </p>
+                                    {currentUser?.avatarPhotoURL && (
+                                        <Button
+                                            type="button"
+                                            variant="link"
+                                            size="sm"
+                                            onClick={handleRemovePhoto}
+                                            className="h-auto p-0 text-[11px] text-destructive font-semibold"
+                                        >
+                                            <X className="size-3 mr-1" />
+                                            Remove Photo
+                                        </Button>
+                                    )}
+                                </div>
                             )}
                             <AvatarGrid
                                 seeds={seeds}

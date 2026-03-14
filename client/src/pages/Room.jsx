@@ -24,7 +24,7 @@ const Room = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { socket, isConnected } = useSocket();
-    const { userId: globalUserId, name: globalName, avatarSeed: globalAvatarSeed, avatarPhotoURL: globalAvatarPhotoURL } = useProfile();
+    const { userId: globalUserId, name: globalName, avatarSeed: globalAvatarSeed, avatarPhotoURL: globalAvatarPhotoURL, updateProfile } = useProfile();
     const { user: authUser, signOut } = useAuthContext();
 
     const [viewState, setViewState] = useState(
@@ -520,7 +520,16 @@ const Room = () => {
 
     const handleUpdateProfile = ({ name, avatarSeed, avatarPhotoURL }) => {
         socket.emit('update_profile', { roomId, name, avatarSeed, avatarPhotoURL: avatarPhotoURL ?? null });
-        // Also keep currentUser in sync locally
+        
+        // Update local session state and localStorage
+        updateProfile({ name, avatarSeed, avatarPhotoURL });
+
+        // If authenticated, persist the profile update to Firestore for cross-device sync
+        if (authUser && socket) {
+            socket.emit('save_user_profile', { name, avatarSeed, avatarPhotoURL }, () => {});
+        }
+
+        // Also keep currentUser (room-specific state) in sync locally
         setCurrentUser(prev => ({
             ...prev,
             name: name ?? prev.name,

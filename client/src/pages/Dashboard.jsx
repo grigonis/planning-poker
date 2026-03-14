@@ -64,12 +64,13 @@ const Dashboard = () => {
         // 1. Link the guest UUID so history under this device's UUID shows up when queried by UID
         socket.emit('link_guest_uid', { guestUuid: userId }, () => {});
 
-        // 2. Load stored profile from Firestore (name, avatarSeed) — sync into local state
+        // 2. Load stored profile from Firestore (name, avatarSeed, avatarPhotoURL) — sync into local state
         socket.emit('load_user_profile', {}, (profile) => {
-            if (profile && (profile.name || profile.avatarSeed)) {
+            if (profile && (profile.name || profile.avatarSeed || profile.avatarPhotoURL)) {
                 updateProfile({
-                    ...(profile.name      ? { name: profile.name }           : {}),
-                    ...(profile.avatarSeed ? { avatarSeed: profile.avatarSeed } : {}),
+                    ...(profile.name           ? { name: profile.name }           : {}),
+                    ...(profile.avatarSeed     ? { avatarSeed: profile.avatarSeed } : {}),
+                    ...(profile.avatarPhotoURL ? { avatarPhotoURL: profile.avatarPhotoURL } : {}),
                 });
             }
         });
