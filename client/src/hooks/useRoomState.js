@@ -18,6 +18,8 @@ export const useRoomState = (roomId) => {
     const [funFeatures, setFunFeatures] = useState(location.state?.funFeatures || false);
     const [autoReveal, setAutoReveal] = useState(location.state?.autoReveal || false);
     const [anonymousMode, setAnonymousMode] = useState(location.state?.anonymousMode || false);
+    const [groupScopedVoting, setGroupScopedVoting] = useState(location.state?.groupScopedVoting || false);
+    const [votingGroups, setVotingGroups] = useState(location.state?.votingGroups || null);
     const [votingSystem, setVotingSystem] = useState(location.state?.votingSystem || {
         type: 'FIBONACCI_MODIFIED',
         name: 'Modified Fibonacci',
@@ -60,6 +62,8 @@ export const useRoomState = (roomId) => {
         funFeatures, setFunFeatures,
         autoReveal, setAutoReveal,
         anonymousMode, setAnonymousMode,
+        groupScopedVoting, setGroupScopedVoting,
+        votingGroups, setVotingGroups,
         votingSystem, setVotingSystem,
         roomName, setRoomName,
         roomDescription, setRoomDescription,

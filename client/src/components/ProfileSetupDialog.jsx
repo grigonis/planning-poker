@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
+import ImageCropDialog from './ImageCropDialog';
 
 // ─── Avatar seed generation ───────────────────────────────────────────────────
 
@@ -218,8 +219,16 @@ const ProfileSetupDialog = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    
+    // Photo / Avatar logic
+    const [useCustomPhoto, setUseCustomPhoto] = useState(false);
+    const [customPhotoUrl, setCustomPhotoUrl] = useState(null);
+    
+    // Cropping & Uploading
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [cropImageSrc, setCropImageSrc] = useState(null);
+    const [isCropModalOpen, setIsCropModalOpen] = useState(false);
     const fileInputRef = React.useRef(null);
 
     // ── Seed → sex lookup (flat list: 0-5 male, 6-11 female) ──
@@ -246,15 +255,21 @@ const ProfileSetupDialog = ({
         setError(prefetchError);
 
         if (mode === 'edit') {
-            // User can edit their name. Pre-fill with currentUser name or auth name.
             setName(currentUser?.name || authUser?.displayName || '');
             setSubmitting(false);
-            // Re-use existing avatar seed if available; otherwise pick a random one
+
+            const photoURL = globalAvatarPhotoURL || currentUser?.avatarPhotoURL || authUser?.photoURL || null;
+            if (photoURL) {
+                setCustomPhotoUrl(photoURL);
+                setUseCustomPhoto(true);
+            } else {
+                setUseCustomPhoto(false);
+            }
+
             const existingSeed = currentUser?.avatarSeed;
             const newSeeds = generateSeeds();
             setSeeds(newSeeds);
             if (existingSeed) {
-                // If seed isn't in new batch, slot it into position 0
                 const all = [...newSeeds.male, ...newSeeds.female];
                 if (!all.includes(existingSeed)) {
                     newSeeds.male[0] = existingSeed;
@@ -266,14 +281,21 @@ const ProfileSetupDialog = ({
                 setSelectedSex('male');
             }
         } else {
-            // join mode — auth name takes precedence, then saved session name
             setName(authUser?.displayName || initialName || '');
             setSubmitting(false);
             setSelectedGroupId('');
+
+            const photoURL = globalAvatarPhotoURL || authUser?.photoURL || null;
+            if (photoURL) {
+                setCustomPhotoUrl(photoURL);
+                setUseCustomPhoto(true);
+            } else {
+                setUseCustomPhoto(false);
+            }
+
             const newSeeds = generateSeeds();
             setSeeds(newSeeds);
             if (initialAvatarSeed) {
-                // Slot saved seed into position 0 so it's visible and selected
                 newSeeds.male[0] = initialAvatarSeed;
                 setSeeds({ ...newSeeds });
                 setSelectedSeed(initialAvatarSeed);
@@ -355,27 +377,39 @@ const ProfileSetupDialog = ({
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validation
         if (!file.type.startsWith('image/')) {
             toast.error('Please upload an image file.');
             return;
         }
         
-        // Initial size check (pre-compression)
         if (file.size > 5 * 1024 * 1024) {
             toast.error('Image must be smaller than 5MB.');
             return;
         }
 
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            setCropImageSrc(reader.result);
+            setIsCropModalOpen(true);
+        });
+        reader.readAsDataURL(file);
+
+        // Reset the file input value so selecting the same file again triggers onChange
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleCropComplete = async (resizedBlob) => {
+        setIsCropModalOpen(false);
         setUploading(true);
+        
         try {
-            const resizedBlob = await resizeImage(file);
             const fileName = `${Date.now()}.jpg`;
-            // Organized by userId to allow potential future security rule narrowing
             const storageRef = ref(storage, `avatars/${globalUserId || 'guest'}/${fileName}`);
             const uploadTask = uploadBytesResumable(storageRef, resizedBlob);
 
@@ -392,10 +426,12 @@ const ProfileSetupDialog = ({
                 async () => {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                     
-                    // Update current user locally and globally
+                    setCustomPhotoUrl(downloadURL);
+                    setUseCustomPhoto(true);
+
+                    // Update current user locally and globally immediately if desired
                     updateProfile({ avatarPhotoURL: downloadURL });
                     
-                    // If in a room and in edit mode, sync to server immediately
                     if (mode === 'edit' && socket && roomId) {
                         socket.emit('update_profile', { roomId, avatarPhotoURL: downloadURL });
                         if (authUser) {
@@ -415,42 +451,38 @@ const ProfileSetupDialog = ({
         }
     };
 
-    const handleRemovePhoto = () => {
-        updateProfile({ avatarPhotoURL: null });
-        if (mode === 'edit' && socket) {
-            socket.emit('update_profile', { roomId, avatarPhotoURL: null });
-            if (authUser) {
-                socket.emit('save_user_profile', { avatarPhotoURL: null });
-            }
-        }
-    };
-
     const handleSelectSeed = (seed) => {
-        setSelectedSeed(seed);
+        if (selectedSeed === seed && useCustomPhoto === false && customPhotoUrl) {
+            // Deselect predefined avatar, return to custom photo
+            setUseCustomPhoto(true);
+        } else {
+            // Select predefined avatar
+            setSelectedSeed(seed);
+            setUseCustomPhoto(false);
+        }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!name.trim() || !selectedSeed) return;
+        const effectiveSeed = useCustomPhoto ? selectedSeed : selectedSeed; // We keep selectedSeed around for history
+        const photoURL = useCustomPhoto ? customPhotoUrl : null;
+        const finalName = name.trim();
+
+        if (!finalName || !effectiveSeed) return;
 
         if (mode === 'edit') {
-            // When authenticated, use the current photo URL (custom or OAuth)
-            const photoURL = globalAvatarPhotoURL || currentUser?.avatarPhotoURL || authUser?.photoURL || null;
-            const finalName = name.trim();
-            onUpdateProfile?.({ name: finalName, avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
+            onUpdateProfile?.({ name: finalName, avatarSeed: effectiveSeed, avatarPhotoURL: photoURL });
             onClose?.();
             return;
         }
 
-        // join mode
         setSubmitting(true);
-        // When hostUserId is provided, pass it so server reconnects the pre-registered host slot
-        // Otherwise use our globalUserId so history is linked across rooms
         const joinPayload = {
             roomId,
-            name: name.trim(),
+            name: finalName,
             role: hostUserId ? hostRole : 'DEV',
             userId: hostUserId || globalUserId,
+            avatarPhotoURL: photoURL
         };
         socket.emit('join_room', joinPayload, (response) => {
             if (response.error) {
@@ -467,24 +499,23 @@ const ProfileSetupDialog = ({
             }
 
             // Set avatar + final name (+ photo URL if available) on the server user object
-            const photoURL = globalAvatarPhotoURL || authUser?.photoURL || null;
-            socket.emit('update_profile', { roomId, name: name.trim(), avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
+            socket.emit('update_profile', { roomId, name: finalName, avatarSeed: effectiveSeed, avatarPhotoURL: photoURL });
 
             // If authenticated, persist to Firestore for cross-room/cross-device consistency
             if (authUser) {
-                socket.emit('save_user_profile', { name: name.trim(), avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
+                socket.emit('save_user_profile', { name: finalName, avatarSeed: effectiveSeed, avatarPhotoURL: photoURL });
             }
 
             // Save to global profile for cross-room identity
-            updateProfile({ name: name.trim(), avatarSeed: selectedSeed });
+            updateProfile({ name: finalName, avatarSeed: effectiveSeed, avatarPhotoURL: photoURL });
 
             setSubmitting(false);
             onJoinSuccess?.({
-                name: name.trim(),
+                name: finalName,
                 role: joinPayload.role,
                 userId,
-                avatarSeed: selectedSeed,
-                avatarPhotoURL: authUser?.photoURL || null,
+                avatarSeed: effectiveSeed,
+                avatarPhotoURL: photoURL,
                 isHost: !!hostUserId,
                 gameMode: response.mode,
                 funFeatures: response.funFeatures,
@@ -564,31 +595,41 @@ const ProfileSetupDialog = ({
                         <div className="px-6 pt-6 pb-5 border-b border-border bg-muted/20">
                             <div className="flex items-center gap-4">
                                 {/* Preview avatar — Custom photoURL or auth photo takes precedence */}
-                                {(globalAvatarPhotoURL || (isEditMode && currentUser?.avatarPhotoURL) || authUser?.photoURL) ? (
-                                    <motion.div
-                                        initial={{ scale: 0.85, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        transition={{ duration: 0.18 }}
-                                        className="size-[72px] rounded-full overflow-hidden border-[3px] border-background shadow-xl ring-[3px] ring-primary/25 shrink-0"
-                                    >
-                                        <img
-                                            src={globalAvatarPhotoURL || (isEditMode ? currentUser?.avatarPhotoURL : null) || authUser?.photoURL}
-                                            alt="Your profile photo"
-                                            className="size-full object-cover"
-                                            referrerPolicy="no-referrer"
-                                        />
-                                    </motion.div>
-                                ) : (
-                                    <AnimatePresence mode="wait">
-                                        {selectedSeed && (
-                                            <PreviewAvatar
-                                                key={selectedSeed}
-                                                seed={selectedSeed}
-                                                sex={selectedSex}
+                                <div className="relative group cursor-pointer" onClick={handleUploadClick}>
+                                    {useCustomPhoto && customPhotoUrl ? (
+                                        <motion.div
+                                            initial={{ scale: 0.85, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            transition={{ duration: 0.18 }}
+                                            className="size-[72px] rounded-full overflow-hidden border-[3px] border-background shadow-xl ring-[3px] ring-primary/25 shrink-0"
+                                        >
+                                            <img
+                                                src={customPhotoUrl}
+                                                alt="Your profile photo"
+                                                className="size-full object-cover"
+                                                referrerPolicy="no-referrer"
                                             />
-                                        )}
-                                    </AnimatePresence>
-                                )}
+                                        </motion.div>
+                                    ) : (
+                                        <AnimatePresence mode="wait">
+                                            {selectedSeed && (
+                                                <PreviewAvatar
+                                                    key={selectedSeed}
+                                                    seed={selectedSeed}
+                                                    sex={selectedSex}
+                                                />
+                                            )}
+                                        </AnimatePresence>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                                        <Camera className="size-5 text-white" />
+                                    </div>
+                                    {uploading && (
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-full">
+                                            <Loader2 className="size-5 text-white animate-spin" />
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Name input */}
                                 <div className="flex-1 flex flex-col gap-2">
@@ -630,7 +671,7 @@ const ProfileSetupDialog = ({
                         <div className="px-6 py-5 flex flex-col gap-4">
                             <div className="flex items-center justify-between">
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                                    {isEditMode && (currentUser?.avatarPhotoURL || authUser?.photoURL) ? 'Fallback Avatar' : 'Choose Avatar'}
+                                    Select an avatar
                                 </p>
                                 <div className="flex items-center gap-1">
                                     <input
@@ -642,25 +683,10 @@ const ProfileSetupDialog = ({
                                     />
                                     <Button
                                         type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleUploadClick}
-                                        disabled={uploading}
-                                        className="h-7 gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground px-2"
-                                    >
-                                        {uploading ? (
-                                            <Loader2 className="size-3 animate-spin" />
-                                        ) : (
-                                            <Camera className="size-3" />
-                                        )}
-                                        {uploading ? `${Math.round(uploadProgress)}%` : 'Upload'}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
+                                        variant="secondary"
                                         size="sm"
                                         onClick={handleShuffle}
-                                        className="h-7 gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground px-2"
+                                        className="h-8 gap-1.5 text-xs font-bold px-3 text-primary bg-primary/10 hover:bg-primary/20 hover:text-primary border-none shadow-none"
                                     >
                                         <RefreshCw className="size-3" />
                                         Shuffle
@@ -668,28 +694,9 @@ const ProfileSetupDialog = ({
                                 </div>
                             </div>
 
-                            {isEditMode && (currentUser?.avatarPhotoURL || authUser?.photoURL) && (
-                                <div className="flex items-center justify-between -mt-2">
-                                    <p className="text-[11px] text-muted-foreground">
-                                        Used when not signed in or photo unavailable.
-                                    </p>
-                                    {currentUser?.avatarPhotoURL && (
-                                        <Button
-                                            type="button"
-                                            variant="link"
-                                            size="sm"
-                                            onClick={handleRemovePhoto}
-                                            className="h-auto p-0 text-[11px] text-destructive font-semibold"
-                                        >
-                                            <X className="size-3 mr-1" />
-                                            Remove Photo
-                                        </Button>
-                                    )}
-                                </div>
-                            )}
                             <AvatarGrid
                                 seeds={seeds}
-                                selectedSeed={selectedSeed}
+                                selectedSeed={useCustomPhoto ? null : selectedSeed}
                                 onSelect={handleSelectSeed}
                             />
                         </div>
@@ -748,6 +755,14 @@ const ProfileSetupDialog = ({
                     </form>
                 )}
             </DialogContent>
+            
+            {/* Image Crop Modal */}
+            <ImageCropDialog 
+                isOpen={isCropModalOpen} 
+                onClose={() => setIsCropModalOpen(false)} 
+                imageSrc={cropImageSrc} 
+                onCropComplete={handleCropComplete} 
+            />
         </Dialog>
     );
 };

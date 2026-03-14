@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Plus, Trash2, UserPlus } from 'lucide-react';
+import { Users, Plus, Trash2, UserPlus, Target } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -22,9 +22,11 @@ const ManageGroupsDialog = ({
     onClose,
     groups = [],           // Array<{ id, name, color }>
     groupsEnabled = false,
+    groupScopedVoting = false,
     users = [],            // Array<UserObject> — full room user list
     currentUser,
     onToggleGroups,        // (enabled: boolean) => void
+    onToggleGroupScopedVoting, // (enabled: boolean) => void
     onCreateGroup,         // (name: string) => void
     onDeleteGroup,         // (groupId: string) => void
     onAssignGroup,         // (targetUserId: string, groupId: string | null) => void
@@ -103,6 +105,27 @@ const ManageGroupsDialog = ({
 
                     {groupsEnabled && (
                         <>
+                            {/* Group-Scoped Voting Toggle */}
+                            <div className="flex items-center justify-between gap-4 p-4 rounded-3xl border border-transparent hover:border-border hover:bg-muted/30 transition-colors mt-2 mb-4">
+                                <div className="flex items-start gap-4">
+                                    <div className={`p-3 rounded-2xl shrink-0 transition-colors ${groupScopedVoting ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                        <Users className="size-5" />
+                                    </div>
+                                    <div className="mt-0.5">
+                                        <Label htmlFor="groupScopedVotingSwitch" className="font-bold text-sm mb-1 cursor-pointer">
+                                            Group-Scoped Voting
+                                        </Label>
+                                        <p className="text-[13px] text-muted-foreground leading-snug">
+                                            Allow the host to start a vote for specific groups only.
+                                        </p>
+                                    </div>
+                                </div>
+                                <Switch
+                                    id="groupScopedVotingSwitch"
+                                    checked={groupScopedVoting}
+                                    onCheckedChange={onToggleGroupScopedVoting}
+                                />
+                            </div>
                             {/* Create new group */}
                             <div className="space-y-2">
                                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">

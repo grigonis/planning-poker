@@ -111,6 +111,8 @@ const Room = () => {
                     if (response.funFeatures !== undefined) room.setFunFeatures(response.funFeatures);
                     if (response.autoReveal !== undefined) room.setAutoReveal(response.autoReveal);
                     if (response.anonymousMode !== undefined) room.setAnonymousMode(response.anonymousMode);
+                    if (response.groupScopedVoting !== undefined) room.setGroupScopedVoting(response.groupScopedVoting);
+                    if (response.votingGroups !== undefined) room.setVotingGroups(response.votingGroups);
                     if (response.votingSystem) room.setVotingSystem(response.votingSystem);
                     if (response.roomName !== undefined) room.setRoomName(response.roomName);
                     if (response.roomDescription !== undefined) room.setRoomDescription(response.roomDescription);
@@ -144,7 +146,8 @@ const Room = () => {
                         gameMode: response.mode,
                         funFeatures: response.funFeatures,
                         avatarSeed: serverMe?.avatarSeed || avatarSeed || name,
-                        avatarPhotoURL: serverMe?.avatarPhotoURL || avatarPhotoURL || null
+                        avatarPhotoURL: serverMe?.avatarPhotoURL || avatarPhotoURL || null,
+                        groupId: serverMe?.groupId || null
                     });
                     room.setViewState('ROOM');
 
@@ -190,6 +193,7 @@ const Room = () => {
             isHost: user.isHost || false,
             avatarSeed: user.avatarSeed || user.name,
             avatarPhotoURL: user.avatarPhotoURL || null,
+            groupId: user.groupId || null,
         });
 
         if (user.users) room.setUsers(user.users);
@@ -197,6 +201,8 @@ const Room = () => {
         if (user.funFeatures !== undefined) room.setFunFeatures(user.funFeatures);
         if (user.autoReveal !== undefined) room.setAutoReveal(user.autoReveal);
         if (user.anonymousMode !== undefined) room.setAnonymousMode(user.anonymousMode);
+        if (user.groupScopedVoting !== undefined) room.setGroupScopedVoting(user.groupScopedVoting);
+        if (user.votingGroups !== undefined) room.setVotingGroups(user.votingGroups);
         if (user.votingSystem) room.setVotingSystem(user.votingSystem);
         if (user.roomName !== undefined) room.setRoomName(user.roomName);
         if (user.roomDescription !== undefined) room.setRoomDescription(user.roomDescription);
@@ -217,7 +223,8 @@ const Room = () => {
     };
 
     const isMeHost = room.users.find(u => u.id === room.currentUser.id)?.isHost || false;
-    const showOverlay = (room.phase === 'VOTING' && room.currentUser.role !== 'SPECTATOR') ||
+    const isMyGroupVoting = !room.votingGroups || (room.currentUser.groupId && room.votingGroups.includes(room.currentUser.groupId));
+    const showOverlay = (room.phase === 'VOTING' && room.currentUser.role !== 'SPECTATOR' && isMyGroupVoting) ||
         (room.phase === 'PARTIAL_VOTE_DEV' && room.currentUser.role === 'DEV') ||
         (room.phase === 'PARTIAL_VOTE_QA' && room.currentUser.role === 'QA');
 
@@ -250,6 +257,7 @@ const Room = () => {
                         users={room.users} votes={room.votes} phase={room.phase}
                         currentUser={room.currentUser} roomId={roomId} anonymousMode={room.anonymousMode}
                         groups={room.groups} groupsEnabled={room.groupsEnabled} isHost={isMeHost}
+                        votingGroups={room.votingGroups}
                         onAssignGroup={handlers.handleAssignGroup}
                         onKickUser={handlers.handleKickUser}
                     />
@@ -267,6 +275,7 @@ const Room = () => {
                             groups={room.groups} activeReactions={room.activeReactions} isHost={isMeHost}
                             funFeatures={room.funFeatures} autoReveal={room.autoReveal}
                             anonymousMode={room.anonymousMode} roomMode={room.roomMode}
+                            groupScopedVoting={room.groupScopedVoting} votingGroups={room.votingGroups}
                             votingSystem={room.votingSystem} tasks={room.tasks} activeTaskId={room.activeTaskId}
                             onStartVote={handlers.handleStartVote} onReveal={handlers.handleReveal}
                             onReset={handlers.handleReset} onRevote={handlers.handleRevote}
@@ -296,7 +305,7 @@ const Room = () => {
             <EditRoomDetailsDialog isOpen={modals.isEditRoomOpen} onClose={() => modals.setIsEditRoomOpen(false)} roomName={room.roomName} roomDescription={room.roomDescription} onSave={handlers.handleUpdateSettings} />
             <CustomizeCardsDialog isOpen={modals.isCustomizeCardsOpen} onClose={() => modals.setIsCustomizeCardsOpen(false)} votingSystem={room.votingSystem} onSave={handlers.handleUpdateSettings} />
             <EditProfileModal isOpen={modals.isProfileOpen} onClose={() => modals.setIsProfileOpen(false)} currentUser={room.currentUser} onUpdateProfile={handlers.handleUpdateProfile} />
-            <ManageGroupsDialog isOpen={modals.isManageGroupsOpen} onClose={() => modals.setIsManageGroupsOpen(false)} groups={room.groups} groupsEnabled={room.groupsEnabled} users={room.users} currentUser={room.currentUser} onToggleGroups={handlers.handleToggleGroups} onCreateGroup={handlers.handleCreateGroup} onDeleteGroup={handlers.handleDeleteGroup} onAssignGroup={handlers.handleAssignGroup} />
+            <ManageGroupsDialog isOpen={modals.isManageGroupsOpen} onClose={() => modals.setIsManageGroupsOpen(false)} groups={room.groups} groupsEnabled={room.groupsEnabled} groupScopedVoting={room.groupScopedVoting} users={room.users} currentUser={room.currentUser} onToggleGroups={handlers.handleToggleGroups} onToggleGroupScopedVoting={(enabled) => handlers.handleUpdateSettings({ groupScopedVoting: enabled })} onCreateGroup={handlers.handleCreateGroup} onDeleteGroup={handlers.handleDeleteGroup} onAssignGroup={handlers.handleAssignGroup} />
             <SignInDialog open={modals.isSignInOpen} onClose={() => modals.setIsSignInOpen(false)} />
             <KeyboardShortcutsDialog isOpen={modals.isKeyboardShortcutsOpen} onClose={() => modals.setIsKeyboardShortcutsOpen(false)} isHost={isMeHost} />
         </div>

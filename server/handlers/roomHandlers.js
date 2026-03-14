@@ -42,6 +42,8 @@ module.exports = (io, socket) => {
             funFeatures: false,
             autoReveal: true,
             anonymousMode: false,
+            groupScopedVoting: false, // New feature toggle
+            votingGroups: null, // null = all, or array of groupIds
             averages: {},
             votingSystem: presetParams?.votingSystem || {
                 type: 'FIBONACCI_MODIFIED',
@@ -92,6 +94,8 @@ module.exports = (io, socket) => {
             funFeatures: room.funFeatures,
             autoReveal: room.autoReveal,
             anonymousMode: room.anonymousMode,
+            groupScopedVoting: room.groupScopedVoting,
+            votingGroups: room.votingGroups,
             votingSystem: room.votingSystem,
             roomName: room.roomName,
             roomDescription: room.roomDescription,
@@ -116,6 +120,7 @@ module.exports = (io, socket) => {
         if (settings.funFeatures !== undefined) room.funFeatures = !!settings.funFeatures;
         if (settings.autoReveal !== undefined) room.autoReveal = !!settings.autoReveal;
         if (settings.anonymousMode !== undefined) room.anonymousMode = !!settings.anonymousMode;
+        if (settings.groupScopedVoting !== undefined) room.groupScopedVoting = !!settings.groupScopedVoting;
         // SEC-03/SEC-09: Validate votingSystem structure before accepting
         if (settings.votingSystem !== undefined) {
             const vs = settings.votingSystem;
@@ -134,6 +139,7 @@ module.exports = (io, socket) => {
             funFeatures: room.funFeatures,
             autoReveal: room.autoReveal,
             anonymousMode: room.anonymousMode,
+            groupScopedVoting: room.groupScopedVoting,
             votingSystem: room.votingSystem,
             roomName: room.roomName,
             roomDescription: room.roomDescription,
@@ -219,6 +225,8 @@ module.exports = (io, socket) => {
             funFeatures: room.funFeatures,
             autoReveal: room.autoReveal,
             anonymousMode: room.anonymousMode,
+            groupScopedVoting: room.groupScopedVoting,
+            votingGroups: room.votingGroups,
             votingSystem: room.votingSystem,
             roomName: room.roomName,
             roomDescription: room.roomDescription,

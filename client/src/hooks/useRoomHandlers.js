@@ -1,6 +1,6 @@
 export const useRoomHandlers = (socket, roomId, room, updateProfile, authUser) => {
-    const handleStartVote = () => {
-        socket.emit('start_vote', { roomId });
+    const handleStartVote = (targetGroups = null) => {
+        socket.emit('start_vote', { roomId, targetGroups });
     };
 
     const handleVote = (value) => {
