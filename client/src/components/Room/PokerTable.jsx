@@ -334,18 +334,18 @@ const PokerTable = ({
                             {isHost && (
                                 <div className="flex items-center gap-2 w-full pt-1">
                                     <button
-                                        onClick={onReset}
-                                        className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-4 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all active:scale-95 flex-1 justify-center text-xs"
-                                    >
-                                        <ArrowRight size={13} />
-                                        Next Round
-                                    </button>
-                                    <button
                                         onClick={onRevote}
                                         className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-4 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all active:scale-95 flex-1 justify-center text-xs"
                                     >
                                         <RefreshCw size={13} />
                                         Revote
+                                    </button>
+                                    <button
+                                        onClick={onReset}
+                                        className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-4 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all active:scale-95 flex-1 justify-center text-xs"
+                                    >
+                                        <ArrowRight size={13} />
+                                        Next Round
                                     </button>
                                 </div>
                             )}

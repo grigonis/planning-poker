@@ -217,7 +217,7 @@ module.exports = (io, socket) => {
 
         if (!user || !user.isHost) return;
 
-        room.phase = 'IDLE';
+        room.phase = 'VOTING';
         room.votes.clear();
         room.averages = {};
 
@@ -230,7 +230,10 @@ module.exports = (io, socket) => {
             }
         }
 
-        io.to(roomId).emit("reset", { activeTaskId: room.activeTaskId, tasks: room.tasks });
+        io.to(roomId).emit("vote_started", { phase: 'VOTING' });
+        if (room.tasks.length > 0) {
+            io.to(roomId).emit("tasks_updated", { tasks: room.tasks, activeTaskId: room.activeTaskId });
+        }
     };
 
     socket.on("start_vote", startVoteHandler);
