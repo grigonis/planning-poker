@@ -51,6 +51,38 @@ const Dashboard = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSignInOpen, setIsSignInOpen] = useState(false);
 
+    // On sign-in: link pre-auth guest UUID to Firebase user and load stored profile.
+    // Runs whenever authUser transitions from null → a real user and the socket is ready.
+    const prevAuthUserRef = React.useRef(null);
+    useEffect(() => {
+        const wasGuest = prevAuthUserRef.current === null;
+        const isNowAuthed = !!authUser;
+        prevAuthUserRef.current = authUser;
+
+        if (!wasGuest || !isNowAuthed || !socket) return;
+
+        // 1. Link the guest UUID so history under this device's UUID shows up when queried by UID
+        socket.emit('link_guest_uid', { guestUuid: userId }, () => {});
+
+        // 2. Load stored profile from Firestore (name, avatarSeed) — sync into local state
+        socket.emit('load_user_profile', {}, (profile) => {
+            if (profile && (profile.name || profile.avatarSeed)) {
+                updateProfile({
+                    ...(profile.name      ? { name: profile.name }           : {}),
+                    ...(profile.avatarSeed ? { avatarSeed: profile.avatarSeed } : {}),
+                });
+            }
+        });
+
+        // 3. Re-fetch history now that we're authenticated — merged UID+UUID results
+        setIsLoading(true);
+        socket.emit('get_user_history', { userId }, (response) => {
+            if (Array.isArray(response)) setHistory(response);
+            setIsLoading(false);
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authUser, socket]);
+
     // Fetch history and active rooms
     useEffect(() => {
         if (!socket || !userId) return;
@@ -95,6 +127,10 @@ const Dashboard = () => {
 
     const handleUpdateProfile = (data) => {
         updateProfile(data);
+        // If authenticated, persist the profile update to Firestore for cross-device sync
+        if (authUser && socket) {
+            socket.emit('save_user_profile', data, () => {});
+        }
     };
 
     return (

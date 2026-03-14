@@ -1,9 +1,9 @@
 # GSD State
 
 **Active Milestone:** M007 — Firebase Integration — Persistence & Optional Auth
-**Active Slice:** S04 — Profile Sync & Identity Linking
-**Phase:** milestone-execution
-**Next Action:** Begin S04 — store guest UUID on Firebase user record, load profile from Firestore on sign-in, update history query to use firebaseUid when authenticated
+**Active Slice:** —
+**Phase:** milestone-complete
+**Next Action:** M007 is feature-complete. Remaining pre-production: tighten Firestore security rules; wire email magic link handler in App.jsx; consider squash-merging gsd/M007 to main.
 
 ## Milestone Registry
 

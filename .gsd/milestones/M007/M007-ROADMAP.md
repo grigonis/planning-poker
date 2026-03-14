@@ -59,7 +59,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Optional Firebase Auth (Google + GitHub OAuth)** `risk:medium` `depends:[S02]`
   > After this: Users can sign in with Google or GitHub from the dashboard. Signed-in users have profile stored in Firestore `users/{uid}` and history queryable by Firebase UID. Guest flow is completely unchanged.
 
-- [ ] **S04: Profile Sync & Identity Linking** `risk:low` `depends:[S03]`
+- [x] **S04: Profile Sync & Identity Linking** `risk:low` `depends:[S03]`
   > After this: Signed-in users' profile (name, avatar) syncs to Firestore and loads on any device. Pre-auth guest UUID is stored on the Firebase user record so past guest sessions appear in history after sign-in.
 
 ## Boundary Map

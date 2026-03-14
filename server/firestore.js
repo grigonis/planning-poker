@@ -169,27 +169,150 @@ const getHistoryByUserId = async (userId) => {
 
 /**
  * Create or update a Firebase user record in Firestore.
- * Called from the socket auth middleware on every authenticated connection.
+ * Called from the socket auth middleware on every authenticated connection,
+ * and when profile or guest UUID data needs to be synced.
+ *
  * @param {string} uid - Firebase UID
- * @param {{ email, displayName, photoURL }} data
+ * @param {{ email?, displayName?, photoURL?, name?, avatarSeed?, guestUuid? }} data
  */
 const upsertUser = async (uid, data) => {
     try {
-        await db.collection('users').doc(uid).set({
+        const update = {
             uid,
-            email: data.email ?? null,
-            displayName: data.displayName ?? null,
-            photoURL: data.photoURL ?? null,
             lastSeenAt: new Date().toISOString(),
-        }, { merge: true });
+        };
+        if (data.email      !== undefined) update.email       = data.email ?? null;
+        if (data.displayName !== undefined) update.displayName = data.displayName ?? null;
+        if (data.photoURL   !== undefined) update.photoURL    = data.photoURL ?? null;
+        if (data.name       !== undefined) update.name        = data.name ?? null;
+        if (data.avatarSeed !== undefined) update.avatarSeed  = data.avatarSeed ?? null;
 
-        // Set createdAt only on first write (merge won't overwrite it)
+        await db.collection('users').doc(uid).set(update, { merge: true });
+
+        // Set createdAt only on first write (merge won't overwrite existing value)
         await db.collection('users').doc(uid).set({
             createdAt: new Date().toISOString(),
         }, { merge: true });
+
+        // guestUuid: only set if not already present — preserves the earliest linkage
+        if (data.guestUuid) {
+            const ref = db.collection('users').doc(uid);
+            const doc = await ref.get();
+            if (!doc.exists || !doc.data().guestUuid) {
+                await ref.set({ guestUuid: data.guestUuid }, { merge: true });
+                console.log(`[Auth] Linked guest UUID ${data.guestUuid} to uid ${uid}`);
+            }
+        }
     } catch (err) {
         console.error('[Firestore] upsertUser failed:', err.message);
     }
 };
 
-module.exports = { upsertSession, upsertTask, updateParticipants, closeSession, getHistoryByUserId, upsertUser };
+/**
+ * Fetch a user's stored profile from Firestore.
+ * Returns null if the document doesn't exist.
+ * @param {string} uid - Firebase UID
+ * @returns {Promise<{name:string|null, avatarSeed:string|null, guestUuid:string|null}|null>}
+ */
+const getUserProfile = async (uid) => {
+    try {
+        const doc = await db.collection('users').doc(uid).get();
+        if (!doc.exists) return null;
+        const d = doc.data();
+        return {
+            name:       d.name       ?? null,
+            avatarSeed: d.avatarSeed ?? null,
+            guestUuid:  d.guestUuid  ?? null,
+        };
+    } catch (err) {
+        console.error('[Firestore] getUserProfile failed:', err.message);
+        return null;
+    }
+};
+
+/**
+ * Fetch session history for a Firebase-authenticated user.
+ * Merges sessions found by Firebase UID and by linked guest UUID (if any).
+ * @param {string} uid - Firebase UID
+ * @returns {Promise<Array>}
+ */
+const getHistoryByFirebaseUid = async (uid) => {
+    try {
+        // Fetch the user doc to get the linked guest UUID
+        const profile = await getUserProfile(uid);
+        const guestUuid = profile?.guestUuid ?? null;
+
+        const toISO = (val) => {
+            if (!val) return null;
+            if (typeof val.toDate === 'function') return val.toDate().toISOString();
+            return val;
+        };
+
+        const fetchSessions = async (queryId) => {
+            const snapshot = await db
+                .collection('sessions')
+                .where('participantIds', 'array-contains', queryId)
+                .orderBy('createdAt', 'desc')
+                .limit(50)
+                .get();
+
+            return Promise.all(snapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                const tasksSnap = await doc.ref.collection('tasks').get();
+                const tasks = tasksSnap.docs.map(t => {
+                    const td = t.data();
+                    return {
+                        id: td.id,
+                        title: td.title,
+                        votes: td.votes,
+                        status: td.status,
+                        resolvedAt: toISO(td.resolvedAt),
+                    };
+                });
+                return {
+                    id: data.id,
+                    roomName: data.roomName || '',
+                    roomDescription: data.roomDescription || '',
+                    gameMode: data.gameMode || null,
+                    votingSystem: data.votingSystem || null,
+                    participants: data.participants || [],
+                    tasks,
+                    createdAt: toISO(data.createdAt),
+                    endedAt: toISO(data.endedAt),
+                };
+            }));
+        };
+
+        // Run queries in parallel — uid query always runs; guest UUID query only if linked
+        const queries = [fetchSessions(uid)];
+        if (guestUuid && guestUuid !== uid) queries.push(fetchSessions(guestUuid));
+
+        const results = await Promise.all(queries);
+        const all = results.flat();
+
+        // Dedup by session id, then sort newest-first
+        const seen = new Set();
+        const deduped = all.filter(s => {
+            if (seen.has(s.id)) return false;
+            seen.add(s.id);
+            return true;
+        });
+        deduped.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+        return deduped.slice(0, 50);
+    } catch (err) {
+        console.error('[Firestore] getHistoryByFirebaseUid failed:', err.message);
+        return [];
+    }
+};
+
+module.exports = {
+    upsertSession,
+    upsertTask,
+    updateParticipants,
+    closeSession,
+    getHistoryByUserId,
+    getHistoryByFirebaseUid,
+    upsertUser,
+    getUserProfile,
+};

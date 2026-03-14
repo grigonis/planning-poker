@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { rooms, getActiveRoomsByUserId } = require('../store');
-const { upsertSession, updateParticipants, closeSession, getHistoryByUserId } = require('../firestore');
+const { upsertSession, updateParticipants, closeSession, getHistoryByUserId, getHistoryByFirebaseUid, upsertUser, getUserProfile } = require('../firestore');
 
 module.exports = (io, socket) => {
     const checkRoomHandler = ({ roomId }, callback) => {
@@ -255,9 +255,41 @@ module.exports = (io, socket) => {
     };
 
     const getUserHistoryHandler = async ({ userId }, callback) => {
+        // Authenticated users: merge sessions found by Firebase UID + linked guest UUID
+        if (socket.firebaseUid) {
+            const history = await getHistoryByFirebaseUid(socket.firebaseUid);
+            return callback(history);
+        }
+        // Guest: fall back to UUID-only query
         if (!userId) return callback([]);
         const history = await getHistoryByUserId(userId);
         callback(history);
+    };
+
+    /**
+     * Link a guest UUID to the authenticated Firebase user document.
+     * Only stores guestUuid if not already set (preserves earliest linkage).
+     * No-op for guests (socket.firebaseUid is null).
+     */
+    const linkGuestUidHandler = async ({ guestUuid }, callback) => {
+        const uid = socket.firebaseUid;
+        if (!uid || !guestUuid) return callback?.({ ok: false });
+        await upsertUser(uid, { guestUuid });
+        callback?.({ ok: true });
+    };
+
+    /**
+     * Load a user's stored profile (name, avatarSeed) from Firestore.
+     * Returns {} for guests or if no profile stored.
+     */
+    const loadUserProfileHandler = async (_, callback) => {
+        const uid = socket.firebaseUid;
+        if (!uid) return callback({});
+        const profile = await getUserProfile(uid);
+        if (profile) {
+            console.log(`[Auth] Profile loaded from Firestore for ${uid}`);
+        }
+        callback(profile ?? {});
     };
 
     const getUserActiveRoomsHandler = ({ userId }, callback) => {
@@ -278,4 +310,15 @@ module.exports = (io, socket) => {
     socket.on("end_session", endSessionHandler);
     socket.on("get_user_history", getUserHistoryHandler);
     socket.on("get_active_rooms", getUserActiveRoomsHandler);
+    socket.on("link_guest_uid", linkGuestUidHandler);
+    socket.on("load_user_profile", loadUserProfileHandler);
+    socket.on("save_user_profile", async ({ name, avatarSeed } = {}, callback) => {
+        const uid = socket.firebaseUid;
+        if (!uid) return callback?.({ ok: false });
+        await upsertUser(uid, {
+            ...(name       !== undefined ? { name }       : {}),
+            ...(avatarSeed !== undefined ? { avatarSeed } : {}),
+        });
+        callback?.({ ok: true });
+    });
 };
