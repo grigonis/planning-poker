@@ -1,36 +1,83 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
 
-# ── GSD baseline (auto-generated) ──
+# ── Build output ──────────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+.next/
+out/
+
+# ── Environment / Secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Editor ───────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# ── Test / Debug artifacts ────────────────────────────────────────────────────
+*.png
+*.jpg
+*.jpeg
+!client/public/**
+*.otf
+*.ttf
+*.woff
+*.woff2
+!client/public/**
+e2e_*.js
+netstat_out.txt
+git_log.txt
+test_asset.*
+output.log
+build_*.txt
+lint_*.txt
+full_lint.txt
+herocards_lint.txt
+log.txt
+
+# ── AI / Dev tool configs (machine-local, not project code) ──────────────────
+.gemini/
+.agents/
+.bg-shell/
+.planning/
+.artifacts/
 .gsd/activity/
 .gsd/runtime/
 .gsd/worktrees/
 .gsd/auto.lock
 .gsd/metrics.json
 .gsd/STATE.md
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
-.idea/
-.vscode/
-*.code-workspace
-.env
-.env.*
-!.env.example
-node_modules/
-.next/
-dist/
-build/
+.gsd/completed-units.json
+skills-lock.json
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+*.local
+coverage/
+.cache/
+tmp/
 __pycache__/
 *.pyc
 .venv/
 venv/
-target/
-vendor/
-*.log
-coverage/
-.cache/
-tmp/
-
-# ── GSD baseline (auto-generated) ──
-.gsd/completed-units.json

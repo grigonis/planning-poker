@@ -29,7 +29,8 @@ export const SocketProvider = ({ children }) => {
             }
             idTokenRef.current = idToken;
 
-            const newSocket = io('http://localhost:5000', {
+            const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
+            const newSocket = io(serverUrl, {
                 auth: idToken ? { idToken } : {},
             });
 

@@ -8,13 +8,19 @@ const cors = require("cors");
 const { admin } = require("./firebase");
 const { upsertUser } = require("./firestore");
 
+const CORS_ORIGIN = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+    : ['http://localhost:5173'];
+
 const app = express();
-app.use(cors());
+app.use(cors({ origin: CORS_ORIGIN }));
+
+app.get('/health', (_req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Allow all origins for simplicity in MVP
+        origin: CORS_ORIGIN,
         methods: ["GET", "POST"]
     }
 });
@@ -43,7 +49,6 @@ io.use(async (socket, next) => {
         socket.firebaseUid = decoded.uid;
         // Upsert user record — fire-and-forget
         upsertUser(decoded.uid, {
-            uid: decoded.uid,
             email: decoded.email ?? null,
             displayName: decoded.name ?? null,
             photoURL: decoded.picture ?? null,

@@ -187,22 +187,22 @@ const upsertUser = async (uid, data) => {
         if (data.name       !== undefined) update.name        = data.name ?? null;
         if (data.avatarSeed !== undefined) update.avatarSeed  = data.avatarSeed ?? null;
 
-        await db.collection('users').doc(uid).set(update, { merge: true });
+        const ref = db.collection('users').doc(uid);
 
-        // Set createdAt only on first write (merge won't overwrite existing value)
-        await db.collection('users').doc(uid).set({
-            createdAt: new Date().toISOString(),
-        }, { merge: true });
+        // Single read covers: set createdAt on first write only, and link guestUuid only once.
+        // This read happens on every authenticated socket connect — acceptable given it's one
+        // point-read and avoids a second round-trip write.
+        const existing = await ref.get();
+        const existingData = existing.exists ? existing.data() : {};
 
-        // guestUuid: only set if not already present — preserves the earliest linkage
-        if (data.guestUuid) {
-            const ref = db.collection('users').doc(uid);
-            const doc = await ref.get();
-            if (!doc.exists || !doc.data().guestUuid) {
-                await ref.set({ guestUuid: data.guestUuid }, { merge: true });
-                console.log(`[Auth] Linked guest UUID ${data.guestUuid} to uid ${uid}`);
-            }
+        if (!existingData.createdAt) update.createdAt = new Date().toISOString();
+
+        if (data.guestUuid && !existingData.guestUuid) {
+            update.guestUuid = data.guestUuid;
+            console.log(`[Auth] Linked guest UUID ${data.guestUuid} to uid ${uid}`);
         }
+
+        await ref.set(update, { merge: true });
     } catch (err) {
         console.error('[Firestore] upsertUser failed:', err.message);
     }

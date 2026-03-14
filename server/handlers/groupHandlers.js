@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { rooms } = require('../store');
+const { getUser } = require('./utils');
 
 const GROUP_COLORS = [
     '#6366f1', // indigo
@@ -10,16 +10,6 @@ const GROUP_COLORS = [
     '#06b6d4', // cyan
 ];
 
-const getUser = (socket) => {
-    const roomId = socket.data.roomId;
-    if (!roomId) return null;
-    const room = rooms.get(roomId);
-    if (!room) return null;
-    const userId = socket.data.userId;
-    if (!userId) return null;
-    const user = room.users.get(userId);
-    return { user, room, userId, roomId };
-};
 
 module.exports = (io, socket) => {
     /**

@@ -1,19 +1,5 @@
-const { rooms } = require("../store");
 const { upsertTask } = require("../firestore");
-
-const getUser = (socket) => {
-    const roomId = socket.data.roomId;
-    if (!roomId) return null;
-
-    const room = rooms.get(roomId);
-    if (!room) return null;
-
-    const userId = socket.data.userId;
-    if (!userId) return null;
-
-    const user = room.users.get(userId);
-    return { user, room, userId };
-};
+const { getUser } = require("./utils");
 
 module.exports = (io, socket) => {
     const startVoteHandler = ({ roomId }) => {
