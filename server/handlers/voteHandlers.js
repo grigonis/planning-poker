@@ -2,7 +2,7 @@ const { upsertTask } = require("../firestore");
 const { getUser } = require("./utils");
 
 module.exports = (io, socket) => {
-    const startVoteHandler = ({ roomId }) => {
+    const startVoteHandler = ({ roomId, targetGroups = null }) => {
         const result = getUser(socket);
         if (!result) return;
         const { user, room } = result;
@@ -12,6 +12,7 @@ module.exports = (io, socket) => {
         room.phase = 'VOTING';
         room.votes.clear(); // Reset previous votes
         room.averages = {}; // Initialize averages
+        room.votingGroups = targetGroups; // null = all, or array of group IDs
 
         // Auto-select first pending task if tasks exist but none is active
         if (room.tasks.length > 0 && !room.activeTaskId) {
@@ -23,7 +24,7 @@ module.exports = (io, socket) => {
             }
         }
 
-        io.to(roomId).emit("vote_started", { phase: 'VOTING' });
+        io.to(roomId).emit("vote_started", { phase: 'VOTING', votingGroups: room.votingGroups });
     };
 
     const castVoteHandler = ({ roomId, value }) => {
@@ -62,6 +63,7 @@ module.exports = (io, socket) => {
             room.users.forEach(u => {
                 if (u.role === 'SPECTATOR') return;
                 if (!u.connected) return;
+                if (room.votingGroups && !room.votingGroups.includes(u.groupId)) return;
                 eligibleVoters++;
             });
 
@@ -81,6 +83,7 @@ module.exports = (io, socket) => {
         room.votes.forEach((val, userId) => {
             const u = room.users.get(userId);
             if (u && u.role !== 'SPECTATOR') {
+                if (room.votingGroups && !room.votingGroups.includes(u.groupId)) return;
                 const num = parseFloat(val);
                 if (!isNaN(num)) {
                     total += num;
@@ -105,6 +108,9 @@ module.exports = (io, socket) => {
 
         if (room.groupsEnabled && room.groups.size > 0) {
             room.groups.forEach((group) => {
+                // If specific groups are voting, ignore unselected groups for group averages
+                if (room.votingGroups && !room.votingGroups.includes(group.id)) return;
+
                 let gTotal = 0;
                 let gCount = 0;
                 room.users.forEach((u) => {
@@ -188,6 +194,7 @@ module.exports = (io, socket) => {
         room.phase = 'IDLE';
         room.votes.clear();
         room.averages = {}; // Clear averages on reset
+        room.votingGroups = null; // Clear voting group selection
 
         // If the active task was completed, auto-advance to next pending task
         if (room.activeTaskId) {
@@ -204,7 +211,7 @@ module.exports = (io, socket) => {
             }
         }
 
-        io.to(roomId).emit("reset", { activeTaskId: room.activeTaskId, tasks: room.tasks });
+        io.to(roomId).emit("reset", { activeTaskId: room.activeTaskId, tasks: room.tasks, votingGroups: null });
     };
 
     /**
@@ -230,7 +237,7 @@ module.exports = (io, socket) => {
             }
         }
 
-        io.to(roomId).emit("vote_started", { phase: 'VOTING' });
+        io.to(roomId).emit("vote_started", { phase: 'VOTING', votingGroups: room.votingGroups });
         if (room.tasks.length > 0) {
             io.to(roomId).emit("tasks_updated", { tasks: room.tasks, activeTaskId: room.activeTaskId });
         }

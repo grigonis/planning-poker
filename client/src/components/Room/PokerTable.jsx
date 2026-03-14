@@ -1,17 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PlayerAvatar from './PlayerAvatar';
 import Card from '../Voting/Card';
-import { Eye, RotateCcw, Play, ArrowRight, RefreshCw } from 'lucide-react';
+import { Eye, RotateCcw, Play, ArrowRight, RefreshCw, ChevronDown, Users } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu';
 import { Progress } from '../ui/progress';
 
 import playerFaceDownSVG from '../../assets/TBD_face_down_player.svg';
 
 const SIDE_ASSIGNMENTS = ['TOP', 'BOT', 'LEFT', 'RIGHT', 'BOT', 'TOP', 'BOT', 'TOP', 'LEFT', 'RIGHT', 'BOT', 'TOP', 'LEFT', 'RIGHT', 'BOT', 'TOP'];
 
-const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
+const VoteChip = ({ user, votes, myVote, phase, currentUserId, votingGroups }) => {
     // 1. Spectators do not show any card slot
     if (user.role === 'SPECTATOR') {
         return null;
+    }
+
+    const isParticipating = !votingGroups || votingGroups.includes(user.groupId);
+
+    // If specific groups are voting and this user is not in them, show idle slot
+    if (phase !== 'IDLE' && !isParticipating) {
+        return (
+            <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-gray-400/30 dark:border-white/10 flex items-center justify-center opacity-50 bg-gray-500/5">
+            </div>
+        );
     }
 
     const isMe = user.id === currentUserId;
@@ -24,11 +35,6 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
     }
 
     const isVotingPhase = phase === 'VOTING' || phase.startsWith('PARTIAL');
-    let isParticipating = true;
-
-    if (!isParticipating && phase !== 'IDLE') {
-        return <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px]" />;
-    }
 
     // 3. Voting Started
     if (isVotingPhase) {
@@ -60,7 +66,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId }) => {
 
 
 
-const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true, groups = [], groupsEnabled = false }) => {
+const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style = {}, avatarSize = 48, activeReaction, x = 50, y = 50, anonymousMode = false, shuffleState = 'idle', isRevealed = true, groups = [], groupsEnabled = false, votingGroups = null }) => {
     // Determine dynamic layout direction based on coordinates to point cards towards center of table
     // Extreme left/right edges (x <= 15 or x >= 85) are considered "side" seats
     const isSide = x <= 15 || x >= 85;
@@ -109,7 +115,7 @@ const PlayerSlot = ({ user, votes, myVote, phase, currentUserId, roomMode, style
                 </div>
             )}
             <PlayerAvatar user={user} roomMode={roomMode} size={avatarSize} isCurrentUser={currentUserId === user.id} activeReaction={activeReaction} anonymousMode={anonymousMode} groups={groups} groupsEnabled={groupsEnabled} />
-            <VoteChip user={user} votes={votes} myVote={myVote} phase={phase} currentUserId={currentUserId} />
+            <VoteChip user={user} votes={votes} myVote={myVote} phase={phase} currentUserId={currentUserId} votingGroups={votingGroups} />
         </div>
     );
 };
@@ -121,6 +127,8 @@ const PokerTable = ({
     myVote,
     phase,
     roomMode,
+    groupScopedVoting = false,
+    votingGroups = null,
     averages = {},
     groupAverages = [],
     groupsEnabled = false,
@@ -208,13 +216,11 @@ const PokerTable = ({
     if (isVotingPhase) {
         users.forEach(u => {
             if (u.role === 'SPECTATOR') return;
-            let isParticipating = true;
+            if (votingGroups && !votingGroups.includes(u.groupId)) return;
 
-            if (isParticipating) {
-                eligibleVotersCount++;
-                if (votes[u.id] !== undefined) {
-                    currentVotesCount++;
-                }
+            eligibleVotersCount++;
+            if (votes[u.id] !== undefined) {
+                currentVotesCount++;
             }
         });
     }
@@ -253,13 +259,41 @@ const PokerTable = ({
                             </div>
                             {isHost && (
                                 <div className="flex flex-col items-center gap-4 mt-2">
-                                    <button
-                                        onClick={onStartVote}
-                                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-bold text-sm md:text-base flex items-center gap-2 transition-all shadow-primary/20 active:scale-95"
-                                    >
-                                        <Play size={18} />
-                                        {activeTaskId ? 'Start Voting Task' : 'Quick Start Round'}
-                                    </button>
+                                    {(groupsEnabled && groupScopedVoting && groups.length > 0) ? (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-bold text-sm md:text-base flex items-center gap-2 transition-all shadow-primary/20 active:scale-95">
+                                                    <Play size={18} />
+                                                    {activeTaskId ? 'Start Voting Task' : 'Quick Start Round'}
+                                                    <ChevronDown size={14} className="ml-1" />
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="w-56" align="center">
+                                                <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                    Start vote for...
+                                                </div>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onClick={() => onStartVote(null)} className="font-bold cursor-pointer">
+                                                    <Users className="size-4 mr-2" /> Everyone
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                {groups.map(g => (
+                                                    <DropdownMenuItem key={g.id} onClick={() => onStartVote([g.id])} className="cursor-pointer">
+                                                        <span className="size-2.5 rounded-full mr-2" style={{ backgroundColor: g.color }} />
+                                                        {g.name} Only
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    ) : (
+                                        <button
+                                            onClick={() => onStartVote(null)}
+                                            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-bold text-sm md:text-base flex items-center gap-2 transition-all shadow-primary/20 active:scale-95"
+                                        >
+                                            <Play size={18} />
+                                            {activeTaskId ? 'Start Voting Task' : 'Quick Start Round'}
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -412,6 +446,7 @@ const PokerTable = ({
                                 isRevealed={i < revealedCount}
                                 groups={groups}
                                 groupsEnabled={groupsEnabled}
+                                votingGroups={votingGroups}
                             />
                         );
                     });

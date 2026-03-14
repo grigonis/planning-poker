@@ -37,7 +37,7 @@ function getAvatarSvg(user) {
  *
  * Spectators always at the bottom in "Spectating" group.
  */
-function getLifecycleGroups(users, votes, phase, groups, groupsEnabled) {
+function getLifecycleGroups(users, votes, phase, groups, groupsEnabled, votingGroups = null) {
     const spectators = [];
     const nonSpectators = [];
 
@@ -94,15 +94,15 @@ function getLifecycleGroups(users, votes, phase, groups, groupsEnabled) {
             }
         }
     } else if (phase === 'VOTING' || phase.startsWith('PARTIAL')) {
-        const voting = nonSpectators.filter(u => votes[u.id] === undefined);
-        const voted = nonSpectators.filter(u => votes[u.id] !== undefined);
+        const isParticipating = (u) => !votingGroups || votingGroups.includes(u.groupId);
 
-        if (voted.length > 0) {
-            result.push({ label: 'Voted', icon: 'voted', members: voted });
-        }
-        if (voting.length > 0) {
-            result.push({ label: 'Voting', icon: 'voting', members: voting });
-        }
+        const voting = nonSpectators.filter(u => isParticipating(u) && votes[u.id] === undefined);
+        const voted = nonSpectators.filter(u => isParticipating(u) && votes[u.id] !== undefined);
+        const waiting = nonSpectators.filter(u => !isParticipating(u));
+
+        if (voted.length > 0) result.push({ label: 'Voted', icon: 'voted', members: voted });
+        if (voting.length > 0) result.push({ label: 'Voting', icon: 'voting', members: voting });
+        if (waiting.length > 0) result.push({ label: 'Waiting', icon: 'waiting', members: waiting });
     } else {
         // IDLE
         if (nonSpectators.length > 0) {
@@ -313,7 +313,7 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
 
 // ----- main component -----
 
-const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser, roomId, anonymousMode = false, groups = [], groupsEnabled = false, isHost = false, onAssignGroup, onKickUser }) => {
+const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser, roomId, anonymousMode = false, groups = [], groupsEnabled = false, isHost = false, votingGroups = null, onAssignGroup, onKickUser }) => {
     const storageKey = `keystimate_panel_open_${roomId}`;
 
     const [isExpanded, setIsExpanded] = useState(() => {
@@ -344,13 +344,13 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
     };
 
     const lifecycleGroups = useMemo(
-        () => getLifecycleGroups(users, votes, phase, groups, groupsEnabled),
-        [users, votes, phase, groups, groupsEnabled]
+        () => getLifecycleGroups(users, votes, phase, groups, groupsEnabled, votingGroups),
+        [users, votes, phase, groups, groupsEnabled, votingGroups]
     );
 
     const totalCount = users.length;
-    const votedCount = users.filter(u => u.role !== 'SPECTATOR' && votes[u.id] !== undefined).length;
-    const eligibleCount = users.filter(u => u.role !== 'SPECTATOR').length;
+    const votedCount = users.filter(u => u.role !== 'SPECTATOR' && (!votingGroups || votingGroups.includes(u.groupId)) && votes[u.id] !== undefined).length;
+    const eligibleCount = users.filter(u => u.role !== 'SPECTATOR' && (!votingGroups || votingGroups.includes(u.groupId))).length;
 
     return (
         <div

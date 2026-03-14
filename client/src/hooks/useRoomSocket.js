@@ -40,10 +40,11 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
             }
         };
 
-        const onVoteStarted = ({ phase }) => {
+        const onVoteStarted = ({ phase, votingGroups }) => {
             room.setPhase(phase);
             room.setMyVote(null);
             room.setVotes({});
+            if (votingGroups !== undefined) room.setVotingGroups(votingGroups);
         };
 
         const onVoteUpdate = ({ userId, hasVoted }) => {
@@ -121,7 +122,7 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
             }
         };
 
-        const onReset = ({ activeTaskId: updatedActiveTaskId, tasks: updatedTasks } = {}) => {
+        const onReset = ({ activeTaskId: updatedActiveTaskId, tasks: updatedTasks, votingGroups } = {}) => {
             room.setPhase('IDLE');
             room.setMyVote(null);
             room.setVotes({});
@@ -129,12 +130,14 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
             room.setGroupAverages([]);
             if (updatedActiveTaskId !== undefined) room.setActiveTaskId(updatedActiveTaskId);
             if (updatedTasks) room.setTasks(updatedTasks);
+            if (votingGroups !== undefined) room.setVotingGroups(votingGroups);
         };
 
         const onRoomSettingsUpdated = ({ settings }) => {
             if (settings.funFeatures !== undefined) room.setFunFeatures(settings.funFeatures);
             if (settings.autoReveal !== undefined) room.setAutoReveal(settings.autoReveal);
             if (settings.anonymousMode !== undefined) room.setAnonymousMode(settings.anonymousMode);
+            if (settings.groupScopedVoting !== undefined) room.setGroupScopedVoting(settings.groupScopedVoting);
             if (settings.votingSystem) room.setVotingSystem(settings.votingSystem);
             if (settings.roomName !== undefined) room.setRoomName(settings.roomName);
             if (settings.roomDescription !== undefined) room.setRoomDescription(settings.roomDescription);
