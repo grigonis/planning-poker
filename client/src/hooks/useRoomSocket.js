@@ -15,7 +15,8 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
                     me.role !== room.currentUser.role || 
                     me.name !== room.currentUser.name || 
                     me.avatarSeed !== room.currentUser.avatarSeed || 
-                    me.avatarPhotoURL !== room.currentUser.avatarPhotoURL
+                    me.avatarPhotoURL !== room.currentUser.avatarPhotoURL ||
+                    me.groupId !== room.currentUser.groupId
                 )) {
                     room.setCurrentUser(prev => {
                         const next = { 
@@ -24,7 +25,8 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
                             role: me.role, 
                             name: me.name, 
                             avatarSeed: me.avatarSeed, 
-                            avatarPhotoURL: me.avatarPhotoURL || null 
+                            avatarPhotoURL: me.avatarPhotoURL || null,
+                            groupId: me.groupId || null
                         };
                         localStorage.setItem(`keystimate_session_${roomId}`, JSON.stringify({
                             userId: next.id,

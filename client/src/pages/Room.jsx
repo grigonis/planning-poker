@@ -146,7 +146,8 @@ const Room = () => {
                         gameMode: response.mode,
                         funFeatures: response.funFeatures,
                         avatarSeed: serverMe?.avatarSeed || avatarSeed || name,
-                        avatarPhotoURL: serverMe?.avatarPhotoURL || avatarPhotoURL || null
+                        avatarPhotoURL: serverMe?.avatarPhotoURL || avatarPhotoURL || null,
+                        groupId: serverMe?.groupId || null
                     });
                     room.setViewState('ROOM');
 
@@ -192,6 +193,7 @@ const Room = () => {
             isHost: user.isHost || false,
             avatarSeed: user.avatarSeed || user.name,
             avatarPhotoURL: user.avatarPhotoURL || null,
+            groupId: user.groupId || null,
         });
 
         if (user.users) room.setUsers(user.users);
