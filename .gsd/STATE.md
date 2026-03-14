@@ -1,9 +1,9 @@
 # GSD State
 
-**Active Milestone:** M008 — Security Hardening
-**Active Slice:** —
-**Phase:** complete
-**Next Action:** All M008 fixes applied and verified. Remaining open item: Firestore security rules (SEC-13). Ready for next milestone.
+**Active Milestone:** M009 — Enhanced Profile & Avatar Customization
+**Active Slice:** S01 — Profile UI & Name Unlocking
+**Phase:** plan
+**Next Action:** Starting S01: Profile UI & Name Unlocking. Unlocking name input in ProfileSetupDialog.
 
 ## Milestone Registry
 
