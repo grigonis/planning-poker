@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /avatars/{userId}/{allPaths=**} {
+      // Anyone can view avatars
+      allow read: if true;
+      
+      // Allow upload if:
+      // 1. File is an image
+      // 2. File is less than 2MB
+      // 3. User is uploading to their own folder (honor system for guests, but verified for auth users if we had auth in rules)
+      // Note: Since we have guest users, we can't strictly enforce request.auth.uid == userId for all.
+      allow write: if request.resource.size < 2 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

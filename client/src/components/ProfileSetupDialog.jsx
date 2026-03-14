@@ -312,6 +312,45 @@ const ProfileSetupDialog = ({
         setSelectedSex('male');
     };
 
+    const resizeImage = (file, maxWidth = 400, maxHeight = 400) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        resolve(blob);
+                    }, 'image/jpeg', 0.85); // 85% quality JPEG
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    };
+
     const handleUploadClick = () => {
         fileInputRef.current?.click();
     };
@@ -325,18 +364,20 @@ const ProfileSetupDialog = ({
             toast.error('Please upload an image file.');
             return;
         }
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('Image must be smaller than 2MB.');
+        
+        // Initial size check (pre-compression)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image must be smaller than 5MB.');
             return;
         }
 
         setUploading(true);
-
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${globalUserId || 'guest'}_${Date.now()}.${fileExt}`;
-            const storageRef = ref(storage, `avatars/${fileName}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
+            const resizedBlob = await resizeImage(file);
+            const fileName = `${Date.now()}.jpg`;
+            // Organized by userId to allow potential future security rule narrowing
+            const storageRef = ref(storage, `avatars/${globalUserId || 'guest'}/${fileName}`);
+            const uploadTask = uploadBytesResumable(storageRef, resizedBlob);
 
             uploadTask.on('state_changed', 
                 (snapshot) => {
@@ -354,14 +395,22 @@ const ProfileSetupDialog = ({
                     // Update current user locally and globally
                     updateProfile({ avatarPhotoURL: downloadURL });
                     
+                    // If in a room and in edit mode, sync to server immediately
+                    if (mode === 'edit' && socket && roomId) {
+                        socket.emit('update_profile', { roomId, avatarPhotoURL: downloadURL });
+                        if (authUser) {
+                            socket.emit('save_user_profile', { avatarPhotoURL: downloadURL });
+                        }
+                    }
+                    
                     setUploading(false);
                     setUploadProgress(0);
                     toast.success('Avatar uploaded successfully!');
                 }
             );
         } catch (err) {
-            console.error('Upload init failed:', err);
-            toast.error('Upload failed to initialize.');
+            console.error('Image processing failed:', err);
+            toast.error('Failed to process image.');
             setUploading(false);
         }
     };
@@ -420,6 +469,11 @@ const ProfileSetupDialog = ({
             // Set avatar + final name (+ photo URL if available) on the server user object
             const photoURL = globalAvatarPhotoURL || authUser?.photoURL || null;
             socket.emit('update_profile', { roomId, name: name.trim(), avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
+
+            // If authenticated, persist to Firestore for cross-room/cross-device consistency
+            if (authUser) {
+                socket.emit('save_user_profile', { name: name.trim(), avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
+            }
 
             // Save to global profile for cross-room identity
             updateProfile({ name: name.trim(), avatarSeed: selectedSeed });
@@ -510,7 +564,7 @@ const ProfileSetupDialog = ({
                         <div className="px-6 pt-6 pb-5 border-b border-border bg-muted/20">
                             <div className="flex items-center gap-4">
                                 {/* Preview avatar — Custom photoURL or auth photo takes precedence */}
-                                {(isEditMode && (currentUser?.avatarPhotoURL || authUser?.photoURL)) ? (
+                                {(globalAvatarPhotoURL || (isEditMode && currentUser?.avatarPhotoURL) || authUser?.photoURL) ? (
                                     <motion.div
                                         initial={{ scale: 0.85, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
@@ -518,7 +572,7 @@ const ProfileSetupDialog = ({
                                         className="size-[72px] rounded-full overflow-hidden border-[3px] border-background shadow-xl ring-[3px] ring-primary/25 shrink-0"
                                     >
                                         <img
-                                            src={currentUser?.avatarPhotoURL || authUser.photoURL}
+                                            src={globalAvatarPhotoURL || (isEditMode ? currentUser?.avatarPhotoURL : null) || authUser?.photoURL}
                                             alt="Your profile photo"
                                             className="size-full object-cover"
                                             referrerPolicy="no-referrer"

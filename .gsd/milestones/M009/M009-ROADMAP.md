@@ -18,9 +18,9 @@
 
 - [x] **S01: Profile UI & Name Unlocking** `risk:low` `depends:[]`
   > After this: Users can edit their name in ProfileSetupDialog; server handles name/avatar updates correctly.
-- [ ] **S02: Custom Avatar Upload** `risk:high` `depends:[S01]`
+- [x] **S02: Custom Avatar Upload** `risk:high` `depends:[S01]`
   > After this: Users can upload images to Firebase Storage and use them as their avatar.
-- [ ] **S03: Persistence & Sync** `risk:medium` `depends:[S02]`
+- [x] **S03: Persistence & Sync** `risk:medium` `depends:[S02]`
   > After this: Custom profiles are saved to Firestore for authenticated users and persist across sessions.
 
 ## Milestone Definition of Done
