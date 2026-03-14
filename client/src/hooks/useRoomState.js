@@ -32,6 +32,15 @@ export const useRoomState = (roomId) => {
         localStorage.getItem(`keystimate_tasks_open_${roomId}`) === 'true'
     );
 
+    // Persist tasks pane state to localStorage
+    const setIsTasksOpenPersisted = (valOrFn) => {
+        setIsTasksOpen(prev => {
+            const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn;
+            localStorage.setItem(`keystimate_tasks_open_${roomId}`, String(next));
+            return next;
+        });
+    };
+
     const [tasks, setTasks] = useState(location.state?.tasks || []);
     const [activeTaskId, setActiveTaskId] = useState(location.state?.activeTaskId || null);
     const [currentUser, setCurrentUser] = useState(location.state || {});
@@ -56,7 +65,7 @@ export const useRoomState = (roomId) => {
         roomDescription, setRoomDescription,
         groups, setGroups,
         groupsEnabled, setGroupsEnabled,
-        isTasksOpen, setIsTasksOpen,
+        isTasksOpen, setIsTasksOpen: setIsTasksOpenPersisted,
         tasks, setTasks,
         activeTaskId, setActiveTaskId,
         currentUser, setCurrentUser,

@@ -103,6 +103,7 @@ const Room = () => {
                         return;
                     }
                     room.setViewState('GUEST_INPUT');
+                    localStorage.removeItem(`keystimate_session_${roomId}`);
                 } else {
                     room.setPhase(response.phase);
                     room.setUsers(response.users);
@@ -146,6 +147,16 @@ const Room = () => {
                         avatarPhotoURL: serverMe?.avatarPhotoURL || avatarPhotoURL || null
                     });
                     room.setViewState('ROOM');
+
+                    // Persist session for reconnect on page refresh
+                    localStorage.setItem(`keystimate_session_${roomId}`, JSON.stringify({
+                        userId: response.userId,
+                        name: serverMe?.name || name,
+                        role: serverMe?.role || role,
+                        avatarSeed: serverMe?.avatarSeed || avatarSeed || name,
+                        avatarPhotoURL: serverMe?.avatarPhotoURL || avatarPhotoURL || null,
+                        roomId
+                    }));
                 }
             });
         };
@@ -180,6 +191,28 @@ const Room = () => {
             avatarSeed: user.avatarSeed || user.name,
             avatarPhotoURL: user.avatarPhotoURL || null,
         });
+
+        if (user.users) room.setUsers(user.users);
+        if (user.gameMode) room.setRoomMode(user.gameMode);
+        if (user.funFeatures !== undefined) room.setFunFeatures(user.funFeatures);
+        if (user.autoReveal !== undefined) room.setAutoReveal(user.autoReveal);
+        if (user.anonymousMode !== undefined) room.setAnonymousMode(user.anonymousMode);
+        if (user.votingSystem) room.setVotingSystem(user.votingSystem);
+        if (user.roomName !== undefined) room.setRoomName(user.roomName);
+        if (user.roomDescription !== undefined) room.setRoomDescription(user.roomDescription);
+        if (user.groups) room.setGroups(user.groups);
+        if (user.groupsEnabled !== undefined) room.setGroupsEnabled(user.groupsEnabled);
+
+        // Persist session for reconnect on page refresh
+        localStorage.setItem(`keystimate_session_${roomId}`, JSON.stringify({
+            userId: user.userId,
+            name: user.name,
+            role: user.role,
+            avatarSeed: user.avatarSeed || user.name,
+            avatarPhotoURL: user.avatarPhotoURL || null,
+            roomId
+        }));
+
         room.setViewState('ROOM');
     };
 
@@ -206,6 +239,7 @@ const Room = () => {
                 onOpenInvite={() => modals.setIsInviteOpen(true)}
                 onOpenProfile={() => modals.setIsProfileOpen(true)}
                 onOpenHelp={() => modals.setIsKeyboardShortcutsOpen(true)}
+                onSignIn={() => modals.setIsSignInOpen(true)}
                 authUser={authUser} onSignOut={signOut}
             />
 
@@ -235,6 +269,14 @@ const Room = () => {
                             onStartVote={handlers.handleStartVote} onReveal={handlers.handleReveal}
                             onReset={handlers.handleReset} onUpdateSettings={handlers.handleUpdateSettings}
                         />
+                        {/* Emoji Reactions System */}
+                        {room.funFeatures && (
+                            <EmojiReactions
+                                roomId={roomId}
+                                currentUserId={room.currentUser.id}
+                                phase={room.phase}
+                            />
+                        )}
                     </main>
                     <TasksPane
                         isOpen={room.isTasksOpen} onClose={() => room.setIsTasksOpen(false)}
@@ -245,7 +287,7 @@ const Room = () => {
                 </>
             )}
 
-            <GuestJoinModal isOpen={room.viewState === 'GUEST_INPUT'} roomId={roomId} onJoinSuccess={handleGuestJoinSuccess} />
+            <GuestJoinModal isOpen={room.viewState === 'GUEST_INPUT'} roomId={roomId} onJoinSuccess={handleGuestJoinSuccess} hostUserId={location.state?.hostUserId || null} hostRole={location.state?.hostRole || 'DEV'} />
             <InviteModal isOpen={modals.isInviteOpen} onClose={() => modals.setIsInviteOpen(false)} roomId={roomId} />
             <SettingsDialog isOpen={modals.isSettingsOpen} onClose={() => modals.setIsSettingsOpen(false)} funFeatures={room.funFeatures} autoReveal={room.autoReveal} anonymousMode={room.anonymousMode} onUpdateSettings={handlers.handleUpdateSettings} onEndSession={handlers.handleEndSession} />
             <EditRoomDetailsDialog isOpen={modals.isEditRoomOpen} onClose={() => modals.setIsEditRoomOpen(false)} roomName={room.roomName} roomDescription={room.roomDescription} onSave={handlers.handleUpdateSettings} />
