@@ -1,8 +1,8 @@
 # GSD State
 
-**Active Milestone:** None — all milestones complete
-**Phase:** Idle
-**Next Action:** —
+**Active Milestone:** M011 — UX Overhaul & Interaction Polish
+**Phase:** Planning
+**Next Action:** Plan and execute S01
 
 ## Milestone Registry
 
@@ -16,6 +16,7 @@
 - [x] **M008 — Security Hardening** - COMPLETE
 - [x] **M009 — Enhanced Profile & Avatar Customization** - COMPLETE
 - [x] **M010 — Polishing & Refinement** - COMPLETE
+- [ ] **M011 — UX Overhaul & Interaction Polish** - IN PROGRESS
 
 ## Blockers
 
