@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useLayoutEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronRight, ChevronLeft, Check, Clock, Eye, Crown,
     Users, Vote, SkipForward, CheckCircle2, UserX
@@ -30,12 +29,12 @@ function getAvatarSvg(user) {
 
 /**
  * Groups users by lifecycle state.
- * 
+ *
  * States:
  *   IDLE         → all non-spectators in "Waiting" group
  *   VOTING       → non-voted in "Voting", voted in "Voted"
  *   REVEALED     → if groupsEnabled, group by team name; else "Results" + "Skipped"
- *   
+ *
  * Spectators always at the bottom in "Spectating" group.
  */
 function getLifecycleGroups(users, votes, phase, groups, groupsEnabled) {
@@ -70,23 +69,20 @@ function getLifecycleGroups(users, votes, phase, groups, groupsEnabled) {
                 }
             }
 
-            // Add team groups
             for (const [, groupData] of groupMap) {
                 if (groupData.members.length > 0) result.push(groupData);
             }
 
-            // Skipped (no vote) from ungrouped
             const voted = ungrouped.filter(u => votes[u.id] !== undefined);
             const skipped = ungrouped.filter(u => votes[u.id] === undefined);
 
             if (voted.length > 0) {
-                result.push({ label: 'Voted', icon: 'check', members: voted });
+                result.push({ label: 'Voted', icon: 'voted', members: voted });
             }
             if (skipped.length > 0) {
                 result.push({ label: 'Skipped', icon: 'skip', members: skipped });
             }
         } else {
-            // No groups: Results + Skipped
             const voted = nonSpectators.filter(u => votes[u.id] !== undefined);
             const skipped = nonSpectators.filter(u => votes[u.id] === undefined);
 
@@ -131,18 +127,12 @@ function SmallAvatar({ user, size = 28 }) {
         return getAvatarSvg(user);
     }, [user?.avatarSeed, avatarPhotoURL]);
 
+    const style = { width: size, height: size, minWidth: size };
+
     if (avatarPhotoURL) {
         return (
-            <div
-                className="rounded-full overflow-hidden shrink-0 bg-muted border border-border/50"
-                style={{ width: size, height: size, minWidth: size }}
-            >
-                <img
-                    src={avatarPhotoURL}
-                    alt={user.name}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                />
+            <div className="rounded-full overflow-hidden shrink-0 bg-muted border border-border/50" style={style}>
+                <img src={avatarPhotoURL} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
         );
     }
@@ -150,10 +140,7 @@ function SmallAvatar({ user, size = 28 }) {
     if (!svgContent) {
         const initials = (user?.name || '?')[0].toUpperCase();
         return (
-            <div
-                className="rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold text-xs"
-                style={{ width: size, height: size, minWidth: size }}
-            >
+            <div className="rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold text-xs" style={style}>
                 {initials}
             </div>
         );
@@ -162,7 +149,7 @@ function SmallAvatar({ user, size = 28 }) {
     return (
         <div
             className="rounded-full overflow-hidden shrink-0 bg-muted"
-            style={{ width: size, height: size, minWidth: size }}
+            style={style}
             dangerouslySetInnerHTML={{ __html: svgContent }}
         />
     );
@@ -181,24 +168,19 @@ const GROUP_ICON_MAP = {
 function GroupHeader({ label, icon, color, count }) {
     const IconComp = GROUP_ICON_MAP[icon] || Users;
     return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-1.5 px-2 pt-3 pb-1 select-none"
-        >
+        <div className="flex items-center gap-1.5 px-2 pt-3 pb-1 select-none">
             <IconComp
-                className="size-3"
+                className="size-3 text-muted-foreground/60"
                 style={color ? { color } : undefined}
             />
             <span
-                className="text-[9px] font-bold uppercase tracking-wider"
+                className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60"
                 style={color ? { color } : undefined}
             >
                 {label}
             </span>
-            <span className="text-[9px] text-muted-foreground/50 ml-auto">{count}</span>
-        </motion.div>
+            <span className="text-[9px] text-muted-foreground/40 ml-auto">{count}</span>
+        </div>
     );
 }
 
@@ -239,26 +221,18 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
     // Collapsed: avatar centered
     if (!expanded) {
         return (
-            <motion.div
-                layout
-                initial={false}
-                className="flex items-center justify-center py-1"
-            >
+            <div className="flex items-center justify-center py-1">
                 <SmallAvatar user={user} size={28} />
-            </motion.div>
+            </div>
         );
     }
 
     const rowContent = (
-        <motion.div
-            layout
-            initial={false}
+        <div
             className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-white/20 dark:hover:bg-white/5 ${isMe ? 'bg-primary/5' : ''} ${(canAssign || canKick) ? 'cursor-pointer' : ''}`}
         >
-            {/* Avatar */}
             <SmallAvatar user={user} size={28} />
 
-            {/* Name + icons */}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1 min-w-0 flex-wrap">
                     <span className={`text-xs font-medium truncate ${isMe ? 'text-primary' : 'text-foreground'}`}>
@@ -274,14 +248,12 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
                 )}
             </div>
 
-            {/* Vote badge in revealed phase */}
             {phase === 'REVEALED' && (
                 <VoteBadge voteVal={voteVal} anonymousMode={anonymousMode} isMe={isMe} />
             )}
-        </motion.div>
+        </div>
     );
 
-    // If host can assign groups or kick, wrap in dropdown
     if (canAssign || canKick) {
         return (
             <DropdownMenu>
@@ -408,37 +380,35 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
             </button>
 
             {/* User list — scrollable */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden py-1 px-1 space-y-0.5">
-                <AnimatePresence mode="popLayout">
-                    {lifecycleGroups.map((group) => (
-                        <div key={group.label}>
-                            {isExpanded && (
-                                <GroupHeader
-                                    label={group.label}
-                                    icon={group.icon}
-                                    color={group.color}
-                                    count={group.members.length}
-                                />
-                            )}
-                            {group.members.map(user => (
-                                <UserRow
-                                    key={user.id}
-                                    user={user}
-                                    votes={votes}
-                                    phase={phase}
-                                    currentUser={currentUser}
-                                    anonymousMode={anonymousMode}
-                                    expanded={isExpanded}
-                                    groups={groups}
-                                    groupsEnabled={groupsEnabled}
-                                    isHost={isHost}
-                                    onAssignGroup={onAssignGroup}
-                                    onKickUser={onKickUser}
-                                />
-                            ))}
-                        </div>
-                    ))}
-                </AnimatePresence>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden py-1 px-1">
+                {lifecycleGroups.map((group) => (
+                    <div key={group.label}>
+                        {isExpanded && (
+                            <GroupHeader
+                                label={group.label}
+                                icon={group.icon}
+                                color={group.color}
+                                count={group.members.length}
+                            />
+                        )}
+                        {group.members.map(user => (
+                            <UserRow
+                                key={user.id}
+                                user={user}
+                                votes={votes}
+                                phase={phase}
+                                currentUser={currentUser}
+                                anonymousMode={anonymousMode}
+                                expanded={isExpanded}
+                                groups={groups}
+                                groupsEnabled={groupsEnabled}
+                                isHost={isHost}
+                                onAssignGroup={onAssignGroup}
+                                onKickUser={onKickUser}
+                            />
+                        ))}
+                    </div>
+                ))}
 
                 {users.length === 0 && isExpanded && (
                     <p className="text-xs text-muted-foreground text-center py-4 px-2">No participants yet</p>

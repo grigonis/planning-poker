@@ -27,10 +27,9 @@ export const useRoomHandlers = (socket, roomId, room, updateProfile, authUser) =
                     ...prev,
                     role: response.role
                 }));
-                // Clear local vote if becoming spectator
-                if (response.role === 'SPECTATOR') {
-                    room.setMyVote(null);
-                }
+                // Always clear local vote state on role change
+                // Server already cleared the vote; client needs to match
+                room.setMyVote(null);
             }
             callback?.(response);
         });

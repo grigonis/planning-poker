@@ -46,7 +46,16 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
             room.setVotes({});
         };
 
-        const onVoteUpdate = ({ userId }) => {
+        const onVoteUpdate = ({ userId, hasVoted }) => {
+            if (hasVoted === false) {
+                // User's vote was cleared (e.g. spectator toggle)
+                room.setVotes(prev => {
+                    const next = { ...prev };
+                    delete next[userId];
+                    return next;
+                });
+                return;
+            }
             room.setVotes(prev => ({ ...prev, [userId]: 'VOTED' }));
             if (room.funFeatures) {
                 try {

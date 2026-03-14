@@ -5,6 +5,7 @@ import {
     LogIn, LogOut, UserCog, Keyboard, Eye, EyeOff, MonitorPlay
 } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Switch } from '../ui/switch';
 import {
     Tooltip,
     TooltipContent,
@@ -204,11 +205,12 @@ const UserDropdown = ({
                     {/* ── Session Toggles (Room mode only) ── */}
                     {showRoomToggles && (
                         <>
-                            <button
-                                role="menuitem"
-                                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg mx-1 hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors focus:outline-none focus-visible:bg-accent"
+                            <div
+                                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg mx-1 hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors"
                                 style={{ width: 'calc(100% - 8px)' }}
-                                onClick={() => {
+                                onClick={(e) => {
+                                    // Don't trigger if clicking the switch itself
+                                    if (e.target.closest('[data-slot="switch"]')) return;
                                     onToggleSpectator?.();
                                     setOpen(false);
                                 }}
@@ -222,10 +224,15 @@ const UserDropdown = ({
                                         {isSpectator ? 'Currently spectating' : 'Watch without voting'}
                                     </span>
                                 </div>
-                                <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSpectator ? 'border-primary bg-primary' : 'border-muted-foreground/30'}`}>
-                                    {isSpectator && <div className="size-1.5 rounded-full bg-primary-foreground" />}
-                                </div>
-                            </button>
+                                <Switch
+                                    size="sm"
+                                    checked={isSpectator}
+                                    onCheckedChange={() => {
+                                        onToggleSpectator?.();
+                                        setOpen(false);
+                                    }}
+                                />
+                            </div>
 
                             <button
                                 role="menuitem"
