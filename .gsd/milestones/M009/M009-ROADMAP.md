@@ -16,7 +16,7 @@
 
 ## Slices
 
-- [ ] **S01: Profile UI & Name Unlocking** `risk:low` `depends:[]`
+- [x] **S01: Profile UI & Name Unlocking** `risk:low` `depends:[]`
   > After this: Users can edit their name in ProfileSetupDialog; server handles name/avatar updates correctly.
 - [ ] **S02: Custom Avatar Upload** `risk:high` `depends:[S01]`
   > After this: Users can upload images to Firebase Storage and use them as their avatar.

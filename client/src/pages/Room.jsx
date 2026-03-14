@@ -65,6 +65,22 @@ const Room = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSignInOpen, setIsSignInOpen] = useState(false);
 
+    // M009 S01 T03: Load custom profile from Firestore when authenticated
+    useEffect(() => {
+        if (socket && isConnected && authUser) {
+            socket.emit('load_user_profile', {}, (profile) => {
+                if (profile && (profile.name || profile.avatarSeed || profile.avatarPhotoURL)) {
+                    console.log('[Auth] Syncing Firestore profile to local state');
+                    updateProfile({
+                        name: profile.name || globalName,
+                        avatarSeed: profile.avatarSeed || globalAvatarSeed,
+                        avatarPhotoURL: profile.avatarPhotoURL || globalAvatarPhotoURL
+                    });
+                }
+            });
+        }
+    }, [socket, isConnected, !!authUser]);
+
     // Tasks State
     const [tasks, setTasks] = useState(location.state?.tasks || []);
     const [activeTaskId, setActiveTaskId] = useState(location.state?.activeTaskId || null);

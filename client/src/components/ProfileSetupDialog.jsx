@@ -368,6 +368,12 @@ const ProfileSetupDialog = ({
 
     const handleRemovePhoto = () => {
         updateProfile({ avatarPhotoURL: null });
+        if (mode === 'edit' && socket) {
+            socket.emit('update_profile', { roomId, avatarPhotoURL: null });
+            if (authUser) {
+                socket.emit('save_user_profile', { avatarPhotoURL: null });
+            }
+        }
     };
 
     const handleSelectSeed = (seed) => {
@@ -380,7 +386,7 @@ const ProfileSetupDialog = ({
 
         if (mode === 'edit') {
             // When authenticated, use the current photo URL (custom or OAuth)
-            const photoURL = currentUser?.avatarPhotoURL || authUser?.photoURL || null;
+            const photoURL = globalAvatarPhotoURL || currentUser?.avatarPhotoURL || authUser?.photoURL || null;
             const finalName = name.trim();
             onUpdateProfile?.({ name: finalName, avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
             onClose?.();
@@ -411,8 +417,8 @@ const ProfileSetupDialog = ({
                 socket.emit('assign_group', { roomId, targetUserId: userId, groupId: selectedGroupId });
             }
 
-            // Set avatar + final name (+ photo URL if authenticated) on the server user object
-            const photoURL = authUser?.photoURL || null;
+            // Set avatar + final name (+ photo URL if available) on the server user object
+            const photoURL = globalAvatarPhotoURL || authUser?.photoURL || null;
             socket.emit('update_profile', { roomId, name: name.trim(), avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
 
             // Save to global profile for cross-room identity

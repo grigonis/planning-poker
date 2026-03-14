@@ -2,8 +2,8 @@
 
 **Active Milestone:** M009 — Enhanced Profile & Avatar Customization
 **Active Slice:** S01 — Profile UI & Name Unlocking
-**Phase:** plan
-**Next Action:** Starting S01: Profile UI & Name Unlocking. Unlocking name input in ProfileSetupDialog.
+**Phase:** complete
+**Next Action:** S01 complete. Ready for S02: Custom Avatar Upload.
 
 ## Milestone Registry
 
