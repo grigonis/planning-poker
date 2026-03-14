@@ -49,16 +49,16 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Participant Panel Lifecycle & Profile Dropdown** `risk:high` `depends:[]`
+- [x] **S01: Participant Panel Lifecycle & Profile Dropdown** `risk:high` `depends:[]`
   > After this: participant panel shows Waiting/Voting/Voted/Revealed/Skipped/Spectating groups with icons; group mode override works on reveal; user dropdown has spectator + screen sharing toggles; keyboard shortcuts button removed from navbar
 
-- [ ] **S02: Host Controls — Kick, Post-Reveal Buttons, Task Auto-Advance** `risk:medium` `depends:[S01]`
+- [x] **S02: Host Controls — Kick, Post-Reveal Buttons, Task Auto-Advance** `risk:medium` `depends:[S01]`
   > After this: host sees Next Round + Revote post-reveal; can kick users from left panel; task-based voting auto-advances
 
-- [ ] **S03: UI & CSS Polish** `risk:low` `depends:[]`
+- [x] **S03: UI & CSS Polish** `risk:low` `depends:[]`
   > After this: avatar hover disabled on table, "Planning Poker" removed, invite auto-close + toast, settings hover fix, sidebar animation smooth, inputs larger
 
-- [ ] **S04: Integration Verification** `risk:low` `depends:[S01,S02,S03]`
+- [x] **S04: Integration Verification** `risk:low` `depends:[S01,S02,S03]`
   > After this: all 11 issues verified end-to-end in browser with running server
 
 ## Boundary Map
