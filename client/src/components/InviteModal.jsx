@@ -8,6 +8,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const InviteModal = ({ isOpen, onClose, roomId }) => {
     const [copied, setCopied] = useState(false);
@@ -16,7 +17,11 @@ const InviteModal = ({ isOpen, onClose, roomId }) => {
     const handleCopy = () => {
         navigator.clipboard.writeText(inviteLink);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        toast.success("Link copied to clipboard");
+        setTimeout(() => {
+            setCopied(false);
+            onClose();
+        }, 400);
     };
 
     return (

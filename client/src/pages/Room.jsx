@@ -239,6 +239,7 @@ const Room = () => {
                 onOpenInvite={() => modals.setIsInviteOpen(true)}
                 onOpenProfile={() => modals.setIsProfileOpen(true)}
                 onOpenHelp={() => modals.setIsKeyboardShortcutsOpen(true)}
+                onToggleSpectator={handlers.handleToggleSpectator}
                 onSignIn={() => modals.setIsSignInOpen(true)}
                 authUser={authUser} onSignOut={signOut}
             />
@@ -250,6 +251,7 @@ const Room = () => {
                         currentUser={room.currentUser} roomId={roomId} anonymousMode={room.anonymousMode}
                         groups={room.groups} groupsEnabled={room.groupsEnabled} isHost={isMeHost}
                         onAssignGroup={handlers.handleAssignGroup}
+                        onKickUser={handlers.handleKickUser}
                     />
                     <main className="flex-1 p-4">
                         {showOverlay && !room.myVote && (
@@ -267,7 +269,8 @@ const Room = () => {
                             anonymousMode={room.anonymousMode} roomMode={room.roomMode}
                             votingSystem={room.votingSystem} tasks={room.tasks} activeTaskId={room.activeTaskId}
                             onStartVote={handlers.handleStartVote} onReveal={handlers.handleReveal}
-                            onReset={handlers.handleReset} onUpdateSettings={handlers.handleUpdateSettings}
+                            onReset={handlers.handleReset} onRevote={handlers.handleRevote}
+                            onUpdateSettings={handlers.handleUpdateSettings}
                         />
                         {/* Emoji Reactions System */}
                         {room.funFeatures && (

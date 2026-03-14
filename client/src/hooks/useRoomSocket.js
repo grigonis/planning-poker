@@ -112,13 +112,14 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
             }
         };
 
-        const onReset = ({ activeTaskId: updatedActiveTaskId } = {}) => {
+        const onReset = ({ activeTaskId: updatedActiveTaskId, tasks: updatedTasks } = {}) => {
             room.setPhase('IDLE');
             room.setMyVote(null);
             room.setVotes({});
             room.setAverages({});
             room.setGroupAverages([]);
             if (updatedActiveTaskId !== undefined) room.setActiveTaskId(updatedActiveTaskId);
+            if (updatedTasks) room.setTasks(updatedTasks);
         };
 
         const onRoomSettingsUpdated = ({ settings }) => {
@@ -139,6 +140,11 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
         const onSessionEnded = () => {
             toast.error('The host has ended this session.');
             navigate('/');
+        };
+
+        const onKicked = ({ message }) => {
+            toast.error(message || 'You were removed from the room.');
+            navigate('/dashboard');
         };
 
         const onShowReaction = ({ userId, emojiIcon }) => {
@@ -170,6 +176,7 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
         socket.on('room_settings_updated', onRoomSettingsUpdated);
         socket.on('room_groups_updated', onRoomGroupsUpdated);
         socket.on('session_ended', onSessionEnded);
+        socket.on('kicked', onKicked);
         socket.on('show_reaction', onShowReaction);
         socket.on('tasks_updated', onTasksUpdated);
 
@@ -182,6 +189,7 @@ export const useRoomSocket = (socket, roomId, room, navigate) => {
             socket.off('room_settings_updated', onRoomSettingsUpdated);
             socket.off('room_groups_updated', onRoomGroupsUpdated);
             socket.off('session_ended', onSessionEnded);
+            socket.off('kicked', onKicked);
             socket.off('show_reaction', onShowReaction);
             socket.off('tasks_updated', onTasksUpdated);
         };

@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
-import { Crown, RefreshCw } from 'lucide-react';
-import { useSocket } from '../../context/SocketContext';
+import { Crown } from 'lucide-react';
 import anonymousMonkeySvg from '../../assets/anonymous-monkey.svg';
 import {
     Tooltip,
@@ -25,7 +24,6 @@ function getMonkeyAlias(userId) {
 }
 
 const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction, anonymousMode = false, hideDetails = false, groups = [], groupsEnabled = false }) => {
-    const { socket } = useSocket();
     const isAnon = anonymousMode && !isCurrentUser && user.role !== 'SPECTATOR';
     const displayName = isAnon ? getMonkeyAlias(user.id) : user.name;
 
@@ -44,22 +42,15 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
 
     const isOnline = user.connected !== false;
 
-    const handleAvatarClick = () => {
-        if (isCurrentUser && socket?.connected) {
-            socket.emit('update_avatar', { roomId: socket.data?.roomId || window.location.pathname.split('/').pop() });
-        }
-    };
-
     return (
         <div className="flex flex-col items-center gap-2 min-w-0">
             {/* Avatar with presence dot */}
             <div className="relative flex-shrink-0 group">
                 <div
-                    onClick={handleAvatarClick}
                     className={`rounded-full overflow-hidden border-2 bg-slate-800 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.5)] ${isOnline
-                        ? 'border-white/10 ring-4 ring-white/5 group-hover:ring-white/10'
+                        ? 'border-white/10 ring-4 ring-white/5'
                         : 'border-white/20 opacity-50 grayscale'
-                        } ${isCurrentUser ? 'cursor-pointer hover:scale-105 hover:border-primary' : ''}`}
+                        }`}
                     style={{ width: size, height: size }}
                 >
                     <img
@@ -70,11 +61,6 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                         referrerPolicy="no-referrer"
                     />
                 </div>
-                {isCurrentUser && (
-                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                        <RefreshCw className="text-white w-5 h-5 animate-spin-slow" />
-                    </div>
-                )}
                 {/* Active Emoji Reaction Overlay */}
                 {activeReaction?.icon && (
                     <div

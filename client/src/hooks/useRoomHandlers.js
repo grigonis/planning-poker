@@ -16,6 +16,30 @@ export const useRoomHandlers = (socket, roomId, room, updateProfile, authUser) =
         socket.emit('reset', { roomId });
     };
 
+    const handleRevote = () => {
+        socket.emit('revote', { roomId });
+    };
+
+    const handleToggleSpectator = (callback) => {
+        socket.emit('toggle_spectator', { roomId }, (response) => {
+            if (response?.ok) {
+                room.setCurrentUser(prev => ({
+                    ...prev,
+                    role: response.role
+                }));
+                // Clear local vote if becoming spectator
+                if (response.role === 'SPECTATOR') {
+                    room.setMyVote(null);
+                }
+            }
+            callback?.(response);
+        });
+    };
+
+    const handleKickUser = (targetUserId) => {
+        socket.emit('kick_user', { roomId, targetUserId });
+    };
+
     const handleUpdateSettings = (settings) => {
         socket.emit('update_room_settings', { roomId, settings });
     };
@@ -71,10 +95,11 @@ export const useRoomHandlers = (socket, roomId, room, updateProfile, authUser) =
     };
 
     return {
-        handleStartVote, handleVote, handleReveal, handleReset,
+        handleStartVote, handleVote, handleReveal, handleReset, handleRevote,
         handleUpdateSettings, handleToggleGroups, handleCreateGroup,
         handleDeleteGroup, handleAssignGroup, handleUpdateProfile,
         handleEndSession, handleCreateTask, handleBulkCreate,
-        handleDeleteTask, handleSelectTask
+        handleDeleteTask, handleSelectTask, handleToggleSpectator,
+        handleKickUser
     };
 };

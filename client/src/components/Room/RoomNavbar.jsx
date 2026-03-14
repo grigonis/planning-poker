@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users, Settings, LayoutList, Pencil, Layers, UsersRound,
-    LogIn, LogOut, UserCog, Keyboard,
+    LogIn, LogOut, UserCog, Keyboard, Eye, EyeOff, MonitorPlay
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
@@ -107,11 +107,15 @@ const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGr
  * Used in both room mode and dashboard mode.
  */
 const UserDropdown = ({
-    currentUser,        // { id, name, avatarSeed }
+    currentUser,        // { id, name, avatarSeed, role }
     authUser,           // Firebase User | null
     onOpenProfile,      // () => void
     onSignIn,           // () => void
     onSignOut,          // () => void
+    onToggleSpectator,  // (callback) => void
+    onToggleScreenShare, // () => void — shows keyboard controls
+    isSpectator = false,
+    showRoomToggles = false,
     // Room-mode extras (not used in dashboard, but harmless to pass)
     isCurrentUser = true,
 }) => {
@@ -197,6 +201,56 @@ const UserDropdown = ({
 
                     <div className="my-1 h-px bg-border mx-2" role="separator" />
 
+                    {/* ── Session Toggles (Room mode only) ── */}
+                    {showRoomToggles && (
+                        <>
+                            <button
+                                role="menuitem"
+                                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg mx-1 hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors focus:outline-none focus-visible:bg-accent"
+                                style={{ width: 'calc(100% - 8px)' }}
+                                onClick={() => {
+                                    onToggleSpectator?.();
+                                    setOpen(false);
+                                }}
+                            >
+                                <div className={`size-7 rounded-full flex items-center justify-center shrink-0 border ${isSpectator ? 'bg-primary/10 border-primary/20' : 'bg-muted border-border'}`}>
+                                    {isSpectator ? <Eye className="size-3.5 text-primary" /> : <EyeOff className="size-3.5 text-muted-foreground" />}
+                                </div>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="text-sm font-medium leading-tight">Spectator mode</span>
+                                    <span className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                                        {isSpectator ? 'Currently spectating' : 'Watch without voting'}
+                                    </span>
+                                </div>
+                                <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSpectator ? 'border-primary bg-primary' : 'border-muted-foreground/30'}`}>
+                                    {isSpectator && <div className="size-1.5 rounded-full bg-primary-foreground" />}
+                                </div>
+                            </button>
+
+                            <button
+                                role="menuitem"
+                                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg mx-1 hover:bg-accent hover:text-accent-foreground cursor-pointer text-left transition-colors focus:outline-none focus-visible:bg-accent"
+                                style={{ width: 'calc(100% - 8px)' }}
+                                onClick={() => {
+                                    onToggleScreenShare?.();
+                                    setOpen(false);
+                                }}
+                            >
+                                <div className="size-7 rounded-full bg-muted border border-border flex items-center justify-center shrink-0">
+                                    <MonitorPlay className="size-3.5 text-muted-foreground" />
+                                </div>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="text-sm font-medium leading-tight">Keyboard controls</span>
+                                    <span className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                                        Show shortcuts reference
+                                    </span>
+                                </div>
+                            </button>
+
+                            <div className="my-1 h-px bg-border mx-2" role="separator" />
+                        </>
+                    )}
+
                     {/* ── Item 2: Sign in / Sign out ── */}
                     {authUser ? (
                         <button
@@ -259,6 +313,7 @@ const RoomNavbar = ({
     onOpenInvite,
     onOpenProfile,
     onOpenHelp,
+    onToggleSpectator,
     mode = 'room',       // 'room' | 'dashboard'
     // Auth props
     authUser = null,     // Firebase User object or null
@@ -282,11 +337,12 @@ const RoomNavbar = ({
                     border-radius: 6px;
                     cursor: pointer;
                     text-align: left;
+                    color: oklch(var(--foreground));
                     transition: background 0.1s, color 0.1s;
                 }
                 .dropdown-item:hover {
-                    background: hsl(var(--accent));
-                    color: hsl(var(--accent-foreground));
+                    background: oklch(var(--accent));
+                    color: oklch(var(--accent-foreground));
                 }
             `}</style>
 
@@ -365,24 +421,6 @@ const RoomNavbar = ({
                     {/* Theme Toggle */}
                     <ThemeToggle />
 
-                    {/* Keyboard Shortcuts Help */}
-                    {!minimal && !isDashboard && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="rounded-full size-9 text-muted-foreground"
-                                    onClick={onOpenHelp}
-                                    aria-label="Keyboard Shortcuts"
-                                >
-                                    <Keyboard className="size-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Keyboard Shortcuts (?)</TooltipContent>
-                        </Tooltip>
-                    )}
-
                     {/* Room mode: Settings dropdown (host only) */}
                     {!minimal && !isDashboard && isHost && (
                         <SettingsDropdown
@@ -401,6 +439,10 @@ const RoomNavbar = ({
                             onOpenProfile={onOpenProfile}
                             onSignIn={onSignIn}
                             onSignOut={onSignOut}
+                            onToggleSpectator={onToggleSpectator}
+                            onToggleScreenShare={onOpenHelp}
+                            isSpectator={currentUser?.role === 'SPECTATOR'}
+                            showRoomToggles={!minimal && !isDashboard}
                         />
                     )}
                 </div>
