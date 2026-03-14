@@ -12,6 +12,7 @@ const upsertSession = async (room) => {
             name: u.name,
             role: u.role,
             avatarSeed: u.avatarSeed || null,
+            avatarPhotoURL: u.avatarPhotoURL || null,
         }));
 
         await db.collection('sessions').doc(room.id).set({
@@ -59,6 +60,7 @@ const upsertTask = async (roomId, task, participants) => {
                     name: u.name,
                     role: u.role,
                     avatarSeed: u.avatarSeed || null,
+                    avatarPhotoURL: u.avatarPhotoURL || null,
                 })),
             }, { merge: true });
     } catch (err) {
@@ -79,6 +81,7 @@ const updateParticipants = async (roomId, users) => {
             name: u.name,
             role: u.role,
             avatarSeed: u.avatarSeed || null,
+            avatarPhotoURL: u.avatarPhotoURL || null,
         }));
 
         await db.collection('sessions').doc(roomId).set({

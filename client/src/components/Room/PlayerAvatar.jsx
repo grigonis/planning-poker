@@ -29,15 +29,18 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
     const isAnon = anonymousMode && !isCurrentUser && user.role !== 'SPECTATOR';
     const displayName = isAnon ? getMonkeyAlias(user.id) : user.name;
 
+    // Prefer real OAuth photo over dicebear avatar
+    const avatarPhotoURL = isAnon ? null : (user.avatarPhotoURL || null);
+
     const avatarSvg = useMemo(() => {
-        if (isAnon) return null;
+        if (isAnon || avatarPhotoURL) return null;
         const avatar = createAvatar(avataaars, {
             seed: user.avatarSeed || user.name || user.id,
             size,
             backgroundColor: ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'],
         });
         return avatar.toDataUri();
-    }, [user.avatarSeed, user.name, user.id, size, isAnon]);
+    }, [user.avatarSeed, user.name, user.id, size, isAnon, avatarPhotoURL]);
 
     const isOnline = user.connected !== false;
 
@@ -60,10 +63,11 @@ const PlayerAvatar = ({ user, roomMode, size = 64, isCurrentUser, activeReaction
                     style={{ width: size, height: size }}
                 >
                     <img
-                        src={isAnon ? anonymousMonkeySvg : avatarSvg}
+                        src={isAnon ? anonymousMonkeySvg : (avatarPhotoURL || avatarSvg)}
                         alt={isAnon ? 'Anonymous' : user.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        referrerPolicy="no-referrer"
                     />
                 </div>
                 {isCurrentUser && (

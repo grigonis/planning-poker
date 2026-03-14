@@ -21,10 +21,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSocket } from '../context/SocketContext';
 import { useProfile } from '../hooks/useProfile';
+import { useAuthContext } from '../context/AuthContext';
 import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, RefreshCw, Loader2, AlertCircle, Check } from 'lucide-react';
+import { ArrowRight, RefreshCw, Loader2, AlertCircle, Check, ShieldCheck } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -197,7 +198,8 @@ const ProfileSetupDialog = ({
     prefetchError = null,
 }) => {
     const { socket } = useSocket();
-    const { userId: globalUserId, updateProfile } = useProfile();
+    const { userId: globalUserId, updateProfile, avatarPhotoURL: globalAvatarPhotoURL } = useProfile();
+    const { user: authUser } = useAuthContext();
 
     // ── State ──
     const [name, setName] = useState('');
@@ -238,7 +240,8 @@ const ProfileSetupDialog = ({
         setError(prefetchError);
 
         if (mode === 'edit') {
-            setName(currentUser?.name || '');
+            // Auth name takes precedence when logged in
+            setName(authUser?.displayName || currentUser?.name || '');
             setSubmitting(false);
             // Re-use existing avatar seed if available; otherwise pick a random one
             const existingSeed = currentUser?.avatarSeed;
@@ -257,8 +260,8 @@ const ProfileSetupDialog = ({
                 setSelectedSex('male');
             }
         } else {
-            // join mode — pre-fill from saved session if available
-            setName(initialName || '');
+            // join mode — auth name takes precedence, then saved session name
+            setName(authUser?.displayName || initialName || '');
             setSubmitting(false);
             setSelectedGroupId('');
             const newSeeds = generateSeeds();
@@ -312,7 +315,10 @@ const ProfileSetupDialog = ({
         if (!name.trim() || !selectedSeed) return;
 
         if (mode === 'edit') {
-            onUpdateProfile?.({ name: name.trim(), avatarSeed: selectedSeed });
+            // When authenticated, use locked auth name and forward the OAuth photo URL
+            const photoURL = authUser?.photoURL || null;
+            const finalName = (authUser?.displayName || name).trim();
+            onUpdateProfile?.({ name: finalName, avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
             onClose?.();
             return;
         }
@@ -341,8 +347,9 @@ const ProfileSetupDialog = ({
                 socket.emit('assign_group', { roomId, targetUserId: userId, groupId: selectedGroupId });
             }
 
-            // Set avatar + final name on the server user object
-            socket.emit('update_profile', { roomId, name: name.trim(), avatarSeed: selectedSeed });
+            // Set avatar + final name (+ photo URL if authenticated) on the server user object
+            const photoURL = authUser?.photoURL || null;
+            socket.emit('update_profile', { roomId, name: name.trim(), avatarSeed: selectedSeed, avatarPhotoURL: photoURL });
 
             // Save to global profile for cross-room identity
             updateProfile({ name: name.trim(), avatarSeed: selectedSeed });
@@ -353,6 +360,7 @@ const ProfileSetupDialog = ({
                 role: joinPayload.role,
                 userId,
                 avatarSeed: selectedSeed,
+                avatarPhotoURL: authUser?.photoURL || null,
                 isHost: !!hostUserId,
                 gameMode: response.mode,
                 funFeatures: response.funFeatures,
@@ -368,9 +376,12 @@ const ProfileSetupDialog = ({
         });
     };
 
-    const canSubmit = name.trim().length > 0 && !!selectedSeed && !submitting;
     const isEditMode = mode === 'edit';
     const title = isEditMode ? 'Edit Profile' : 'Join Session';
+
+    // When authenticated in edit mode, name is locked to auth name — always valid
+    const effectiveName = (isEditMode && authUser?.displayName) ? authUser.displayName : name;
+    const canSubmit = effectiveName.trim().length > 0 && !!selectedSeed && !submitting;
 
     return (
         <Dialog
@@ -417,16 +428,32 @@ const ProfileSetupDialog = ({
                         {/* Header */}
                         <div className="px-6 pt-6 pb-5 border-b border-border bg-muted/20">
                             <div className="flex items-center gap-4">
-                                {/* Preview avatar */}
-                                <AnimatePresence mode="wait">
-                                    {selectedSeed && (
-                                        <PreviewAvatar
-                                            key={selectedSeed}
-                                            seed={selectedSeed}
-                                            sex={selectedSex}
+                                {/* Preview avatar — OAuth photo takes precedence in edit mode when authed */}
+                                {isEditMode && authUser?.photoURL ? (
+                                    <motion.div
+                                        initial={{ scale: 0.85, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ duration: 0.18 }}
+                                        className="size-[72px] rounded-full overflow-hidden border-[3px] border-background shadow-xl ring-[3px] ring-primary/25 shrink-0"
+                                    >
+                                        <img
+                                            src={authUser.photoURL}
+                                            alt="Your profile photo"
+                                            className="size-full object-cover"
+                                            referrerPolicy="no-referrer"
                                         />
-                                    )}
-                                </AnimatePresence>
+                                    </motion.div>
+                                ) : (
+                                    <AnimatePresence mode="wait">
+                                        {selectedSeed && (
+                                            <PreviewAvatar
+                                                key={selectedSeed}
+                                                seed={selectedSeed}
+                                                sex={selectedSex}
+                                            />
+                                        )}
+                                    </AnimatePresence>
+                                )}
 
                                 {/* Name input */}
                                 <div className="flex-1 flex flex-col gap-2">
@@ -436,25 +463,33 @@ const ProfileSetupDialog = ({
                                     >
                                         Display Name <span className="text-destructive">*</span>
                                     </label>
-                                    <div className="relative">
-                                        <Input
-                                            id="profile-name"
-                                            type="text"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            placeholder="Your name…"
-                                            className="font-semibold h-10 pr-12"
-                                            maxLength={24}
-                                            autoFocus
-                                            autoComplete="off"
-                                        />
-                                        <span className={cn(
-                                            "absolute right-3 top-1/2 -translate-y-1/2 text-[10px] tabular-nums transition-colors",
-                                            name.length > 20 ? "text-destructive" : "text-muted-foreground/50"
-                                        )}>
-                                            {name.length}/24
-                                        </span>
-                                    </div>
+                                    {/* When authenticated, name is locked to OAuth name */}
+                                    {isEditMode && authUser?.displayName ? (
+                                        <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-border bg-muted/50">
+                                            <span className="font-semibold text-sm flex-1 truncate">{authUser.displayName}</span>
+                                            <ShieldCheck className="size-4 text-primary shrink-0" aria-label="Verified via sign-in" />
+                                        </div>
+                                    ) : (
+                                        <div className="relative">
+                                            <Input
+                                                id="profile-name"
+                                                type="text"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                placeholder="Your name…"
+                                                className="font-semibold h-10 pr-12"
+                                                maxLength={24}
+                                                autoFocus
+                                                autoComplete="off"
+                                            />
+                                            <span className={cn(
+                                                "absolute right-3 top-1/2 -translate-y-1/2 text-[10px] tabular-nums transition-colors",
+                                                name.length > 20 ? "text-destructive" : "text-muted-foreground/50"
+                                            )}>
+                                                {name.length}/24
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -463,7 +498,7 @@ const ProfileSetupDialog = ({
                         <div className="px-6 py-5 flex flex-col gap-4">
                             <div className="flex items-center justify-between">
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                                    Choose Avatar
+                                    {isEditMode && authUser?.photoURL ? 'Fallback Avatar' : 'Choose Avatar'}
                                 </p>
                                 <Button
                                     type="button"
@@ -477,6 +512,11 @@ const ProfileSetupDialog = ({
                                 </Button>
                             </div>
 
+                            {isEditMode && authUser?.photoURL && (
+                                <p className="text-[11px] text-muted-foreground -mt-1">
+                                    Used when not signed in or photo unavailable.
+                                </p>
+                            )}
                             <AvatarGrid
                                 seeds={seeds}
                                 selectedSeed={selectedSeed}

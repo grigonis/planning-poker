@@ -24,7 +24,7 @@ const Room = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { socket, isConnected } = useSocket();
-    const { userId: globalUserId, name: globalName, avatarSeed: globalAvatarSeed } = useProfile();
+    const { userId: globalUserId, name: globalName, avatarSeed: globalAvatarSeed, avatarPhotoURL: globalAvatarPhotoURL } = useProfile();
     const { user: authUser, signOut } = useAuthContext();
 
     const [viewState, setViewState] = useState(
@@ -91,12 +91,13 @@ const Room = () => {
         if (!socket || !isConnected) return; // Wait for connection
 
         const tryJoin = (userData) => {
-            const { name, role, userId, avatarSeed } = userData;
+            const { name, role, userId, avatarSeed, avatarPhotoURL } = userData;
             socket.emit('join_room', {
                 roomId,
                 name,
                 role,
-                userId
+                userId,
+                avatarPhotoURL: avatarPhotoURL || null
             }, (response) => {
                 if (response.error) {
                     if (response.error === 'Room not found') {
@@ -135,9 +136,13 @@ const Room = () => {
 
                     const serverMe = response.users.find(u => u.id === response.userId);
                     
-                    // Sync avatar to server if we have a seed and server doesn't match
-                    if (avatarSeed && serverMe && serverMe.avatarSeed !== avatarSeed) {
-                        socket.emit('update_profile', { roomId, name, avatarSeed });
+                    // Sync avatar/photo to server if local differs from server state
+                    const needsProfileSync = (
+                        (avatarSeed && serverMe && serverMe.avatarSeed !== avatarSeed) ||
+                        (avatarPhotoURL && serverMe && serverMe.avatarPhotoURL !== avatarPhotoURL)
+                    );
+                    if (needsProfileSync) {
+                        socket.emit('update_profile', { roomId, name, avatarSeed, avatarPhotoURL: avatarPhotoURL || null });
                     }
 
                     const updatedUser = {
@@ -147,7 +152,8 @@ const Room = () => {
                         isHost: serverMe?.isHost || false,
                         gameMode: response.mode,
                         funFeatures: response.funFeatures,
-                        avatarSeed: serverMe?.avatarSeed || avatarSeed || name
+                        avatarSeed: serverMe?.avatarSeed || avatarSeed || name,
+                        avatarPhotoURL: serverMe?.avatarPhotoURL || avatarPhotoURL || null
                     };
 
                     setCurrentUser(updatedUser);
@@ -158,6 +164,7 @@ const Room = () => {
                         name: updatedUser.name,
                         role: updatedUser.role,
                         avatarSeed: updatedUser.avatarSeed,
+                        avatarPhotoURL: updatedUser.avatarPhotoURL || null,
                         roomId
                     }));
                 }
@@ -189,7 +196,8 @@ const Room = () => {
                         name: globalName,
                         role: hostUserId ? hostRole : 'DEV',
                         userId: hostUserId || globalUserId,
-                        avatarSeed: globalAvatarSeed || globalName
+                        avatarSeed: globalAvatarSeed || globalName,
+                        avatarPhotoURL: globalAvatarPhotoURL || null
                     });
                 } catch (e) {
                     setViewState('GUEST_INPUT');
@@ -208,15 +216,16 @@ const Room = () => {
             setUsers(updatedUsers);
             if (currentUser.id) {
                 const me = updatedUsers.find(u => u.id === currentUser.id);
-                if (me && (me.isHost !== currentUser.isHost || me.role !== currentUser.role || me.name !== currentUser.name || me.avatarSeed !== currentUser.avatarSeed)) {
+                if (me && (me.isHost !== currentUser.isHost || me.role !== currentUser.role || me.name !== currentUser.name || me.avatarSeed !== currentUser.avatarSeed || me.avatarPhotoURL !== currentUser.avatarPhotoURL)) {
                     setCurrentUser(prev => {
-                        const next = { ...prev, isHost: me.isHost, role: me.role, name: me.name, avatarSeed: me.avatarSeed };
+                        const next = { ...prev, isHost: me.isHost, role: me.role, name: me.name, avatarSeed: me.avatarSeed, avatarPhotoURL: me.avatarPhotoURL || null };
                         // Persist session info on changes
                         localStorage.setItem(`keystimate_session_${roomId}`, JSON.stringify({
                             userId: next.id,
                             name: next.name,
                             role: next.role,
                             avatarSeed: next.avatarSeed,
+                            avatarPhotoURL: next.avatarPhotoURL || null,
                             roomId
                         }));
                         return next;
@@ -418,6 +427,7 @@ const Room = () => {
             id: user.userId,
             isHost: user.isHost || false,
             avatarSeed: user.avatarSeed || user.name,
+            avatarPhotoURL: user.avatarPhotoURL || null,
         });
 
         if (user.users) setUsers(user.users);
@@ -463,6 +473,7 @@ const Room = () => {
             name: user.name,
             role: user.role,
             avatarSeed: user.avatarSeed,
+            avatarPhotoURL: user.avatarPhotoURL || null,
             roomId
         }));
     };
@@ -507,8 +518,15 @@ const Room = () => {
         socket.emit('assign_group', { roomId, targetUserId, groupId: groupId || null });
     };
 
-    const handleUpdateProfile = ({ name, avatarSeed }) => {
-        socket.emit('update_profile', { roomId, name, avatarSeed });
+    const handleUpdateProfile = ({ name, avatarSeed, avatarPhotoURL }) => {
+        socket.emit('update_profile', { roomId, name, avatarSeed, avatarPhotoURL: avatarPhotoURL ?? null });
+        // Also keep currentUser in sync locally
+        setCurrentUser(prev => ({
+            ...prev,
+            name: name ?? prev.name,
+            avatarSeed: avatarSeed ?? prev.avatarSeed,
+            avatarPhotoURL: avatarPhotoURL !== undefined ? avatarPhotoURL : prev.avatarPhotoURL
+        }));
     };
 
     const handleEndSession = () => {

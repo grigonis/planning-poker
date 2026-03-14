@@ -67,7 +67,8 @@ module.exports = (io, socket) => {
             socketId: socket.id,
             connected: true,
             groupId: null,
-            avatarSeed: null
+            avatarSeed: null,
+            avatarPhotoURL: null
         };
 
         room.users.set(userId, host);
@@ -136,9 +137,12 @@ module.exports = (io, socket) => {
         console.log(`Room ${roomId} settings updated by host`);
     };
 
-    const joinRoomHandler = ({ roomId, name, role, userId }, callback) => {
+    const joinRoomHandler = ({ roomId, name, role, userId, avatarPhotoURL }, callback) => {
         // SEC-07: Sanitize string inputs
         name = sanitize(name, 50);
+        // Validate avatarPhotoURL: must be http(s) URL if provided
+        const safePhotoURL = (avatarPhotoURL && typeof avatarPhotoURL === 'string' && /^https?:\/\//i.test(avatarPhotoURL))
+            ? avatarPhotoURL.slice(0, 500) : null;
         const room = rooms.get(roomId);
 
         if (!room) {
@@ -154,8 +158,10 @@ module.exports = (io, socket) => {
             user.socketId = socket.id;
             user.connected = true;
 
-            // Re-sync name if changed?
+            // Re-sync name if changed
             if (name && name !== user.name) user.name = name;
+            // Update photo URL if provided
+            if (safePhotoURL !== null) user.avatarPhotoURL = safePhotoURL;
 
         } else {
             // NEW JOIN
@@ -170,7 +176,8 @@ module.exports = (io, socket) => {
                 isHost: false,
                 socketId: socket.id,
                 connected: true,
-                groupId: null
+                groupId: null,
+                avatarPhotoURL: safePhotoURL
             };
             room.users.set(newUserId, user);
         }
@@ -257,7 +264,7 @@ module.exports = (io, socket) => {
         }
     };
 
-    const updateProfileHandler = ({ roomId, name, avatarSeed }) => {
+    const updateProfileHandler = ({ roomId, name, avatarSeed, avatarPhotoURL }) => {
         const userId = socket.data.userId;
         const room = rooms.get(roomId);
         if (room && userId) {
@@ -265,6 +272,12 @@ module.exports = (io, socket) => {
             if (user) {
                 if (name) user.name = sanitize(name, 50);
                 if (avatarSeed) user.avatarSeed = sanitize(avatarSeed, 200);
+                // avatarPhotoURL: accept only http(s) URLs, cap length
+                if (avatarPhotoURL && typeof avatarPhotoURL === 'string' && /^https?:\/\//i.test(avatarPhotoURL)) {
+                    user.avatarPhotoURL = avatarPhotoURL.slice(0, 500);
+                } else if (avatarPhotoURL === null) {
+                    user.avatarPhotoURL = null;
+                }
                 // Broadcast update
                 const usersList = Array.from(room.users.values());
                 io.to(roomId).emit('user_joined', usersList);

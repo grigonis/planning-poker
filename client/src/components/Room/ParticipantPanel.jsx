@@ -66,7 +66,27 @@ function getOrderedGroups(users, votes, phase) {
 // ----- sub-components -----
 
 function SmallAvatar({ user, size = 28 }) {
-    const svgContent = useMemo(() => getAvatarSvg(user), [user?.avatarSeed]);
+    const avatarPhotoURL = user?.avatarPhotoURL || null;
+    const svgContent = useMemo(() => {
+        if (avatarPhotoURL) return null;
+        return getAvatarSvg(user);
+    }, [user?.avatarSeed, avatarPhotoURL]);
+
+    if (avatarPhotoURL) {
+        return (
+            <div
+                className="rounded-full overflow-hidden shrink-0 bg-muted border border-border/50"
+                style={{ width: size, height: size }}
+            >
+                <img
+                    src={avatarPhotoURL}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                />
+            </div>
+        );
+    }
 
     if (!svgContent) {
         const initials = (user?.name || '?')[0].toUpperCase();

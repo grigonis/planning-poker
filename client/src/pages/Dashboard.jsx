@@ -40,7 +40,7 @@ import PlayerAvatar from '../components/Room/PlayerAvatar';
 import { Skeleton } from "../components/ui/skeleton";
 
 const Dashboard = () => {
-    const { userId, name, avatarSeed, updateProfile } = useProfile();
+    const { userId, name, avatarSeed, avatarPhotoURL, updateProfile } = useProfile();
     const { socket } = useSocket();
     const { user: authUser, signOut } = useAuthContext();
     
@@ -142,7 +142,7 @@ const Dashboard = () => {
             {/* Top Navigation */}
             <RoomNavbar 
                 mode="dashboard"
-                currentUser={{ id: userId, name, avatarSeed }}
+                currentUser={{ id: userId, name, avatarSeed, avatarPhotoURL }}
                 onOpenProfile={() => setIsProfileOpen(true)}
                 authUser={authUser}
                 onSignIn={() => setIsSignInOpen(true)}
@@ -326,7 +326,7 @@ const Dashboard = () => {
             <ProfileSetupDialog 
                 isOpen={isProfileOpen}
                 mode="edit"
-                currentUser={{ id: userId, name, avatarSeed }}
+                currentUser={{ id: userId, name, avatarSeed, avatarPhotoURL }}
                 onUpdateProfile={handleUpdateProfile}
                 onClose={() => setIsProfileOpen(false)}
             />
