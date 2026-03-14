@@ -1,9 +1,9 @@
 # GSD State
 
-**Active Milestone:** M007 — Firebase Integration — Persistence & Optional Auth
+**Active Milestone:** —
 **Active Slice:** —
-**Phase:** milestone-complete
-**Next Action:** M007 is feature-complete. Remaining pre-production: tighten Firestore security rules; wire email magic link handler in App.jsx; consider squash-merging gsd/M007 to main.
+**Phase:** idle
+**Next Action:** All milestones complete. No queued work. Ready for next milestone or production hardening (Firestore security rules, performance, etc.).
 
 ## Milestone Registry
 
@@ -13,7 +13,7 @@
 - [x] **M004 — Groups & Teams UI** - COMPLETE
 - [x] **M005 — Avatar Identity** - COMPLETE
 - [x] **M006 — Team Management & Dashboard** - COMPLETE
-- [ ] **M007 — Firebase Integration — Persistence & Optional Auth** - IN PLANNING
+- [x] **M007 — Firebase Integration — Persistence & Optional Auth** - COMPLETE
 
 ## Blockers
 
