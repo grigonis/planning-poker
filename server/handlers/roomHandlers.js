@@ -315,6 +315,85 @@ module.exports = (io, socket) => {
         }
     };
 
+    /**
+     * toggle_spectator — user toggles their own spectator mode
+     * If toggling ON during an active round with an existing vote, clears the vote.
+     */
+    const toggleSpectatorHandler = ({ roomId }, callback) => {
+        const userId = socket.data.userId;
+        const room = rooms.get(roomId);
+        if (!room || !userId) return callback?.({ error: 'Not in a room' });
+
+        const user = room.users.get(userId);
+        if (!user) return callback?.({ error: 'User not found' });
+
+        const wasSpectator = user.role === 'SPECTATOR';
+        user.role = wasSpectator ? 'DEV' : 'SPECTATOR';
+
+        // If becoming spectator and had a vote, clear it
+        if (!wasSpectator && room.votes.has(userId)) {
+            room.votes.delete(userId);
+        }
+
+        room.lastActivity = Date.now();
+
+        const usersList = Array.from(room.users.values());
+        io.to(roomId).emit('user_joined', usersList);
+
+        // Also emit vote_update so progress bars recalculate
+        io.to(roomId).emit('vote_update', { userId, hasVoted: false });
+
+        callback?.({ ok: true, role: user.role });
+        console.log(`Room ${roomId}: ${user.name} toggled spectator ${wasSpectator ? 'OFF' : 'ON'}`);
+    };
+
+    /**
+     * kick_user — host removes a user from the room
+     * The kicked user's socket receives a 'kicked' event and is removed from the room.
+     */
+    const kickUserHandler = ({ roomId, targetUserId }) => {
+        const userId = socket.data.userId;
+        const room = rooms.get(roomId);
+        if (!room || !userId) return;
+
+        const user = room.users.get(userId);
+        if (!user || !user.isHost) return;
+
+        // Can't kick yourself
+        if (targetUserId === userId) return;
+
+        const target = room.users.get(targetUserId);
+        if (!target) return;
+
+        const targetSocketId = target.socketId;
+
+        // Remove from room data
+        room.users.delete(targetUserId);
+        room.votes.delete(targetUserId);
+
+        // Emit 'kicked' to the target socket
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('kicked', {
+                message: `You were removed from the room by the host.`
+            });
+            // Force leave the room
+            const targetSocket = io.sockets.sockets.get(targetSocketId);
+            if (targetSocket) {
+                targetSocket.leave(roomId);
+                targetSocket.data.roomId = null;
+                targetSocket.data.userId = null;
+            }
+        }
+
+        room.lastActivity = Date.now();
+
+        // Broadcast updated user list
+        const usersList = Array.from(room.users.values());
+        io.to(roomId).emit('user_joined', usersList);
+
+        console.log(`Room ${roomId}: host kicked ${target.name} (${targetUserId})`);
+    };
+
     const getUserHistoryHandler = async ({ userId }, callback) => {
         try {
             // Authenticated users: merge sessions found by Firebase UID + linked guest UUID
@@ -388,6 +467,8 @@ module.exports = (io, socket) => {
     socket.on("get_active_rooms", getUserActiveRoomsHandler);
     socket.on("link_guest_uid", linkGuestUidHandler);
     socket.on("load_user_profile", loadUserProfileHandler);
+    socket.on("toggle_spectator", toggleSpectatorHandler);
+    socket.on("kick_user", kickUserHandler);
     socket.on("save_user_profile", async ({ name, avatarSeed, avatarPhotoURL } = {}, callback) => {
         // SEC-06: Rate limit check
         if (!socket.checkRateLimit('save_user_profile')) return;

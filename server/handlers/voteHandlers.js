@@ -13,6 +13,16 @@ module.exports = (io, socket) => {
         room.votes.clear(); // Reset previous votes
         room.averages = {}; // Initialize averages
 
+        // Auto-select first pending task if tasks exist but none is active
+        if (room.tasks.length > 0 && !room.activeTaskId) {
+            const firstPending = room.tasks.find(t => t.status === 'PENDING');
+            if (firstPending) {
+                firstPending.status = 'VOTING';
+                room.activeTaskId = firstPending.id;
+                io.to(roomId).emit("tasks_updated", { tasks: room.tasks, activeTaskId: room.activeTaskId });
+            }
+        }
+
         io.to(roomId).emit("vote_started", { phase: 'VOTING' });
     };
 
@@ -179,19 +189,53 @@ module.exports = (io, socket) => {
         room.votes.clear();
         room.averages = {}; // Clear averages on reset
 
-        // If the active task was completed, clear it so host can pick next one
+        // If the active task was completed, auto-advance to next pending task
         if (room.activeTaskId) {
             const task = room.tasks.find(t => t.id === room.activeTaskId);
             if (task && task.status === 'COMPLETED') {
-                room.activeTaskId = null;
+                // Find next pending task
+                const nextPending = room.tasks.find(t => t.status === 'PENDING');
+                if (nextPending) {
+                    nextPending.status = 'VOTING';
+                    room.activeTaskId = nextPending.id;
+                } else {
+                    room.activeTaskId = null;
+                }
             }
         }
 
-        io.to(roomId).emit("reset", { activeTaskId: room.activeTaskId });
+        io.to(roomId).emit("reset", { activeTaskId: room.activeTaskId, tasks: room.tasks });
+    };
+
+    /**
+     * revote — host resets the round but keeps the same active task
+     */
+    const revoteHandler = ({ roomId }) => {
+        const result = getUser(socket);
+        if (!result) return;
+        const { user, room } = result;
+
+        if (!user || !user.isHost) return;
+
+        room.phase = 'IDLE';
+        room.votes.clear();
+        room.averages = {};
+
+        // Keep the same active task but reset its status to VOTING
+        if (room.activeTaskId) {
+            const task = room.tasks.find(t => t.id === room.activeTaskId);
+            if (task) {
+                task.status = 'VOTING';
+                task.votes = null;
+            }
+        }
+
+        io.to(roomId).emit("reset", { activeTaskId: room.activeTaskId, tasks: room.tasks });
     };
 
     socket.on("start_vote", startVoteHandler);
     socket.on("cast_vote", castVoteHandler);
     socket.on("reveal", revealHandler);
     socket.on("reset", resetHandler);
+    socket.on("revote", revoteHandler);
 };

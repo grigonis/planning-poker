@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PlayerAvatar from './PlayerAvatar';
 import Card from '../Voting/Card';
-import { Eye, RotateCcw, Play } from 'lucide-react';
+import { Eye, RotateCcw, Play, ArrowRight, RefreshCw } from 'lucide-react';
 import { Progress } from '../ui/progress';
 
 import playerFaceDownSVG from '../../assets/TBD_face_down_player.svg';
@@ -133,7 +133,8 @@ const PokerTable = ({
     groups = [],
     onStartVote,
     onReveal,
-    onReset
+    onReset,
+    onRevote
 }) => {
     // Seat shuffle for anonymous mode
     const [displayUsers, setDisplayUsers] = useState(users);
@@ -238,7 +239,7 @@ const PokerTable = ({
                     {phase === 'IDLE' && (
                         <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-5 md:px-8 text-center">
                             <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
-                                {activeTaskId ? 'Up Next' : 'Planning Poker'}
+                                {activeTaskId ? 'Up Next' : 'Ready'}
                             </span>
                             <div className="flex flex-col items-center gap-2">
                                 <h3 className="text-base sm:text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-tight">
@@ -331,13 +332,20 @@ const PokerTable = ({
                             </div>
 
                             {isHost && (
-                                <div className="flex flex-col items-center gap-2 w-full pt-1">
+                                <div className="flex items-center gap-2 w-full pt-1">
                                     <button
                                         onClick={onReset}
-                                        className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95 w-full justify-center text-sm"
+                                        className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-4 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all active:scale-95 flex-1 justify-center text-xs"
                                     >
-                                        <RotateCcw size={15} />
-                                        New Round
+                                        <ArrowRight size={13} />
+                                        Next Round
+                                    </button>
+                                    <button
+                                        onClick={onRevote}
+                                        className="glass hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-200 px-4 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all active:scale-95 flex-1 justify-center text-xs"
+                                    >
+                                        <RefreshCw size={13} />
+                                        Revote
                                     </button>
                                 </div>
                             )}
