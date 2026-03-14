@@ -1,6 +1,11 @@
 const { v4: uuidv4 } = require('uuid');
 const { rooms, getActiveRoomsByUserId } = require('../store');
 const { upsertSession, updateParticipants, closeSession, getHistoryByUserId, getHistoryByFirebaseUid, upsertUser, getUserProfile } = require('../firestore');
+const { getUser } = require('./utils');
+
+// Trim and cap string inputs to prevent oversized payloads
+const sanitize = (str, maxLen = 200) =>
+    typeof str === 'string' ? str.trim().slice(0, maxLen) : '';
 
 module.exports = (io, socket) => {
     const checkRoomHandler = ({ roomId }, callback) => {
@@ -18,7 +23,11 @@ module.exports = (io, socket) => {
     };
 
     const createRoomHandler = ({ roomName, role, gameMode, presetParams, userId: passedUserId }, callback) => {
-        const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        // QA-06: Prevent collision with existing rooms
+        let roomId;
+        do { roomId = Math.random().toString(36).substring(2, 8).toUpperCase(); }
+        while (rooms.has(roomId));
+
         const userId = passedUserId || uuidv4();
 
         const room = {
@@ -36,8 +45,9 @@ module.exports = (io, socket) => {
                 name: 'Modified Fibonacci',
                 values: [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕']
             },
-            roomName: roomName || '',
+            roomName: sanitize(roomName, 80),
             roomDescription: '',
+            lastActivity: Date.now(),
             tasks: [],
             activeTaskId: null,
             groups: new Map(),   // groupId -> { id, name, color }
@@ -91,22 +101,44 @@ module.exports = (io, socket) => {
     };
 
     const updateRoomSettingsHandler = ({ roomId, settings }) => {
-        const room = rooms.get(roomId);
-        if (room) {
-            if (settings.funFeatures !== undefined) room.funFeatures = settings.funFeatures;
-            if (settings.autoReveal !== undefined) room.autoReveal = settings.autoReveal;
-            if (settings.anonymousMode !== undefined) room.anonymousMode = settings.anonymousMode;
-            if (settings.votingSystem !== undefined) room.votingSystem = settings.votingSystem;
-            if (settings.roomName !== undefined) room.roomName = settings.roomName;
-            if (settings.roomDescription !== undefined) room.roomDescription = settings.roomDescription;
-            if (settings.groupsEnabled !== undefined) room.groupsEnabled = settings.groupsEnabled;
+        // SEC-02: Only the host may change room settings
+        const result = getUser(socket);
+        if (!result || !result.user.isHost) return;
+        const { room } = result;
 
-            io.to(roomId).emit('room_settings_updated', { settings });
-            console.log(`Room ${roomId} settings updated:`, settings);
+        if (settings.funFeatures !== undefined) room.funFeatures = !!settings.funFeatures;
+        if (settings.autoReveal !== undefined) room.autoReveal = !!settings.autoReveal;
+        if (settings.anonymousMode !== undefined) room.anonymousMode = !!settings.anonymousMode;
+        // SEC-03/SEC-09: Validate votingSystem structure before accepting
+        if (settings.votingSystem !== undefined) {
+            const vs = settings.votingSystem;
+            if (vs && typeof vs.type === 'string' && typeof vs.name === 'string' && Array.isArray(vs.values) && vs.values.length > 0 && vs.values.length <= 30) {
+                room.votingSystem = vs;
+            }
         }
+        if (settings.roomName !== undefined) room.roomName = sanitize(settings.roomName, 80);
+        if (settings.roomDescription !== undefined) room.roomDescription = sanitize(settings.roomDescription, 300);
+        if (settings.groupsEnabled !== undefined) room.groupsEnabled = !!settings.groupsEnabled;
+
+        room.lastActivity = Date.now();
+
+        // Broadcast actual room state, not raw client payload
+        const updatedSettings = {
+            funFeatures: room.funFeatures,
+            autoReveal: room.autoReveal,
+            anonymousMode: room.anonymousMode,
+            votingSystem: room.votingSystem,
+            roomName: room.roomName,
+            roomDescription: room.roomDescription,
+            groupsEnabled: room.groupsEnabled,
+        };
+        io.to(roomId).emit('room_settings_updated', { settings: updatedSettings });
+        console.log(`Room ${roomId} settings updated by host`);
     };
 
     const joinRoomHandler = ({ roomId, name, role, userId }, callback) => {
+        // SEC-07: Sanitize string inputs
+        name = sanitize(name, 50);
         const room = rooms.get(roomId);
 
         if (!room) {
@@ -146,6 +178,7 @@ module.exports = (io, socket) => {
         socket.join(roomId);
         socket.data.userId = user.id;
         socket.data.roomId = roomId;
+        room.lastActivity = Date.now();
 
         // Update participants in Firestore (fire-and-forget)
         updateParticipants(roomId, Array.from(room.users.values()))
@@ -206,11 +239,14 @@ module.exports = (io, socket) => {
     };
 
     const reactionHandler = ({ roomId, emojiId, emojiIcon }) => {
+        // SEC-05: Verify caller is actually in the room they're posting to
+        if (socket.data.roomId !== roomId) return;
         const userId = socket.data.userId;
         const room = rooms.get(roomId);
         if (room && userId) {
             const user = room.users.get(userId);
             if (user) {
+                room.lastActivity = Date.now();
                 io.to(roomId).emit('show_reaction', {
                     emojiId,
                     emojiIcon,
@@ -227,8 +263,8 @@ module.exports = (io, socket) => {
         if (room && userId) {
             const user = room.users.get(userId);
             if (user) {
-                if (name) user.name = name;
-                if (avatarSeed) user.avatarSeed = avatarSeed;
+                if (name) user.name = sanitize(name, 50);
+                if (avatarSeed) user.avatarSeed = sanitize(avatarSeed, 200);
                 // Broadcast update
                 const usersList = Array.from(room.users.values());
                 io.to(roomId).emit('user_joined', usersList);
@@ -255,15 +291,20 @@ module.exports = (io, socket) => {
     };
 
     const getUserHistoryHandler = async ({ userId }, callback) => {
-        // Authenticated users: merge sessions found by Firebase UID + linked guest UUID
-        if (socket.firebaseUid) {
-            const history = await getHistoryByFirebaseUid(socket.firebaseUid);
-            return callback(history);
+        try {
+            // Authenticated users: merge sessions found by Firebase UID + linked guest UUID
+            if (socket.firebaseUid) {
+                const history = await getHistoryByFirebaseUid(socket.firebaseUid);
+                return callback(history);
+            }
+            // Guest: fall back to UUID-only query
+            if (!userId) return callback([]);
+            const history = await getHistoryByUserId(userId);
+            callback(history);
+        } catch (err) {
+            console.error('[getUserHistory] failed:', err.message);
+            callback([]);
         }
-        // Guest: fall back to UUID-only query
-        if (!userId) return callback([]);
-        const history = await getHistoryByUserId(userId);
-        callback(history);
     };
 
     /**
@@ -272,10 +313,15 @@ module.exports = (io, socket) => {
      * No-op for guests (socket.firebaseUid is null).
      */
     const linkGuestUidHandler = async ({ guestUuid }, callback) => {
-        const uid = socket.firebaseUid;
-        if (!uid || !guestUuid) return callback?.({ ok: false });
-        await upsertUser(uid, { guestUuid });
-        callback?.({ ok: true });
+        try {
+            const uid = socket.firebaseUid;
+            if (!uid || !guestUuid) return callback?.({ ok: false });
+            await upsertUser(uid, { guestUuid });
+            callback?.({ ok: true });
+        } catch (err) {
+            console.error('[linkGuestUid] failed:', err.message);
+            callback?.({ ok: false });
+        }
     };
 
     /**
@@ -283,13 +329,18 @@ module.exports = (io, socket) => {
      * Returns {} for guests or if no profile stored.
      */
     const loadUserProfileHandler = async (_, callback) => {
-        const uid = socket.firebaseUid;
-        if (!uid) return callback({});
-        const profile = await getUserProfile(uid);
-        if (profile) {
-            console.log(`[Auth] Profile loaded from Firestore for ${uid}`);
+        try {
+            const uid = socket.firebaseUid;
+            if (!uid) return callback({});
+            const profile = await getUserProfile(uid);
+            if (profile) {
+                console.log(`[Auth] Profile loaded from Firestore for ${uid}`);
+            }
+            callback(profile ?? {});
+        } catch (err) {
+            console.error('[loadUserProfile] failed:', err.message);
+            callback({});
         }
-        callback(profile ?? {});
     };
 
     const getUserActiveRoomsHandler = ({ userId }, callback) => {
@@ -313,12 +364,17 @@ module.exports = (io, socket) => {
     socket.on("link_guest_uid", linkGuestUidHandler);
     socket.on("load_user_profile", loadUserProfileHandler);
     socket.on("save_user_profile", async ({ name, avatarSeed } = {}, callback) => {
-        const uid = socket.firebaseUid;
-        if (!uid) return callback?.({ ok: false });
-        await upsertUser(uid, {
-            ...(name       !== undefined ? { name }       : {}),
-            ...(avatarSeed !== undefined ? { avatarSeed } : {}),
-        });
-        callback?.({ ok: true });
+        try {
+            const uid = socket.firebaseUid;
+            if (!uid) return callback?.({ ok: false });
+            await upsertUser(uid, {
+                ...(name       !== undefined ? { name: sanitize(name, 50) }       : {}),
+                ...(avatarSeed !== undefined ? { avatarSeed: sanitize(avatarSeed, 200) } : {}),
+            });
+            callback?.({ ok: true });
+        } catch (err) {
+            console.error('[saveUserProfile] failed:', err.message);
+            callback?.({ ok: false });
+        }
     });
 };

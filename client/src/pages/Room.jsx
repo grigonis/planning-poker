@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import VotingOverlay from '../components/Voting/VotingOverlay';
@@ -68,6 +68,19 @@ const Room = () => {
     // Tasks State
     const [tasks, setTasks] = useState(location.state?.tasks || []);
     const [activeTaskId, setActiveTaskId] = useState(location.state?.activeTaskId || null);
+
+    // QA-13: Reuse a single AudioContext across all vote events to avoid browser limit
+    const audioCtxRef = useRef(null);
+    useEffect(() => {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+            audioCtxRef.current = new AudioCtx();
+        }
+        return () => {
+            audioCtxRef.current?.close();
+            audioCtxRef.current = null;
+        };
+    }, []);
 
     // Guest / Session State
     const [currentUser, setCurrentUser] = useState(location.state || {});
@@ -224,25 +237,29 @@ const Room = () => {
             // Play a soft sound when someone votes (if funFeatures is enabled)
             if (funFeatures) {
                 try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
+                    const audioContext = audioCtxRef.current;
+                    if (audioContext && audioContext.state !== 'closed') {
+                        // Resume context if suspended (browser autoplay policy)
+                        if (audioContext.state === 'suspended') audioContext.resume();
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
 
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
 
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
 
-                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.05);
-                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+                        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                        gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.05);
+                        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
 
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.2);
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.2);
+                    }
                 } catch (e) {
-                    console.log('Audio error:', e);
+                    // Audio failure is non-critical — silently ignore
                 }
             }
         };
@@ -467,9 +484,8 @@ const Room = () => {
         socket.emit('reset', { roomId });
     };
 
-    const handleRevote = (role) => {
-        socket.emit('revote_partial', { roomId, targetRole: role });
-    };
+    // handleRevote: partial revote not yet implemented on server — placeholder for future feature
+    const handleRevote = () => {}; // no-op until server handler is implemented
 
     const handleUpdateSettings = (settings) => {
         socket.emit('update_room_settings', { roomId, settings });

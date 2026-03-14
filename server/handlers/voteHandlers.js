@@ -26,7 +26,16 @@ module.exports = (io, socket) => {
 
         if (room.phase === 'REVEALED') return;
 
+        // SEC-03: Only accept values from the room's voting system (plus universal specials)
+        const UNIVERSAL_SPECIALS = ['?', '☕', '∞', 'Pass'];
+        const allowedValues = [
+            ...room.votingSystem.values.map(String),
+            ...UNIVERSAL_SPECIALS
+        ];
+        if (!allowedValues.includes(String(value))) return;
+
         room.votes.set(userId, value);
+        room.lastActivity = Date.now();
 
         // Emit generic "someone voted" to update progress bars
         io.to(roomId).emit("vote_update", {
@@ -115,7 +124,7 @@ module.exports = (io, socket) => {
                 averages.total = Math.round(groupSum * 10) / 10;
             }
             
-            console.log(`Room ${roomId} groupAverages:`, JSON.stringify(groupAverages));
+            if (process.env.DEBUG) console.log(`Room ${roomId} groupAverages:`, JSON.stringify(groupAverages));
         }
 
         // If an active task is selected, save the combined result to it

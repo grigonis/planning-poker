@@ -1,6 +1,9 @@
 const { v4: uuidv4 } = require("uuid");
 const { getUser } = require("./utils");
 
+const MAX_BULK_TASKS = 200;
+const MAX_TITLE_LEN = 300;
+
 module.exports = (io, socket) => {
     const createTaskHandler = ({ roomId, title }) => {
         const result = getUser(socket);
@@ -11,7 +14,7 @@ module.exports = (io, socket) => {
 
         const task = {
             id: uuidv4(),
-            title: title.trim(),
+            title: title.trim().slice(0, MAX_TITLE_LEN),
             votes: null,
             status: 'PENDING' // PENDING, VOTING, COMPLETED
         };
@@ -27,9 +30,11 @@ module.exports = (io, socket) => {
 
         if (!user || !user.isHost) return;
 
-        const newTasks = titles.split('\n')
-            .map(t => t.trim())
+        // QA-07: Cap input to prevent memory exhaustion from huge payloads
+        const newTasks = titles.slice(0, MAX_BULK_TASKS * (MAX_TITLE_LEN + 1)).split('\n')
+            .map(t => t.trim().slice(0, MAX_TITLE_LEN))
             .filter(Boolean)
+            .slice(0, MAX_BULK_TASKS)
             .map(title => ({
                 id: uuidv4(),
                 title,

@@ -10,15 +10,26 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const { user: authUser, loading: authLoading } = useAuthContext();
-    const idTokenRef = useRef(null);
+
+    // Track last connected auth UID to avoid reconnecting on Firebase User object
+    // re-creations (e.g. silent token refresh). We only want to reconnect on
+    // actual identity changes: null → UID (sign-in) or UID → null (sign-out).
+    const lastAuthUidRef = useRef(undefined); // undefined = not yet initialized
 
     useEffect(() => {
         // Wait until Firebase auth state has resolved before connecting.
-        // This ensures we either attach a token (authenticated) or connect as guest.
         if (authLoading) return;
 
+        const currentUid = authUser?.uid ?? null;
+
+        // Skip reconnect if auth identity hasn't changed — prevents spurious
+        // socket teardown/recreate cycles on Firebase User object refresh.
+        if (lastAuthUidRef.current !== undefined && lastAuthUidRef.current === currentUid) {
+            return;
+        }
+        lastAuthUidRef.current = currentUid;
+
         const connect = async () => {
-            // Get a fresh ID token if the user is signed in
             let idToken = null;
             if (authUser) {
                 try {
@@ -27,7 +38,6 @@ export const SocketProvider = ({ children }) => {
                     console.warn('[Socket] Could not get ID token — connecting as guest:', err.message);
                 }
             }
-            idTokenRef.current = idToken;
 
             const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
             const newSocket = io(serverUrl, {
@@ -47,7 +57,8 @@ export const SocketProvider = ({ children }) => {
         return () => {
             socketInstance?.close();
         };
-    // Reconnect whenever auth state changes (sign-in or sign-out)
+    // authUser included to capture current user object for getIdToken().
+    // lastAuthUidRef guards against spurious reconnects on object re-creation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authUser, authLoading]);
 

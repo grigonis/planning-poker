@@ -1,9 +1,9 @@
 # GSD State
 
-**Active Milestone:** —
+**Active Milestone:** M008 — Security Hardening
 **Active Slice:** —
-**Phase:** idle
-**Next Action:** All milestones complete. No queued work. Ready for next milestone or production hardening (Firestore security rules, performance, etc.).
+**Phase:** complete
+**Next Action:** All M008 fixes applied and verified. Remaining open item: Firestore security rules (SEC-13). Ready for next milestone.
 
 ## Milestone Registry
 
@@ -14,6 +14,7 @@
 - [x] **M005 — Avatar Identity** - COMPLETE
 - [x] **M006 — Team Management & Dashboard** - COMPLETE
 - [x] **M007 — Firebase Integration — Persistence & Optional Auth** - COMPLETE
+- [x] **M008 — Security Hardening** - COMPLETE
 
 ## Blockers
 

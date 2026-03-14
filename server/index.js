@@ -7,6 +7,13 @@ const cors = require("cors");
 // Initialize Firebase Admin before any handlers — fails loudly if env vars missing
 const { admin } = require("./firebase");
 const { upsertUser } = require("./firestore");
+const { rooms } = require("./store");
+
+// SEC-09: Require explicit CORS_ORIGIN in production
+if (!process.env.CORS_ORIGIN && process.env.NODE_ENV === 'production') {
+    console.error('[FATAL] CORS_ORIGIN env var is required in production');
+    process.exit(1);
+}
 
 const CORS_ORIGIN = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
@@ -77,3 +84,22 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+// SEC-08: Periodically expire abandoned rooms to prevent memory leaks
+const ROOM_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours of inactivity
+const ROOM_GC_INTERVAL_MS = 15 * 60 * 1000; // check every 15 minutes
+
+setInterval(() => {
+    const now = Date.now();
+    let expired = 0;
+    rooms.forEach((room, roomId) => {
+        const anyConnected = Array.from(room.users.values()).some(u => u.connected);
+        if (!anyConnected && now - (room.lastActivity ?? 0) > ROOM_TTL_MS) {
+            rooms.delete(roomId);
+            expired++;
+        }
+    });
+    if (expired > 0) {
+        console.log(`[GC] Expired ${expired} abandoned room(s). Active rooms: ${rooms.size}`);
+    }
+}, ROOM_GC_INTERVAL_MS);
