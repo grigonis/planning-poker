@@ -1,34 +1,21 @@
-// InMemory Store
+// InMemory Store — live room state only
+// History is persisted in Firestore (see server/firestore.js)
+//
 // Structure:
 // rooms = new Map<roomId, RoomObject>
 // RoomObject = {
 //   id: string,
 //   hostId: string,
-//   phase: 'IDLE' | 'VOTING' | 'REVEALED' | 'PARTIAL_VOTE_DEV' | 'PARTIAL_VOTE_QA',
-//   users: Map<socketId, UserObject>,
-//   votes: Map<userId, VoteValue> // or stored in UserObject
+//   phase: 'IDLE' | 'VOTING' | 'REVEALED',
+//   users: Map<userId, UserObject>,
+//   votes: Map<userId, VoteValue>
 // }
 
 const rooms = new Map();
-const history = new Map(); // roomId -> snapshot
 
 module.exports = {
     rooms,
-    history,
-    addHistory: (roomId, snapshot) => {
-        history.set(roomId, {
-            ...snapshot,
-            endedAt: new Date().toISOString()
-        });
-    },
-    getHistoryByUserId: (userId) => {
-        // Return sessions where this user was a participant
-        return Array.from(history.values())
-            .filter(room => room.participants.some(p => p.id === userId))
-            .sort((a, b) => new Date(b.endedAt) - new Date(a.endedAt));
-    },
     getActiveRoomsByUserId: (userId) => {
-        // Return active rooms where this user is currently present
         return Array.from(rooms.values())
             .filter(room => Array.from(room.users.values()).some(u => u.id === userId))
             .map(room => ({
@@ -42,14 +29,13 @@ module.exports = {
                 phase: room.phase
             }));
     },
-    // Helper methods can be added here
     createRoom: (roomId, hostId, roomConfig = {}) => {
         rooms.set(roomId, {
             id: roomId,
             hostId,
             phase: 'IDLE',
-            users: new Map(), // socketId -> User
-            votes: new Map(),  // userId -> Vote
+            users: new Map(),
+            votes: new Map(),
             votingSystem: roomConfig.votingSystem || {
                 type: 'FIBONACCI_MODIFIED',
                 name: 'Modified Fibonacci',
@@ -57,7 +43,7 @@ module.exports = {
             },
             tasks: [],
             activeTaskId: null,
-            groups: new Map(),   // groupId -> { id, name, color }
+            groups: new Map(),
             groupsEnabled: false,
             ...roomConfig
         });

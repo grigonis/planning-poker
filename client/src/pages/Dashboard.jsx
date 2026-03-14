@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 import { useProfile } from '../hooks/useProfile';
+import { useAuthContext } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -34,18 +35,21 @@ import {
 } from "../components/ui/card";
 import RoomNavbar from '../components/Room/RoomNavbar';
 import ProfileSetupDialog from '../components/ProfileSetupDialog';
+import SignInDialog from '../components/SignInDialog';
 import PlayerAvatar from '../components/Room/PlayerAvatar';
 import { Skeleton } from "../components/ui/skeleton";
 
 const Dashboard = () => {
     const { userId, name, avatarSeed, updateProfile } = useProfile();
     const { socket } = useSocket();
+    const { user: authUser, signOut } = useAuthContext();
     
     const [history, setHistory] = useState([]);
     const [activeRooms, setActiveRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSignInOpen, setIsSignInOpen] = useState(false);
 
     // Fetch history and active rooms
     useEffect(() => {
@@ -104,6 +108,9 @@ const Dashboard = () => {
                 mode="dashboard"
                 currentUser={{ id: userId, name, avatarSeed }}
                 onOpenProfile={() => setIsProfileOpen(true)}
+                authUser={authUser}
+                onSignIn={() => setIsSignInOpen(true)}
+                onSignOut={signOut}
             />
 
             <main className="flex-1 overflow-y-auto relative z-10">
@@ -224,7 +231,7 @@ const Dashboard = () => {
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-4 text-sm text-muted-foreground font-medium">
-                                                                {new Date(session.endedAt).toLocaleDateString(undefined, {
+                                                                {new Date(session.endedAt || session.createdAt).toLocaleDateString(undefined, {
                                                                     month: 'short',
                                                                     day: 'numeric',
                                                                     year: 'numeric'
@@ -251,7 +258,7 @@ const Dashboard = () => {
                                                             </TableCell>
                                                             <TableCell className="py-4 text-right pr-6">
                                                                 <Badge variant="outline" className="font-mono font-bold tracking-tight">
-                                                                    {session.tasks.filter(t => t.resolved).length} / {session.tasks.length}
+                                                                    {session.tasks.filter(t => t.resolved || t.status === 'COMPLETED').length} / {session.tasks.length}
                                                                 </Badge>
                                                             </TableCell>
                                                         </motion.tr>
@@ -286,6 +293,12 @@ const Dashboard = () => {
                 currentUser={{ id: userId, name, avatarSeed }}
                 onUpdateProfile={handleUpdateProfile}
                 onClose={() => setIsProfileOpen(false)}
+            />
+
+            {/* Sign-in Dialog */}
+            <SignInDialog
+                open={isSignInOpen}
+                onClose={() => setIsSignInOpen(false)}
             />
         </div>
     );

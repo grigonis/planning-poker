@@ -98,6 +98,7 @@ const SettingsDropdown = ({ onOpenEditRoom, onOpenCustomizeCards, onOpenManageGr
 };
 
 // ─── UserDropdown ─────────────────────────────────────────────────────────────
+
 /**
  * Single avatar trigger with two menu items:
  *   1. Avatar + display name — subtitle "User settings" — opens ProfileSetupDialog

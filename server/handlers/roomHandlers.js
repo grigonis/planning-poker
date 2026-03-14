@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
-const { rooms, addHistory, getHistoryByUserId, getActiveRoomsByUserId } = require('../store');
+const { rooms, getActiveRoomsByUserId } = require('../store');
+const { upsertSession, updateParticipants, closeSession, getHistoryByUserId } = require('../firestore');
 
 module.exports = (io, socket) => {
     const checkRoomHandler = ({ roomId }, callback) => {
@@ -67,6 +68,9 @@ module.exports = (io, socket) => {
         socket.data.userId = userId;
         socket.data.roomId = roomId;
 
+        // Persist session to Firestore (fire-and-forget)
+        upsertSession(room).catch(err => console.error('[Firestore] createRoom upsertSession failed:', err.message));
+
         callback({
             roomId,
             userId,
@@ -96,7 +100,7 @@ module.exports = (io, socket) => {
             if (settings.roomName !== undefined) room.roomName = settings.roomName;
             if (settings.roomDescription !== undefined) room.roomDescription = settings.roomDescription;
             if (settings.groupsEnabled !== undefined) room.groupsEnabled = settings.groupsEnabled;
-            
+
             io.to(roomId).emit('room_settings_updated', { settings });
             console.log(`Room ${roomId} settings updated:`, settings);
         }
@@ -124,8 +128,8 @@ module.exports = (io, socket) => {
         } else {
             // NEW JOIN
             const newUserId = userId || uuidv4();
-            // Enforce STANDARD roles 
-            let finalRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV'; // Map all estimators to DEV
+            // Enforce STANDARD roles
+            const finalRole = role === 'SPECTATOR' ? 'SPECTATOR' : 'DEV';
 
             user = {
                 id: newUserId,
@@ -142,6 +146,10 @@ module.exports = (io, socket) => {
         socket.join(roomId);
         socket.data.userId = user.id;
         socket.data.roomId = roomId;
+
+        // Update participants in Firestore (fire-and-forget)
+        updateParticipants(roomId, Array.from(room.users.values()))
+            .catch(err => console.error('[Firestore] joinRoom updateParticipants failed:', err.message));
 
         // Convert Map to Array for frontend
         const usersList = Array.from(room.users.values());
@@ -188,6 +196,10 @@ module.exports = (io, socket) => {
                     const usersList = Array.from(room.users.values());
                     io.to(roomId).emit('user_joined', usersList); // Re-use user_joined to update list
                     console.log(`User disconnected: ${userId} from room ${roomId}`);
+
+                    // Update participants in Firestore (fire-and-forget)
+                    updateParticipants(roomId, usersList)
+                        .catch(err => console.error('[Firestore] disconnect updateParticipants failed:', err.message));
                 }
             }
         }
@@ -230,37 +242,22 @@ module.exports = (io, socket) => {
         if (room && userId) {
             const user = room.users.get(userId);
             if (user && user.isHost) {
-                // S02: Capture snapshot for history
-                const snapshot = {
-                    id: roomId,
-                    roomName: room.roomName,
-                    roomDescription: room.roomDescription,
-                    gameMode: room.gameMode,
-                    votingSystem: room.votingSystem,
-                    participants: Array.from(room.users.values()).map(u => ({
-                        id: u.id,
-                        name: u.name,
-                        role: u.role,
-                        avatarSeed: u.avatarSeed
-                    })),
-                    tasks: room.tasks,
-                    averages: room.averages
-                };
-                // Save to history before deletion
-                addHistory(roomId, snapshot);
+                // Mark session as ended in Firestore (fire-and-forget)
+                closeSession(roomId)
+                    .catch(err => console.error('[Firestore] endSession closeSession failed:', err.message));
 
                 io.to(roomId).emit('session_ended');
                 io.socketsLeave(roomId);
                 rooms.delete(roomId);
-                console.log(`Room ${roomId} ended by host ${user.name}. Snapshot recorded.`);
+                console.log(`Room ${roomId} ended by host ${user.name}.`);
             }
         }
     };
 
-    const getUserHistoryHandler = ({ userId }, callback) => {
+    const getUserHistoryHandler = async ({ userId }, callback) => {
         if (!userId) return callback([]);
-        const userHistory = getHistoryByUserId(userId);
-        callback(userHistory);
+        const history = await getHistoryByUserId(userId);
+        callback(history);
     };
 
     const getUserActiveRoomsHandler = ({ userId }, callback) => {
