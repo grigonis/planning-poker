@@ -24,6 +24,9 @@ module.exports = (io, socket) => {
     };
 
     const bulkCreateTasksHandler = ({ roomId, titles }) => {
+        // SEC-06: Rate limit check
+        if (!socket.checkRateLimit('bulk_create_tasks')) return;
+
         const result = getUser(socket);
         if (!result) return;
         const { user, room } = result;

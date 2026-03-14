@@ -65,7 +65,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Participant Panel** `risk:high` `depends:[S01]`
   > After this: left-side transparent panel shows all room participants with avatar + voting status. Collapsible (collapsed default) / expandable. After reveal, reorders highest-to-lowest with group dividers (voters / non-numeric / spectators). Shows vote values after reveal. Hidden below 768px. Never overlaps poker table.
 
-- [ ] **S05: Integration & Polish** `risk:low` `depends:[S01,S02,S03,S04]`
+- [x] **S05: Integration & Polish** `risk:low` `depends:[S01,S02,S03,S04]`
   > After this: full room flow works end-to-end — create room, edit details, customize cards, toggle settings, see participants through full voting lifecycle. No regressions in tasks pane, emoji reactions, or landing page.
 
 ## Boundary Map

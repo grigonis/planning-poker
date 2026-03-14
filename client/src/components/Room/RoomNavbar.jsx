@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users, Settings, LayoutList, Pencil, Layers, UsersRound,
-    LogIn, LogOut, UserCog,
+    LogIn, LogOut, UserCog, Keyboard,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
@@ -258,6 +258,7 @@ const RoomNavbar = ({
     onOpenManageGroups,
     onOpenInvite,
     onOpenProfile,
+    onOpenHelp,
     mode = 'room',       // 'room' | 'dashboard'
     // Auth props
     authUser = null,     // Firebase User object or null
@@ -363,6 +364,24 @@ const RoomNavbar = ({
 
                     {/* Theme Toggle */}
                     <ThemeToggle />
+
+                    {/* Keyboard Shortcuts Help */}
+                    {!minimal && !isDashboard && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="rounded-full size-9 text-muted-foreground"
+                                    onClick={onOpenHelp}
+                                    aria-label="Keyboard Shortcuts"
+                                >
+                                    <Keyboard className="size-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Keyboard Shortcuts (?)</TooltipContent>
+                        </Tooltip>
+                    )}
 
                     {/* Room mode: Settings dropdown (host only) */}
                     {!minimal && !isDashboard && isHost && (

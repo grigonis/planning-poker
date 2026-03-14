@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Check, Clock, Eye, Crown, Users } from 'lucide-react';
 import {
     DropdownMenu,
@@ -183,17 +184,23 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
     // Collapsed: avatar centered with status dot overlay
     if (!expanded) {
         return (
-            <div className="flex items-center justify-center py-1">
+            <motion.div 
+                layout
+                initial={false}
+                className="flex items-center justify-center py-1"
+            >
                 <div className="relative">
                     <SmallAvatar user={user} size={28} />
                     <StatusDot user={user} votes={votes} phase={phase} />
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
     const rowContent = (
-        <div
+        <motion.div
+            layout
+            initial={false}
             className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-white/20 dark:hover:bg-white/5 ${isMe ? 'bg-primary/5' : ''} ${canAssign ? 'cursor-pointer' : ''}`}
         >
             {/* Avatar */}
@@ -219,7 +226,7 @@ function UserRow({ user, votes, phase, currentUser, anonymousMode, expanded, gro
             ) : (
                 <VoteBadge voteVal={voteVal} anonymousMode={anonymousMode} isMe={isMe} />
             )}
-        </div>
+        </motion.div>
     );
 
     if (!canAssign) return rowContent;
@@ -334,9 +341,14 @@ const ParticipantPanel = ({ users = [], votes = {}, phase = 'IDLE', currentUser,
                 {orderedGroups.map((group, gi) => (
                     <React.Fragment key={gi}>
                         {isExpanded && group.label && phase === 'REVEALED' && (
-                            <div className="px-2 pt-2 pb-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70 select-none">
+                            <motion.div 
+                                layout
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="px-2 pt-2 pb-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70 select-none"
+                            >
                                 {group.label}
-                            </div>
+                            </motion.div>
                         )}
                         {group.members.map(user => (
                             <UserRow

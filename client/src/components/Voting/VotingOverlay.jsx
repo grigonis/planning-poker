@@ -55,10 +55,11 @@ const VotingOverlay = ({ onVote, currentVote, role, votingSystem }) => {
                         className="w-full flex justify-center"
                     >
                         <div className="flex flex-wrap items-end justify-center gap-2 sm:gap-3 px-2 w-full">
-                            {cards.map((val) => {
+                            {cards.map((val, index) => {
                                 const isSelected = currentVote === val;
                                 const displayVal = val === 'COFFEE' ? '☕' : val;
                                 const isLong = String(displayVal).length > 3;
+                                const shortcut = index < 9 ? (index + 1) : null;
 
                                 return (
                                     <button
@@ -82,6 +83,14 @@ const VotingOverlay = ({ onVote, currentVote, role, votingSystem }) => {
                                                 <div className={`absolute top-1.5 left-1.5 font-bold text-[9px] sm:text-xs opacity-40 ${isSelected ? 'text-primary-foreground/50' : 'text-muted-foreground/30'}`}>
                                                     {displayVal}
                                                 </div>
+                                                
+                                                {/* Keyboard Shortcut Hint */}
+                                                {shortcut && !isSelected && (
+                                                    <div className="absolute top-1.5 right-1.5 size-4 rounded-full border border-muted-foreground/20 flex items-center justify-center text-[8px] font-bold text-muted-foreground/40">
+                                                        {shortcut}
+                                                    </div>
+                                                )}
+
                                                 <div className={`absolute bottom-1.5 right-1.5 font-bold text-[9px] sm:text-xs opacity-40 rotate-180 ${isSelected ? 'text-primary-foreground/50' : 'text-muted-foreground/30'}`}>
                                                     {displayVal}
                                                 </div>

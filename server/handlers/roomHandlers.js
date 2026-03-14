@@ -23,6 +23,9 @@ module.exports = (io, socket) => {
     };
 
     const createRoomHandler = ({ roomName, role, gameMode, presetParams, userId: passedUserId }, callback) => {
+        // SEC-06: Rate limit check
+        if (!socket.checkRateLimit('create_room')) return;
+
         // QA-06: Prevent collision with existing rooms
         let roomId;
         do { roomId = Math.random().toString(36).substring(2, 8).toUpperCase(); }
@@ -102,6 +105,9 @@ module.exports = (io, socket) => {
     };
 
     const updateRoomSettingsHandler = ({ roomId, settings }) => {
+        // SEC-06: Rate limit check
+        if (!socket.checkRateLimit('update_room_settings')) return;
+
         // SEC-02: Only the host may change room settings
         const result = getUser(socket);
         if (!result || !result.user.isHost) return;
@@ -138,6 +144,9 @@ module.exports = (io, socket) => {
     };
 
     const joinRoomHandler = ({ roomId, name, role, userId, avatarPhotoURL }, callback) => {
+        // SEC-06: Rate limit check
+        if (!socket.checkRateLimit('join_room')) return;
+
         // SEC-07: Sanitize string inputs
         name = sanitize(name, 50);
         // Validate avatarPhotoURL: must be http(s) URL if provided
@@ -246,6 +255,9 @@ module.exports = (io, socket) => {
     };
 
     const reactionHandler = ({ roomId, emojiId, emojiIcon }) => {
+        // SEC-06: Rate limit check
+        if (!socket.checkRateLimit('send_reaction')) return;
+
         // SEC-05: Verify caller is actually in the room they're posting to
         if (socket.data.roomId !== roomId) return;
         const userId = socket.data.userId;
@@ -377,6 +389,9 @@ module.exports = (io, socket) => {
     socket.on("link_guest_uid", linkGuestUidHandler);
     socket.on("load_user_profile", loadUserProfileHandler);
     socket.on("save_user_profile", async ({ name, avatarSeed, avatarPhotoURL } = {}, callback) => {
+        // SEC-06: Rate limit check
+        if (!socket.checkRateLimit('save_user_profile')) return;
+
         try {
             const uid = socket.firebaseUid;
             if (!uid) return callback?.({ ok: false });

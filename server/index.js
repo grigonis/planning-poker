@@ -38,6 +38,17 @@ const registerRoomHandlers = require("./handlers/roomHandlers");
 const registerVoteHandlers = require("./handlers/voteHandlers");
 const registerTaskHandlers = require("./handlers/taskHandlers");
 const registerGroupHandlers = require("./handlers/groupHandlers");
+const createRateLimiter = require("./utils/rateLimiter");
+
+const checkRateLimit = createRateLimiter({
+    'cast_vote': { max: 20, windowMs: 10000 },
+    'send_reaction': { max: 10, windowMs: 5000 },
+    'create_room': { max: 3, windowMs: 60000 },
+    'join_room': { max: 10, windowMs: 60000 },
+    'update_room_settings': { max: 10, windowMs: 10000 },
+    'bulk_create_tasks': { max: 5, windowMs: 60000 },
+    'save_user_profile': { max: 10, windowMs: 60000 },
+});
 
 /**
  * Optional Firebase auth middleware.
@@ -69,6 +80,9 @@ io.use(async (socket, next) => {
 
 io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id} firebaseUid=${socket.firebaseUid ?? 'guest'}`);
+
+    // SEC-06: Attach rate limiter to socket
+    socket.checkRateLimit = (eventName) => checkRateLimit(socket, eventName);
 
     // Register Handlers
     registerRoomHandlers(io, socket);

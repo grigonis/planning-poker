@@ -17,6 +17,9 @@ module.exports = (io, socket) => {
     };
 
     const castVoteHandler = ({ roomId, value }) => {
+        // SEC-06: Rate limit check
+        if (!socket.checkRateLimit('cast_vote')) return;
+
         const result = getUser(socket);
         if (!result) return;
         const { user, room, userId } = result;
