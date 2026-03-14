@@ -187,6 +187,7 @@ const upsertUser = async (uid, data) => {
         if (data.email      !== undefined) update.email       = data.email ?? null;
         if (data.displayName !== undefined) update.displayName = data.displayName ?? null;
         if (data.photoURL   !== undefined) update.photoURL    = data.photoURL ?? null;
+        if (data.avatarPhotoURL !== undefined) update.avatarPhotoURL = data.avatarPhotoURL ?? null;
         if (data.name       !== undefined) update.name        = data.name ?? null;
         if (data.avatarSeed !== undefined) update.avatarSeed  = data.avatarSeed ?? null;
 
@@ -223,9 +224,10 @@ const getUserProfile = async (uid) => {
         if (!doc.exists) return null;
         const d = doc.data();
         return {
-            name:       d.name       ?? null,
-            avatarSeed: d.avatarSeed ?? null,
-            guestUuid:  d.guestUuid  ?? null,
+            name:           d.name           ?? null,
+            avatarSeed:     d.avatarSeed     ?? null,
+            avatarPhotoURL: d.avatarPhotoURL ?? null,
+            guestUuid:      d.guestUuid      ?? null,
         };
     } catch (err) {
         console.error('[Firestore] getUserProfile failed:', err.message);

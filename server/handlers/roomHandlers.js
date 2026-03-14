@@ -376,13 +376,14 @@ module.exports = (io, socket) => {
     socket.on("get_active_rooms", getUserActiveRoomsHandler);
     socket.on("link_guest_uid", linkGuestUidHandler);
     socket.on("load_user_profile", loadUserProfileHandler);
-    socket.on("save_user_profile", async ({ name, avatarSeed } = {}, callback) => {
+    socket.on("save_user_profile", async ({ name, avatarSeed, avatarPhotoURL } = {}, callback) => {
         try {
             const uid = socket.firebaseUid;
             if (!uid) return callback?.({ ok: false });
             await upsertUser(uid, {
-                ...(name       !== undefined ? { name: sanitize(name, 50) }       : {}),
-                ...(avatarSeed !== undefined ? { avatarSeed: sanitize(avatarSeed, 200) } : {}),
+                ...(name           !== undefined ? { name: sanitize(name, 50) }           : {}),
+                ...(avatarSeed     !== undefined ? { avatarSeed: sanitize(avatarSeed, 200) } : {}),
+                ...(avatarPhotoURL !== undefined ? { avatarPhotoURL: sanitize(avatarPhotoURL, 500) } : {}),
             });
             callback?.({ ok: true });
         } catch (err) {

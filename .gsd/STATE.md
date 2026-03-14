@@ -1,9 +1,9 @@
 # GSD State
 
-**Active Milestone:** M008 — Security Hardening
+**Active Milestone:** —
 **Active Slice:** —
 **Phase:** complete
-**Next Action:** All M008 fixes applied and verified. Remaining open item: Firestore security rules (SEC-13). Ready for next milestone.
+**Next Action:** Milestone M009 complete. All identity features implemented and verified. Ready for next milestone.
 
 ## Milestone Registry
 
