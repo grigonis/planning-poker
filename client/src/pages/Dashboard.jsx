@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-    Clock, 
-    ChevronRight, 
-    Search, 
+import {
+    Search,
     History,
     Users,
     Activity,
-    Trophy,
     Target
 } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
@@ -26,18 +23,24 @@ import {
     TableHeader,
     TableRow,
 } from "../components/ui/table";
-import { 
-    Card, 
-    CardContent, 
-    CardDescription, 
-    CardHeader, 
-    CardTitle 
+import {
+    Card,
+    CardContent,
 } from "../components/ui/card";
 import RoomNavbar from '../components/Room/RoomNavbar';
 import ProfileSetupDialog from '../components/ProfileSetupDialog';
 import SignInDialog from '../components/SignInDialog';
 import PlayerAvatar from '../components/Room/PlayerAvatar';
 import { Skeleton } from "../components/ui/skeleton";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '../components/ui/dialog';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
     const { userId, name, avatarSeed, avatarPhotoURL, updateProfile } = useProfile();
@@ -51,38 +54,82 @@ const Dashboard = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSignInOpen, setIsSignInOpen] = useState(false);
 
-    // On sign-in: link pre-auth guest UUID to Firebase user and load stored profile.
-    // Runs whenever authUser transitions from null → a real user and the socket is ready.
-    const prevAuthUserRef = React.useRef(null);
+    const isGuest = !authUser;
+
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [pendingGuestUuid, setPendingGuestUuid] = useState(null);
+    const [pendingGuestCount, setPendingGuestCount] = useState(0);
+    const [pendingGuestSessions, setPendingGuestSessions] = useState([]);
+    const [accountSessionCount, setAccountSessionCount] = useState(0);
+
+    // Tracks guest sessions while the user is a guest.
+    // Captured continuously so objects are available when the auth transition fires.
+    const guestSessionsRef = useRef([]);
     useEffect(() => {
-        const wasGuest = prevAuthUserRef.current === null;
-        const isNowAuthed = !!authUser;
+        if (isGuest) {
+            guestSessionsRef.current = history;
+        }
+    }, [history, isGuest]);
+
+    // Set when authUser transitions from null → authenticated user.
+    // Consumed by the socket effect below to run the import check on the correct socket.
+    const pendingImportCheckRef = useRef(false);
+
+    // Effect A: Detect the guest → authenticated transition.
+    // Sets a flag that Effect B consumes when the new authenticated socket arrives.
+    const prevAuthUserRef = useRef(authUser);
+    useEffect(() => {
+        if (prevAuthUserRef.current === null && authUser) {
+            pendingImportCheckRef.current = true;
+        }
         prevAuthUserRef.current = authUser;
+    }, [authUser]);
 
-        if (!wasGuest || !isNowAuthed || !socket) return;
+    // Effect B: Runs on the new authenticated socket after sign-in.
+    // Loads Firestore profile (with OAuth fallbacks for new accounts) and
+    // opens the import modal if the guest had sessions not yet in their account.
+    useEffect(() => {
+        if (!socket || !authUser || !pendingImportCheckRef.current) return;
+        pendingImportCheckRef.current = false;
 
-        // 1. Link the guest UUID so history under this device's UUID shows up when queried by UID
-        socket.emit('link_guest_uid', { guestUuid: userId }, () => {});
-
-        // 2. Load stored profile from Firestore (name, avatarSeed, avatarPhotoURL) — sync into local state
+        // Load stored profile from Firestore; fall back to OAuth values for new accounts
         socket.emit('load_user_profile', {}, (profile) => {
-            if (profile && (profile.name || profile.avatarSeed || profile.avatarPhotoURL)) {
-                updateProfile({
-                    ...(profile.name           ? { name: profile.name }           : {}),
-                    ...(profile.avatarSeed     ? { avatarSeed: profile.avatarSeed } : {}),
-                    ...(profile.avatarPhotoURL ? { avatarPhotoURL: profile.avatarPhotoURL } : {}),
-                });
-            }
+            const updates = {};
+            // Prefer Firestore-stored name; fall back to OAuth display name for new accounts
+            const nameToSet = profile?.name || authUser?.displayName || null;
+            if (nameToSet) updates.name = nameToSet;
+            if (profile?.avatarSeed) updates.avatarSeed = profile.avatarSeed;
+            if (profile?.avatarPhotoURL) updates.avatarPhotoURL = profile.avatarPhotoURL;
+            if (Object.keys(updates).length > 0) updateProfile(updates);
         });
 
-        // 3. Re-fetch history now that we're authenticated — merged UID+UUID results
-        setIsLoading(true);
+        // Capture guest sessions at the moment of sign-in (before history state is overwritten)
+        const capturedGuestSessions = guestSessionsRef.current;
+        const capturedGuestIds = new Set(capturedGuestSessions.map(s => s.id));
+
+        // Fetch UID-only history (link_guest_uid not called yet → server returns only UID-matched sessions).
+        // Loading state is managed by the general effect below; we only need the session data here.
         socket.emit('get_user_history', { userId }, (response) => {
-            if (Array.isArray(response)) setHistory(response);
-            setIsLoading(false);
+            const accountSessions = Array.isArray(response) ? response : [];
+            setHistory(accountSessions);
+
+            if (capturedGuestIds.size === 0) return; // no guest sessions to import
+
+            // Diff: find guest sessions not already present in account
+            const accountIds = new Set(accountSessions.map(s => s.id));
+            const unimported = capturedGuestSessions.filter(s => !accountIds.has(s.id));
+
+            if (unimported.length === 0) return; // all guest sessions already linked
+
+            // Open import modal with context-aware data
+            setPendingGuestUuid(userId);
+            setPendingGuestCount(unimported.length);
+            setPendingGuestSessions(unimported.slice(0, 5));
+            setAccountSessionCount(accountSessions.length);
+            setShowImportModal(true);
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authUser, socket]);
+    }, [socket]);
 
     // Fetch history and active rooms
     useEffect(() => {
@@ -115,9 +162,9 @@ const Dashboard = () => {
         
         return [
             { label: 'Total Sessions', value: totalSessions, icon: History, color: 'text-blue-500' },
-            { label: 'Total Votes', value: totalVotes, icon: Target, iconColor: 'text-purple-500' },
-            { label: 'Rooms Joined', value: uniqueRooms, icon: Users, iconColor: 'text-emerald-500' },
-            { label: 'Active Tasks', value: activeRooms.length, icon: Activity, iconColor: 'text-orange-500' },
+            { label: 'Total Votes', value: totalVotes, icon: Target, color: 'text-purple-500' },
+            { label: 'Rooms Joined', value: uniqueRooms, icon: Users, color: 'text-emerald-500' },
+            { label: 'Active Tasks', value: activeRooms.length, icon: Activity, color: 'text-orange-500' },
         ];
     }, [history, activeRooms]);
 
@@ -132,6 +179,29 @@ const Dashboard = () => {
         if (authUser && socket) {
             socket.emit('save_user_profile', data, () => {});
         }
+    };
+
+    const handleImportHistory = () => {
+        if (!socket || !pendingGuestUuid) {
+            setShowImportModal(false);
+            return;
+        }
+        socket.emit('link_guest_uid', { guestUuid: pendingGuestUuid }, (result) => {
+            if (result?.ok === false) {
+                toast.error("Couldn't import sessions — try again later.");
+                return;
+            }
+            socket.emit('get_user_history', { userId }, (response) => {
+                if (Array.isArray(response)) setHistory(response);
+            });
+        });
+        setPendingGuestUuid(null);
+        setShowImportModal(false);
+    };
+
+    const handleSkipImport = () => {
+        setPendingGuestUuid(null);
+        setShowImportModal(false);
     };
 
     return (
@@ -152,20 +222,58 @@ const Dashboard = () => {
 
             <main className="flex-1 overflow-y-auto relative z-10">
                 <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12 flex flex-col gap-10">
-                    
+
+                    {/* Guest banner — shown only for unauthenticated users */}
+                    {isGuest && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            <Card className="shadow-none">
+                                <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+                                    <div className="space-y-1">
+                                        <p className="font-semibold text-foreground text-sm leading-snug">
+                                            Don&apos;t lose your team&apos;s progress.
+                                        </p>
+                                        <p className="text-sm text-muted-foreground max-w-prose leading-relaxed">
+                                            Your local history is at risk &mdash; clear your cache or switch devices and{' '}
+                                            {history.length > 0
+                                                ? <>these <strong className="text-foreground font-semibold">{history.length} session{history.length !== 1 ? 's' : ''}</strong> are gone forever. </>
+                                                : 'any sessions you play are gone forever. '
+                                            }
+                                            Create a free account to sync and secure them.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        className="shrink-0 rounded-xl font-bold"
+                                        onClick={() => setIsSignInOpen(true)}
+                                    >
+                                        Create free account
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
+
                     {/* Welcome Header */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="space-y-1"
                         >
-                            <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3">
-                                Welcome back, {name || 'Estimator'}!
-                                <span className="inline-block animate-bounce-subtle text-2xl">👋</span>
+                            <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 flex-wrap">
+                                {isGuest ? 'Your Dashboard' : `Welcome back, ${name || 'Estimator'}!`}
+                                {isGuest
+                                    ? <Badge variant="secondary" className="text-xs font-semibold normal-case tracking-normal">Guest session</Badge>
+                                    : <span className="inline-block animate-bounce-subtle text-2xl">👋</span>
+                                }
                             </h1>
                             <p className="text-muted-foreground text-lg font-light max-w-2xl">
-                                Track your voting history, manage your sessions, and refine your estimates.
+                                {isGuest
+                                    ? 'History is stored in this browser. Sign in to sync across devices and never lose a session.'
+                                    : 'Track your voting history, manage your sessions, and refine your estimates.'
+                                }
                             </p>
                         </motion.div>
 
@@ -237,8 +345,9 @@ const Dashboard = () => {
                                         <Skeleton className="h-10 w-full" />
                                     </div>
                                 ) : filteredHistory.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <Table>
+                                    <>
+                                        <div className="overflow-x-auto">
+                                            <Table>
                                             <TableHeader className="bg-muted/30">
                                                 <TableRow className="hover:bg-transparent">
                                                     <TableHead className="w-[300px] font-bold py-4">Room Name</TableHead>
@@ -303,7 +412,23 @@ const Dashboard = () => {
                                                 </AnimatePresence>
                                             </TableBody>
                                         </Table>
-                                    </div>
+                                        </div>
+                                        {isGuest && (
+                                            <div className="border-t border-border/40 px-4 py-3">
+                                                <p className="text-xs text-muted-foreground">
+                                                    Stored in this browser &middot; unlinked sessions expire after 7 days &middot;{' '}
+                                                    <Button
+                                                        variant="link"
+                                                        size="sm"
+                                                        className="h-auto p-0 text-xs font-medium"
+                                                        onClick={() => setIsSignInOpen(true)}
+                                                    >
+                                                        Sign in to preserve &rarr;
+                                                    </Button>
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                                         <div className="bg-muted p-4 rounded-full">
@@ -337,6 +462,59 @@ const Dashboard = () => {
                 open={isSignInOpen}
                 onClose={() => setIsSignInOpen(false)}
             />
+
+            {/* Import history modal — fires automatically after sign-in if guest had unlinked sessions */}
+            <Dialog open={showImportModal} onOpenChange={(open) => { if (!open) handleSkipImport(); }}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {accountSessionCount === 0
+                                ? 'Import your guest sessions?'
+                                : 'Merge your guest sessions?'
+                            }
+                        </DialogTitle>
+                        <DialogDescription>
+                            {accountSessionCount === 0
+                                ? `We found ${pendingGuestCount} session${pendingGuestCount !== 1 ? 's' : ''} from your guest visit. Import them to get started.`
+                                : `We found ${pendingGuestCount} session${pendingGuestCount !== 1 ? 's' : ''} from this browser. Add them to your ${accountSessionCount} existing session${accountSessionCount !== 1 ? 's' : ''}?`
+                            }
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {/* Session list — up to 5 sessions shown by name and date */}
+                    {pendingGuestSessions.length > 0 && (
+                        <ul className="space-y-1.5 rounded-lg border border-border/50 bg-muted/30 p-3">
+                            {pendingGuestSessions.map((session) => (
+                                <li key={session.id} className="flex items-center justify-between text-xs">
+                                    <span className="font-medium text-foreground/80 truncate pr-4">
+                                        {session.roomName || 'Unnamed session'}
+                                    </span>
+                                    <span className="text-muted-foreground shrink-0">
+                                        {new Date(session.endedAt || session.createdAt).toLocaleDateString(undefined, {
+                                            month: 'short',
+                                            day: 'numeric',
+                                        })}
+                                    </span>
+                                </li>
+                            ))}
+                            {pendingGuestCount > pendingGuestSessions.length && (
+                                <li className="text-xs text-muted-foreground pt-0.5">
+                                    +{pendingGuestCount - pendingGuestSessions.length} more
+                                </li>
+                            )}
+                        </ul>
+                    )}
+
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={handleSkipImport}>
+                            Start fresh
+                        </Button>
+                        <Button onClick={handleImportHistory}>
+                            Import sessions
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
