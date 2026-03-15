@@ -342,8 +342,9 @@ const Dashboard = () => {
                                         <Skeleton className="h-10 w-full" />
                                     </div>
                                 ) : filteredHistory.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <Table>
+                                    <>
+                                        <div className="overflow-x-auto">
+                                            <Table>
                                             <TableHeader className="bg-muted/30">
                                                 <TableRow className="hover:bg-transparent">
                                                     <TableHead className="w-[300px] font-bold py-4">Room Name</TableHead>
@@ -408,7 +409,23 @@ const Dashboard = () => {
                                                 </AnimatePresence>
                                             </TableBody>
                                         </Table>
-                                    </div>
+                                        </div>
+                                        {isGuest && (
+                                            <div className="border-t border-border/40 px-4 py-3">
+                                                <p className="text-xs text-muted-foreground">
+                                                    Stored in this browser &middot; unlinked sessions expire after 7 days &middot;{' '}
+                                                    <Button
+                                                        variant="link"
+                                                        size="sm"
+                                                        className="h-auto p-0 text-xs font-medium"
+                                                        onClick={() => setIsSignInOpen(true)}
+                                                    >
+                                                        Sign in to preserve &rarr;
+                                                    </Button>
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                                         <div className="bg-muted p-4 rounded-full">
