@@ -234,16 +234,14 @@ const PokerTable = ({
             {/* Elliptical Table Geometry Container */}
             <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] md:aspect-[2.2/1] lg:aspect-[2.4/1] flex items-center justify-center mt-12 md:mt-16">
 
-                {/* Outer Ring Track (C element — track gap around the glass surface) */}
-                <div className="absolute inset-0 m-auto w-[64%] h-[59%] sm:w-[74%] sm:h-[64%] md:w-[79%] md:h-[69%] rounded-[64px] md:rounded-[124px] border border-primary/20 dark:border-primary/15 pointer-events-none z-[9] transition-all duration-700" />
-
                 {/* Table Surface (A element — glass pill with primary glow border) */}
                 <div className="absolute inset-0 m-auto w-[60%] h-[55%] sm:w-[70%] sm:h-[60%] md:w-[75%] md:h-[65%] rounded-[60px] md:rounded-[120px] bg-white/10 dark:bg-[rgba(255,255,255,0.04)] border-2 border-primary/25 dark:border-primary/20 backdrop-blur-md overflow-hidden flex flex-col items-center justify-center z-10 p-6 md:p-12 transition-all duration-700"
                     style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 0 40px oklch(var(--primary) / 0.15)' }}>
                     {/* Center Glow */}
                     <div className="absolute bg-primary/10 blur-[30px] rounded-[9999px] w-[80%] h-[70%] pointer-events-none transition-all duration-700" />
-                    {/* Inner Edge Border Glow */}
-                    <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(37,99,235,0.05)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] rounded-[inherit] pointer-events-none" />
+                    {/* Inset groove — recessed felt depression inside the table surface */}
+                    <div className="absolute inset-[8px] rounded-[52px] md:rounded-[112px] border border-primary/20 dark:border-primary/15 pointer-events-none"
+                        style={{ boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.2)' }} />
 
                     {/* Phase-aware center content */}
                     {phase === 'IDLE' && (
