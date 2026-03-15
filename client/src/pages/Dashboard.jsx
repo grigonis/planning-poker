@@ -77,7 +77,7 @@ const Dashboard = () => {
 
     // Effect A: Detect the guest → authenticated transition.
     // Sets a flag that Effect B consumes when the new authenticated socket arrives.
-    const prevAuthUserRef = useRef(null);
+    const prevAuthUserRef = useRef(authUser);
     useEffect(() => {
         if (prevAuthUserRef.current === null && authUser) {
             pendingImportCheckRef.current = true;
