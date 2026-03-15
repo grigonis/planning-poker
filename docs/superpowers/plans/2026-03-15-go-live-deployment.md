@@ -97,7 +97,7 @@
   Back in the dashboard, click "Enable Email Routing". Cloudflare automatically adds the required MX and TXT DNS records.
 
 - [ ] **Step 5: Smoke test (after DNS propagates — ~5 minutes)**
-  Send a test email to `help@keystimate.com` from any email client.
+  Send a test email to `hello@keystimate.com` from any email client.
   Expected: email arrives in your personal inbox within a minute.
 
 ---
@@ -465,11 +465,12 @@
   ```
   The workflow uses this file for npm cache — it must be committed.
 
-- [ ] **Step 3: Commit the workflow**
+- [ ] **Step 3: Verify the workflow is already committed**
   ```bash
-  git add .github/workflows/deploy.yml
-  git commit -m "ci: add GitHub Actions deploy workflow"
+  git log --oneline .github/workflows/deploy.yml
   ```
+  Expected: one commit line like `a3b5372 ci: add deploy workflow + go-live implementation plan`.
+  The file was pre-committed — nothing to do here.
 
 ---
 
