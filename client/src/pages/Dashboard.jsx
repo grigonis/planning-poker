@@ -254,17 +254,23 @@ const Dashboard = () => {
 
                     {/* Welcome Header */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="space-y-1"
                         >
-                            <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3">
-                                Welcome back, {name || 'Estimator'}!
-                                <span className="inline-block animate-bounce-subtle text-2xl">👋</span>
+                            <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 flex-wrap">
+                                {isGuest ? 'Your Dashboard' : `Welcome back, ${name || 'Estimator'}!`}
+                                {isGuest
+                                    ? <Badge variant="secondary" className="text-xs font-semibold normal-case tracking-normal">Guest session</Badge>
+                                    : <span className="inline-block animate-bounce-subtle text-2xl">👋</span>
+                                }
                             </h1>
                             <p className="text-muted-foreground text-lg font-light max-w-2xl">
-                                Track your voting history, manage your sessions, and refine your estimates.
+                                {isGuest
+                                    ? 'History is stored in this browser. Sign in to sync across devices and never lose a session.'
+                                    : 'Track your voting history, manage your sessions, and refine your estimates.'
+                                }
                             </p>
                         </motion.div>
 
