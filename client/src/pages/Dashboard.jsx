@@ -32,6 +32,17 @@ import ProfileSetupDialog from '../components/ProfileSetupDialog';
 import SignInDialog from '../components/SignInDialog';
 import PlayerAvatar from '../components/Room/PlayerAvatar';
 import { Skeleton } from "../components/ui/skeleton";
+/* eslint-disable no-unused-vars */
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '../components/ui/dialog';
+import { toast } from 'sonner';
+/* eslint-enable no-unused-vars */
 
 const Dashboard = () => {
     const { userId, name, avatarSeed, avatarPhotoURL, updateProfile } = useProfile();
@@ -49,7 +60,6 @@ const Dashboard = () => {
 
     // eslint-disable-next-line no-unused-vars
     const [showImportModal, setShowImportModal] = useState(false);
-    // eslint-disable-next-line no-unused-vars
     const [pendingGuestUuid, setPendingGuestUuid] = useState(null);
     // eslint-disable-next-line no-unused-vars
     const [pendingGuestCount, setPendingGuestCount] = useState(0);
@@ -67,8 +77,7 @@ const Dashboard = () => {
         }
     }, [history, isGuest]);
 
-    // On sign-in: link pre-auth guest UUID to Firebase user and load stored profile.
-    // Runs whenever authUser transitions from null → a real user and the socket is ready.
+    // On sign-in: load stored profile; if guest had unlinked sessions, prompt to import.
     const prevAuthUserRef = useRef(null);
     useEffect(() => {
         const wasGuest = prevAuthUserRef.current === null;
@@ -77,7 +86,7 @@ const Dashboard = () => {
 
         if (!wasGuest || !isNowAuthed || !socket) return;
 
-        // 1. Load stored profile from Firestore (name, avatarSeed, avatarPhotoURL) — sync into local state
+        // Load stored profile from Firestore
         socket.emit('load_user_profile', {}, (profile) => {
             if (profile && (profile.name || profile.avatarSeed || profile.avatarPhotoURL)) {
                 updateProfile({
@@ -88,11 +97,31 @@ const Dashboard = () => {
             }
         });
 
-        // 3. Re-fetch history now that we're authenticated — merged UID+UUID results
+        // Capture guest sessions at the moment of sign-in (before history state is overwritten)
+        const capturedGuestSessions = guestSessionsRef.current;
+        const capturedGuestIds = new Set(capturedGuestSessions.map(s => s.id));
+
+        // Fetch UID-only history (link_guest_uid not called yet → server returns only UID-matched sessions)
         setIsLoading(true);
         socket.emit('get_user_history', { userId }, (response) => {
-            if (Array.isArray(response)) setHistory(response);
+            const accountSessions = Array.isArray(response) ? response : [];
+            setHistory(accountSessions);
             setIsLoading(false);
+
+            if (capturedGuestIds.size === 0) return; // no guest sessions to import
+
+            // Diff: find guest sessions not already present in account
+            const accountIds = new Set(accountSessions.map(s => s.id));
+            const unimported = capturedGuestSessions.filter(s => !accountIds.has(s.id));
+
+            if (unimported.length === 0) return; // all guest sessions already linked
+
+            // Open import modal with context-aware data
+            setPendingGuestUuid(userId);
+            setPendingGuestCount(unimported.length);
+            setPendingGuestSessions(unimported.slice(0, 5)); // show max 5 in modal list
+            setAccountSessionCount(accountSessions.length);
+            setShowImportModal(true);
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authUser, socket]);
@@ -145,6 +174,31 @@ const Dashboard = () => {
         if (authUser && socket) {
             socket.emit('save_user_profile', data, () => {});
         }
+    };
+
+    // eslint-disable-next-line no-unused-vars
+    const handleImportHistory = () => {
+        if (!socket || !pendingGuestUuid) {
+            setShowImportModal(false);
+            return;
+        }
+        socket.emit('link_guest_uid', { guestUuid: pendingGuestUuid }, (result) => {
+            if (result?.ok === false) {
+                toast.error("Couldn't import sessions — try again later.");
+                return;
+            }
+            socket.emit('get_user_history', { userId }, (response) => {
+                if (Array.isArray(response)) setHistory(response);
+            });
+        });
+        setPendingGuestUuid(null);
+        setShowImportModal(false);
+    };
+
+    // eslint-disable-next-line no-unused-vars
+    const handleSkipImport = () => {
+        setPendingGuestUuid(null);
+        setShowImportModal(false);
     };
 
     return (
