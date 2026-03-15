@@ -58,6 +58,7 @@ herocards_lint.txt
 log.txt
 
 # ── AI / Dev tool configs (machine-local, not project code) ──────────────────
+.superpowers/
 .gemini/
 .agents/
 .bg-shell/
