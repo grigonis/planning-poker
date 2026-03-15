@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:planningpoker.live)",
+      "WebFetch(domain:dribbble.com)"
+    ]
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  }
+}
