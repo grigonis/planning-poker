@@ -8,7 +8,7 @@ const Card = ({ value, faceDown = false, selected = false, onClick, className })
             onClick={onClick}
             className={twMerge(
                 clsx(
-                    "relative w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg shadow-md cursor-pointer transition-all duration-300 transform perspective-1000",
+                    "relative w-[28px] h-[40px] sm:w-[44px] sm:h-[62px] md:w-[60px] md:h-[84px] rounded-lg shadow-md cursor-pointer transition-all duration-300 transform perspective-1000",
                     selected ? "ring-4 ring-primary -translate-y-2 shadow-primary/40" : "hover:-translate-y-1",
                     className
                 )

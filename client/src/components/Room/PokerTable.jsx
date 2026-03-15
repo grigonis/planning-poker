@@ -20,7 +20,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId, votingGroups }) =
     // If specific groups are voting and this user is not in them, show idle slot
     if (phase !== 'IDLE' && !isParticipating) {
         return (
-            <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-gray-400/30 dark:border-white/10 flex items-center justify-center opacity-50 bg-gray-500/5">
+            <div className="w-[28px] h-[40px] sm:w-[44px] sm:h-[62px] md:w-[60px] md:h-[84px] rounded-lg border-2 border-dashed border-gray-400/30 dark:border-white/10 flex items-center justify-center opacity-50 bg-gray-500/5">
             </div>
         );
     }
@@ -31,7 +31,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId, votingGroups }) =
 
     // 2. Voting Finished: Show actual face-up card
     if (phase === 'REVEALED' && voteVal !== undefined) {
-        return <Card value={voteVal} className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] text-xs md:text-sm" />;
+        return <Card value={voteVal} className="w-[28px] h-[40px] sm:w-[44px] sm:h-[62px] md:w-[60px] md:h-[84px] text-xs md:text-sm" />;
     }
 
     const isVotingPhase = phase === 'VOTING' || phase.startsWith('PARTIAL');
@@ -41,12 +41,12 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId, votingGroups }) =
         if (hasVoted) {
             // Player has voted: Face-down player card
             return (
-                <img src={playerFaceDownSVG} alt="Voted" className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg animate-in zoom-in duration-300 drop-shadow-primary/30" />
+                <img src={playerFaceDownSVG} alt="Voted" className="w-[28px] h-[40px] sm:w-[44px] sm:h-[62px] md:w-[60px] md:h-[84px] rounded-lg animate-in zoom-in duration-300 drop-shadow-primary/30" />
             );
         } else {
             // Player is deciding: Card dashed placeholder
             return (
-                <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-primary/40 dark:border-white/20 flex flex-col items-center justify-center bg-primary/5 dark:bg-white/5 opacity-80 shadow-inner">
+                <div className="w-[28px] h-[40px] sm:w-[44px] sm:h-[62px] md:w-[60px] md:h-[84px] rounded-lg border-2 border-dashed border-primary/40 dark:border-white/20 flex flex-col items-center justify-center bg-primary/5 dark:bg-white/5 opacity-80 shadow-inner">
                     <div className="flex space-x-1">
                         <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-primary/80 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                         <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-primary/80 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -59,7 +59,7 @@ const VoteChip = ({ user, votes, myVote, phase, currentUserId, votingGroups }) =
 
     // 4. Voting Not Started (IDLE): Empty card dashed placeholder
     return (
-        <div className="w-[32px] h-[45px] sm:w-[50px] sm:h-[70px] md:w-[70px] md:h-[98px] rounded-lg border-2 border-dashed border-gray-400/30 dark:border-white/10 flex items-center justify-center opacity-50 bg-gray-500/5">
+        <div className="w-[28px] h-[40px] sm:w-[44px] sm:h-[62px] md:w-[60px] md:h-[84px] rounded-lg border-2 border-dashed border-gray-400/30 dark:border-white/10 flex items-center justify-center opacity-50 bg-gray-500/5">
         </div>
     );
 };
@@ -234,8 +234,12 @@ const PokerTable = ({
             {/* Elliptical Table Geometry Container */}
             <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] md:aspect-[2.2/1] lg:aspect-[2.4/1] flex items-center justify-center mt-12 md:mt-16">
 
-                {/* Table Surface (Realistic Glassmorphism per Figma) */}
-                <div className="absolute inset-0 m-auto w-[60%] h-[55%] sm:w-[70%] sm:h-[60%] md:w-[75%] md:h-[65%] rounded-[60px] md:rounded-[120px] bg-white/10 dark:bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center justify-center z-10 p-6 md:p-12 transition-all duration-700">
+                {/* Outer Ring Track (C element — track gap around the glass surface) */}
+                <div className="absolute inset-0 m-auto w-[64%] h-[59%] sm:w-[74%] sm:h-[64%] md:w-[79%] md:h-[69%] rounded-[64px] md:rounded-[124px] border border-primary/20 dark:border-primary/15 pointer-events-none z-[9] transition-all duration-700" />
+
+                {/* Table Surface (A element — glass pill with primary glow border) */}
+                <div className="absolute inset-0 m-auto w-[60%] h-[55%] sm:w-[70%] sm:h-[60%] md:w-[75%] md:h-[65%] rounded-[60px] md:rounded-[120px] bg-white/10 dark:bg-[rgba(255,255,255,0.04)] border-2 border-primary/25 dark:border-primary/20 backdrop-blur-md overflow-hidden flex flex-col items-center justify-center z-10 p-6 md:p-12 transition-all duration-700"
+                    style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 0 40px oklch(var(--primary) / 0.15)' }}>
                     {/* Center Glow */}
                     <div className="absolute bg-primary/10 blur-[30px] rounded-[9999px] w-[80%] h-[70%] pointer-events-none transition-all duration-700" />
                     {/* Inner Edge Border Glow */}
@@ -244,16 +248,18 @@ const PokerTable = ({
                     {/* Phase-aware center content */}
                     {phase === 'IDLE' && (
                         <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-5 md:px-8 text-center">
-                            <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
-                                {activeTaskId ? 'Up Next' : 'Ready'}
-                            </span>
+                            {activeTaskId && (
+                                <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
+                                    Up Next
+                                </span>
+                            )}
                             <div className="flex flex-col items-center gap-2">
                                 <h3 className="text-base sm:text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-tight">
                                     {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'Task Selection Error') : 'Waiting for round...'}
                                 </h3>
                                 {!activeTaskId && isHost && (
                                     <p className="text-gray-400 dark:text-white/40 text-sm italic">
-                                        Select a task from the sidebar or just start
+                                        Select a task from the sidebar or start quick
                                     </p>
                                 )}
                             </div>
@@ -300,12 +306,6 @@ const PokerTable = ({
                     )}
                     {isVotingPhase && (
                         <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-5 md:px-8 text-center">
-                            <div className="flex items-center gap-3">
-                                <span className="text-primary text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase opacity-70">
-                                    Currently Estimating
-                                </span>
-                            </div>
-
                             <p className="text-base sm:text-xl md:text-3xl font-black text-gray-900 dark:text-white leading-tight">
                                 {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'General Estimation') : 'General Pointing'}
                             </p>
@@ -333,19 +333,16 @@ const PokerTable = ({
                     )}
 
                     {phase === 'REVEALED' && (
-                        <div className="relative z-10 flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in zoom-in-95 duration-300">
-                            <div className="flex flex-col items-center gap-1 mb-2">
-                                <span className="text-primary text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">
-                                    Voting Results
-                                </span>
-                                <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate max-w-[200px]">
-                                    {activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.title || 'Task Result') : 'Session Result'}
+                        <div className="relative z-10 flex flex-col items-center gap-2 w-full max-w-[220px] sm:max-w-xs animate-in fade-in zoom-in-95 duration-300">
+                            {activeTaskId && (
+                                <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate max-w-[200px] mb-1">
+                                    {tasks.find(t => t.id === activeTaskId)?.title || 'Task Result'}
                                 </h3>
-                            </div>
+                            )}
 
                             {/* Per-group breakdown */}
                             {groupsEnabled && groupAverages.length > 0 && (
-                                <div className="flex flex-wrap justify-center gap-1.5 w-full">
+                                <div className="flex flex-wrap justify-center gap-1 w-full overflow-hidden">
                                     {groupAverages.map(ga => (
                                         <div
                                             key={ga.groupId}

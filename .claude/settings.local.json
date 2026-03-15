@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:planningpoker.live)",
+      "WebFetch(domain:dribbble.com)"
     ]
   },
   "enabledPlugins": {

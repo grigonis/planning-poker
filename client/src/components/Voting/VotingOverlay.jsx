@@ -7,11 +7,11 @@ const VotingOverlay = ({ onVote, currentVote, role, votingSystem }) => {
     const cards = votingSystem?.values || [0, 0.5, 1, 2, 3, 5, 8, 13, 21, '☕'];
     const cardCount = cards.length;
 
-    // Responsive card width: shrink as count grows or viewport narrows.
-    // clamp(minPx, fluidVw, maxPx) — fluid between mobile and desktop.
-    // We spread cards across available width while keeping a usable minimum.
+    // Responsive card width: 5-per-row on mobile, 6 on wider screens.
+    // Larger max so cards feel substantial on desktop.
+    const rowCols = typeof window !== 'undefined' && window.innerWidth < 640 ? 5 : 6;
     const cardStyle = {
-        width: `clamp(56px, calc((100vw - 48px) / ${Math.min(cardCount, 6)} - 12px), 120px)`,
+        width: `clamp(52px, calc((100vw - 48px) / ${Math.min(cardCount, rowCols)} - 12px), 130px)`,
         aspectRatio: '2 / 3',
     };
 
@@ -21,7 +21,7 @@ const VotingOverlay = ({ onVote, currentVote, role, votingSystem }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex flex-col items-center justify-center p-3 sm:p-4 overflow-y-auto font-sans bg-background/90 backdrop-blur-xl transition-colors duration-500"
+                className="fixed inset-0 z-50 flex flex-col items-center justify-center p-3 sm:p-4 py-4 overflow-y-auto font-sans bg-background/90 backdrop-blur-xl transition-colors duration-500"
             >
                 {/* Soft Central Glow */}
                 <div className="pointer-events-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[800px] md:h-[800px] rounded-full bg-primary/10 blur-[120px]" />
@@ -33,17 +33,13 @@ const VotingOverlay = ({ onVote, currentVote, role, votingSystem }) => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="mb-6 sm:mb-8 md:mb-10 text-center"
+                        className="mb-4 sm:mb-6 md:mb-8 text-center"
                     >
-                        <div className="inline-flex items-center gap-2 rounded-full bg-muted/50 px-4 py-1.5 border border-border mb-4 backdrop-blur-sm">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]" />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Active Estimation</span>
-                        </div>
-                        <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tighter text-foreground leading-tight drop-shadow-2xl">
-                            Point this Task
+                        <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight drop-shadow-2xl">
+                            Cast Your Vote
                         </h1>
-                        <p className="mt-2 text-sm md:text-base text-muted-foreground font-medium">
-                            Select a card to reach team consensus
+                        <p className="mt-1.5 text-xs sm:text-sm md:text-base text-muted-foreground font-medium">
+                            Votes are hidden until everyone has selected a card to ensure an unbiased result
                         </p>
                     </motion.div>
 
@@ -83,7 +79,7 @@ const VotingOverlay = ({ onVote, currentVote, role, votingSystem }) => {
                                                 <div className={`absolute top-1.5 left-1.5 font-bold text-[9px] sm:text-xs opacity-40 ${isSelected ? 'text-primary-foreground/50' : 'text-muted-foreground/30'}`}>
                                                     {displayVal}
                                                 </div>
-                                                
+
                                                 {/* Keyboard Shortcut Hint */}
                                                 {shortcut && !isSelected && (
                                                     <div className="absolute top-1.5 right-1.5 size-4 rounded-full border border-muted-foreground/20 flex items-center justify-center text-[8px] font-bold text-muted-foreground/40">
@@ -129,7 +125,7 @@ const VotingOverlay = ({ onVote, currentVote, role, votingSystem }) => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.8 }}
-                        className="mt-6 sm:mt-8 md:mt-10"
+                        className="mt-4 sm:mt-6 md:mt-8"
                     >
                         <Button
                             variant="ghost"
