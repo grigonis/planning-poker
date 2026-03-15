@@ -1,5 +1,39 @@
 const { db } = require('./firebase');
 
+// ---------------------------------------------------------------------------
+// In-memory user profile cache
+// Avoids a Firestore read on every authenticated socket connection.
+// TTL is 5 minutes — short enough to pick up profile changes quickly, long
+// enough to absorb rapid reconnects (tab reload, network blip, etc.).
+// ---------------------------------------------------------------------------
+const USER_PROFILE_CACHE_TTL_MS = 5 * 60 * 1000;
+const userProfileCache = new Map(); // uid -> { data: object, expiresAt: number }
+
+function getCachedProfile(uid) {
+    const entry = userProfileCache.get(uid);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+        userProfileCache.delete(uid);
+        return null;
+    }
+    return entry.data;
+}
+
+function setCachedProfile(uid, data) {
+    userProfileCache.set(uid, {
+        data: { ...data },
+        expiresAt: Date.now() + USER_PROFILE_CACHE_TTL_MS,
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Debounced participant updates
+// Collapses rapid join/disconnect pairs (e.g. reconnect within 1 s) into a
+// single Firestore write, using the latest snapshot of room.users.
+// ---------------------------------------------------------------------------
+const UPDATE_PARTICIPANTS_DEBOUNCE_MS = 1000;
+const pendingParticipantUpdates = new Map(); // roomId -> timeoutId
+
 /**
  * Create or update the session document for a room.
  * Safe to call multiple times — uses merge so the tasks subcollection is never overwritten.
@@ -74,24 +108,34 @@ const upsertTask = async (roomId, task, participants) => {
  * @param {string} roomId
  * @param {Array}  users - array of user objects from room.users
  */
-const updateParticipants = async (roomId, users) => {
-    try {
-        const participants = users.map(u => ({
-            id: u.id,
-            name: u.name,
-            role: u.role,
-            avatarSeed: u.avatarSeed || null,
-            avatarPhotoURL: u.avatarPhotoURL || null,
-        }));
+const updateParticipants = (roomId, users) => {
+    // Cancel any pending write for this room — we'll use the latest snapshot
+    const existing = pendingParticipantUpdates.get(roomId);
+    if (existing) clearTimeout(existing);
 
-        await db.collection('sessions').doc(roomId).set({
-            participants,
-            participantIds: participants.map(p => p.id),
-            updatedAt: new Date().toISOString(),
-        }, { merge: true });
-    } catch (err) {
-        console.error('[Firestore] updateParticipants failed:', err.message);
-    }
+    const timeoutId = setTimeout(async () => {
+        pendingParticipantUpdates.delete(roomId);
+        try {
+            const participants = users.map(u => ({
+                id: u.id,
+                name: u.name,
+                role: u.role,
+                avatarSeed: u.avatarSeed || null,
+                avatarPhotoURL: u.avatarPhotoURL || null,
+            }));
+            await db.collection('sessions').doc(roomId).set({
+                participants,
+                participantIds: participants.map(p => p.id),
+                updatedAt: new Date().toISOString(),
+            }, { merge: true });
+        } catch (err) {
+            console.error('[Firestore] updateParticipants failed:', err.message);
+        }
+    }, UPDATE_PARTICIPANTS_DEBOUNCE_MS);
+
+    pendingParticipantUpdates.set(roomId, timeoutId);
+    // Return a resolved promise so callers that attach .catch() don't break
+    return Promise.resolve();
 };
 
 /**
@@ -193,11 +237,14 @@ const upsertUser = async (uid, data) => {
 
         const ref = db.collection('users').doc(uid);
 
-        // Single read covers: set createdAt on first write only, and link guestUuid only once.
-        // This read happens on every authenticated socket connect — acceptable given it's one
-        // point-read and avoids a second round-trip write.
-        const existing = await ref.get();
-        const existingData = existing.exists ? existing.data() : {};
+        // Use in-memory cache to avoid a Firestore read on every socket connect.
+        // Falls back to a real read only on first connect or after TTL expiry.
+        let existingData = getCachedProfile(uid);
+        if (!existingData) {
+            const existing = await ref.get();
+            existingData = existing.exists ? existing.data() : {};
+            setCachedProfile(uid, existingData);
+        }
 
         if (!existingData.createdAt) update.createdAt = new Date().toISOString();
 
@@ -207,6 +254,8 @@ const upsertUser = async (uid, data) => {
         }
 
         await ref.set(update, { merge: true });
+        // Keep cache in sync so subsequent calls see the latest merged state
+        setCachedProfile(uid, { ...existingData, ...update });
     } catch (err) {
         console.error('[Firestore] upsertUser failed:', err.message);
     }
@@ -220,9 +269,21 @@ const upsertUser = async (uid, data) => {
  */
 const getUserProfile = async (uid) => {
     try {
+        // Return from cache if available — avoids a duplicate read when the
+        // profile was already fetched during the socket auth middleware.
+        const cached = getCachedProfile(uid);
+        if (cached) {
+            return {
+                name:           cached.name           ?? null,
+                avatarSeed:     cached.avatarSeed     ?? null,
+                avatarPhotoURL: cached.avatarPhotoURL ?? null,
+                guestUuid:      cached.guestUuid      ?? null,
+            };
+        }
         const doc = await db.collection('users').doc(uid).get();
         if (!doc.exists) return null;
         const d = doc.data();
+        setCachedProfile(uid, d);
         return {
             name:           d.name           ?? null,
             avatarSeed:     d.avatarSeed     ?? null,
