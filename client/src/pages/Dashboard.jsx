@@ -107,12 +107,11 @@ const Dashboard = () => {
         const capturedGuestSessions = guestSessionsRef.current;
         const capturedGuestIds = new Set(capturedGuestSessions.map(s => s.id));
 
-        // Fetch UID-only history (link_guest_uid not called yet → server returns only UID-matched sessions)
-        setIsLoading(true);
+        // Fetch UID-only history (link_guest_uid not called yet → server returns only UID-matched sessions).
+        // Loading state is managed by the general effect below; we only need the session data here.
         socket.emit('get_user_history', { userId }, (response) => {
             const accountSessions = Array.isArray(response) ? response : [];
             setHistory(accountSessions);
-            setIsLoading(false);
 
             if (capturedGuestIds.size === 0) return; // no guest sessions to import
 
@@ -163,9 +162,9 @@ const Dashboard = () => {
         
         return [
             { label: 'Total Sessions', value: totalSessions, icon: History, color: 'text-blue-500' },
-            { label: 'Total Votes', value: totalVotes, icon: Target, iconColor: 'text-purple-500' },
-            { label: 'Rooms Joined', value: uniqueRooms, icon: Users, iconColor: 'text-emerald-500' },
-            { label: 'Active Tasks', value: activeRooms.length, icon: Activity, iconColor: 'text-orange-500' },
+            { label: 'Total Votes', value: totalVotes, icon: Target, color: 'text-purple-500' },
+            { label: 'Rooms Joined', value: uniqueRooms, icon: Users, color: 'text-emerald-500' },
+            { label: 'Active Tasks', value: activeRooms.length, icon: Activity, color: 'text-orange-500' },
         ];
     }, [history, activeRooms]);
 
