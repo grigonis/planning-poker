@@ -45,6 +45,28 @@ const Dashboard = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSignInOpen, setIsSignInOpen] = useState(false);
 
+    const isGuest = !authUser;
+
+    // eslint-disable-next-line no-unused-vars
+    const [showImportModal, setShowImportModal] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const [pendingGuestUuid, setPendingGuestUuid] = useState(null);
+    // eslint-disable-next-line no-unused-vars
+    const [pendingGuestCount, setPendingGuestCount] = useState(0);
+    // eslint-disable-next-line no-unused-vars
+    const [pendingGuestSessions, setPendingGuestSessions] = useState([]);
+    // eslint-disable-next-line no-unused-vars
+    const [accountSessionCount, setAccountSessionCount] = useState(0);
+
+    // Tracks guest sessions while the user is a guest.
+    // Captured continuously so objects are available when the auth transition fires.
+    const guestSessionsRef = useRef([]);
+    useEffect(() => {
+        if (isGuest) {
+            guestSessionsRef.current = history;
+        }
+    }, [history, isGuest]);
+
     // On sign-in: link pre-auth guest UUID to Firebase user and load stored profile.
     // Runs whenever authUser transitions from null → a real user and the socket is ready.
     const prevAuthUserRef = useRef(null);
