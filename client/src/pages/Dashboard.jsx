@@ -219,7 +219,39 @@ const Dashboard = () => {
 
             <main className="flex-1 overflow-y-auto relative z-10">
                 <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12 flex flex-col gap-10">
-                    
+
+                    {/* Guest banner — shown only for unauthenticated users */}
+                    {isGuest && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            <Card className="shadow-none">
+                                <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+                                    <div className="space-y-1">
+                                        <p className="font-semibold text-foreground text-sm leading-snug">
+                                            Don&apos;t lose your team&apos;s progress.
+                                        </p>
+                                        <p className="text-sm text-muted-foreground max-w-prose leading-relaxed">
+                                            Your local history is at risk &mdash; clear your cache or switch devices and{' '}
+                                            {history.length > 0
+                                                ? <>these <strong className="text-foreground font-semibold">{history.length} session{history.length !== 1 ? 's' : ''}</strong> are gone forever. </>
+                                                : 'any sessions you play are gone forever. '
+                                            }
+                                            Create a free account to sync and secure them.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        className="shrink-0 rounded-xl font-bold"
+                                        onClick={() => setIsSignInOpen(true)}
+                                    >
+                                        Create free account
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
+
                     {/* Welcome Header */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <motion.div 
