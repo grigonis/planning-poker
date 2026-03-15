@@ -29,16 +29,16 @@
 
 ### Task 1: Buy keystimate.com on Cloudflare Registrar
 
-- [ ] **Step 1: Go to Cloudflare Registrar**
+- [x] **Step 1: Go to Cloudflare Registrar**
   Open `registrar.cloudflare.com` in your browser. Sign in or create a free Cloudflare account.
 
-- [ ] **Step 2: Search for the domain**
+- [x] **Step 2: Search for the domain**
   Search for `keystimate.com`. Confirm it is available and the price shown is ~$10.44/year.
 
-- [ ] **Step 3: Purchase the domain**
+- [x] **Step 3: Purchase the domain**
   Complete the purchase. Cloudflare automatically sets itself as the DNS provider — no nameserver change needed.
 
-- [ ] **Step 4: Verify DNS zone is active**
+- [x] **Step 4: Verify DNS zone is active**
   Go to Cloudflare Dashboard → your account → you should see `keystimate.com` listed with status **Active**.
 
 ---
@@ -82,18 +82,18 @@
 
 ### Task 3: Set up Cloudflare Email Routing
 
-- [ ] **Step 1: Enable Email Routing**
+- [x] **Step 1: Enable Email Routing**
   Cloudflare Dashboard → `keystimate.com` → Email → Email Routing → click "Get started".
 
-- [ ] **Step 2: Add forwarding rule**
-  - Custom address: `help`
-  - Destination: your personal email address (Gmail, Outlook, etc.)
+- [x] **Step 2: Add forwarding rule**
+  - Custom address: `hello` (chosen over `help`)
+  - Destination: personal email address
   - Click Save.
 
-- [ ] **Step 3: Verify destination address**
+- [x] **Step 3: Verify destination address**
   Cloudflare will send a verification email to your personal inbox. Open it and click the verification link.
 
-- [ ] **Step 4: Enable Email Routing**
+- [x] **Step 4: Enable Email Routing**
   Back in the dashboard, click "Enable Email Routing". Cloudflare automatically adds the required MX and TXT DNS records.
 
 - [ ] **Step 5: Smoke test (after DNS propagates — ~5 minutes)**
