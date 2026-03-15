@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-    Clock, 
-    ChevronRight, 
-    Search, 
+import {
+    Search,
     History,
     Users,
     Activity,
-    Trophy,
     Target
 } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
@@ -26,12 +23,9 @@ import {
     TableHeader,
     TableRow,
 } from "../components/ui/table";
-import { 
-    Card, 
-    CardContent, 
-    CardDescription, 
-    CardHeader, 
-    CardTitle 
+import {
+    Card,
+    CardContent,
 } from "../components/ui/card";
 import RoomNavbar from '../components/Room/RoomNavbar';
 import ProfileSetupDialog from '../components/ProfileSetupDialog';
@@ -53,7 +47,7 @@ const Dashboard = () => {
 
     // On sign-in: link pre-auth guest UUID to Firebase user and load stored profile.
     // Runs whenever authUser transitions from null → a real user and the socket is ready.
-    const prevAuthUserRef = React.useRef(null);
+    const prevAuthUserRef = useRef(null);
     useEffect(() => {
         const wasGuest = prevAuthUserRef.current === null;
         const isNowAuthed = !!authUser;
@@ -61,10 +55,7 @@ const Dashboard = () => {
 
         if (!wasGuest || !isNowAuthed || !socket) return;
 
-        // 1. Link the guest UUID so history under this device's UUID shows up when queried by UID
-        socket.emit('link_guest_uid', { guestUuid: userId }, () => {});
-
-        // 2. Load stored profile from Firestore (name, avatarSeed, avatarPhotoURL) — sync into local state
+        // 1. Load stored profile from Firestore (name, avatarSeed, avatarPhotoURL) — sync into local state
         socket.emit('load_user_profile', {}, (profile) => {
             if (profile && (profile.name || profile.avatarSeed || profile.avatarPhotoURL)) {
                 updateProfile({
