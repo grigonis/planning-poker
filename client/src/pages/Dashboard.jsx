@@ -32,7 +32,6 @@ import ProfileSetupDialog from '../components/ProfileSetupDialog';
 import SignInDialog from '../components/SignInDialog';
 import PlayerAvatar from '../components/Room/PlayerAvatar';
 import { Skeleton } from "../components/ui/skeleton";
-/* eslint-disable no-unused-vars */
 import {
     Dialog,
     DialogContent,
@@ -42,7 +41,6 @@ import {
     DialogTitle,
 } from '../components/ui/dialog';
 import { toast } from 'sonner';
-/* eslint-enable no-unused-vars */
 
 const Dashboard = () => {
     const { userId, name, avatarSeed, avatarPhotoURL, updateProfile } = useProfile();
@@ -58,14 +56,10 @@ const Dashboard = () => {
 
     const isGuest = !authUser;
 
-    // eslint-disable-next-line no-unused-vars
     const [showImportModal, setShowImportModal] = useState(false);
     const [pendingGuestUuid, setPendingGuestUuid] = useState(null);
-    // eslint-disable-next-line no-unused-vars
     const [pendingGuestCount, setPendingGuestCount] = useState(0);
-    // eslint-disable-next-line no-unused-vars
     const [pendingGuestSessions, setPendingGuestSessions] = useState([]);
-    // eslint-disable-next-line no-unused-vars
     const [accountSessionCount, setAccountSessionCount] = useState(0);
 
     // Tracks guest sessions while the user is a guest.
@@ -176,7 +170,6 @@ const Dashboard = () => {
         }
     };
 
-    // eslint-disable-next-line no-unused-vars
     const handleImportHistory = () => {
         if (!socket || !pendingGuestUuid) {
             setShowImportModal(false);
@@ -195,7 +188,6 @@ const Dashboard = () => {
         setShowImportModal(false);
     };
 
-    // eslint-disable-next-line no-unused-vars
     const handleSkipImport = () => {
         setPendingGuestUuid(null);
         setShowImportModal(false);
@@ -459,6 +451,59 @@ const Dashboard = () => {
                 open={isSignInOpen}
                 onClose={() => setIsSignInOpen(false)}
             />
+
+            {/* Import history modal — fires automatically after sign-in if guest had unlinked sessions */}
+            <Dialog open={showImportModal} onOpenChange={(open) => { if (!open) handleSkipImport(); }}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {accountSessionCount === 0
+                                ? 'Import your guest sessions?'
+                                : 'Merge your guest sessions?'
+                            }
+                        </DialogTitle>
+                        <DialogDescription>
+                            {accountSessionCount === 0
+                                ? `We found ${pendingGuestCount} session${pendingGuestCount !== 1 ? 's' : ''} from your guest visit. Import them to get started.`
+                                : `We found ${pendingGuestCount} session${pendingGuestCount !== 1 ? 's' : ''} from this browser. Add them to your ${accountSessionCount} existing session${accountSessionCount !== 1 ? 's' : ''}?`
+                            }
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {/* Session list — up to 5 sessions shown by name and date */}
+                    {pendingGuestSessions.length > 0 && (
+                        <ul className="space-y-1.5 rounded-lg border border-border/50 bg-muted/30 p-3">
+                            {pendingGuestSessions.map((session) => (
+                                <li key={session.id} className="flex items-center justify-between text-xs">
+                                    <span className="font-medium text-foreground/80 truncate pr-4">
+                                        {session.roomName || 'Unnamed session'}
+                                    </span>
+                                    <span className="text-muted-foreground shrink-0">
+                                        {new Date(session.endedAt || session.createdAt).toLocaleDateString(undefined, {
+                                            month: 'short',
+                                            day: 'numeric',
+                                        })}
+                                    </span>
+                                </li>
+                            ))}
+                            {pendingGuestCount > pendingGuestSessions.length && (
+                                <li className="text-xs text-muted-foreground pt-0.5">
+                                    +{pendingGuestCount - pendingGuestSessions.length} more
+                                </li>
+                            )}
+                        </ul>
+                    )}
+
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={handleSkipImport}>
+                            Start fresh
+                        </Button>
+                        <Button onClick={handleImportHistory}>
+                            Import sessions
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
