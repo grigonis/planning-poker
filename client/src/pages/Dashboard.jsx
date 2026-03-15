@@ -71,24 +71,36 @@ const Dashboard = () => {
         }
     }, [history, isGuest]);
 
-    // On sign-in: load stored profile; if guest had unlinked sessions, prompt to import.
+    // Set when authUser transitions from null → authenticated user.
+    // Consumed by the socket effect below to run the import check on the correct socket.
+    const pendingImportCheckRef = useRef(false);
+
+    // Effect A: Detect the guest → authenticated transition.
+    // Sets a flag that Effect B consumes when the new authenticated socket arrives.
     const prevAuthUserRef = useRef(null);
     useEffect(() => {
-        const wasGuest = prevAuthUserRef.current === null;
-        const isNowAuthed = !!authUser;
+        if (prevAuthUserRef.current === null && authUser) {
+            pendingImportCheckRef.current = true;
+        }
         prevAuthUserRef.current = authUser;
+    }, [authUser]);
 
-        if (!wasGuest || !isNowAuthed || !socket) return;
+    // Effect B: Runs on the new authenticated socket after sign-in.
+    // Loads Firestore profile (with OAuth fallbacks for new accounts) and
+    // opens the import modal if the guest had sessions not yet in their account.
+    useEffect(() => {
+        if (!socket || !authUser || !pendingImportCheckRef.current) return;
+        pendingImportCheckRef.current = false;
 
-        // Load stored profile from Firestore
+        // Load stored profile from Firestore; fall back to OAuth values for new accounts
         socket.emit('load_user_profile', {}, (profile) => {
-            if (profile && (profile.name || profile.avatarSeed || profile.avatarPhotoURL)) {
-                updateProfile({
-                    ...(profile.name           ? { name: profile.name }           : {}),
-                    ...(profile.avatarSeed     ? { avatarSeed: profile.avatarSeed } : {}),
-                    ...(profile.avatarPhotoURL ? { avatarPhotoURL: profile.avatarPhotoURL } : {}),
-                });
-            }
+            const updates = {};
+            // Prefer Firestore-stored name; fall back to OAuth display name for new accounts
+            const nameToSet = profile?.name || authUser?.displayName || null;
+            if (nameToSet) updates.name = nameToSet;
+            if (profile?.avatarSeed) updates.avatarSeed = profile.avatarSeed;
+            if (profile?.avatarPhotoURL) updates.avatarPhotoURL = profile.avatarPhotoURL;
+            if (Object.keys(updates).length > 0) updateProfile(updates);
         });
 
         // Capture guest sessions at the moment of sign-in (before history state is overwritten)
@@ -113,12 +125,12 @@ const Dashboard = () => {
             // Open import modal with context-aware data
             setPendingGuestUuid(userId);
             setPendingGuestCount(unimported.length);
-            setPendingGuestSessions(unimported.slice(0, 5)); // show max 5 in modal list
+            setPendingGuestSessions(unimported.slice(0, 5));
             setAccountSessionCount(accountSessions.length);
             setShowImportModal(true);
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authUser, socket]);
+    }, [socket]);
 
     // Fetch history and active rooms
     useEffect(() => {
