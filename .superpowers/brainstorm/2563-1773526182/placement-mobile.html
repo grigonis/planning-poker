@@ -1,0 +1,159 @@
+<h2>Stats panel — how should it behave on mobile?</h2>
+<p class="subtitle">Two approaches to Option B, comparing desktop and mobile with emoji reactions active</p>
+
+<div class="split" style="align-items:flex-start;gap:24px;">
+
+  <!-- Option B1: Inline panel below table -->
+  <div class="mockup" style="flex:1;">
+    <div class="mockup-header">B1 — Inline section (scrollable)</div>
+    <div class="mockup-body" style="padding:0;">
+
+      <!-- Desktop view -->
+      <div style="padding:10px 12px 6px;font-size:9px;color:#64748b;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Desktop</div>
+      <div style="background:#0f172a;padding:10px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <!-- Table -->
+        <div style="width:85%;height:64px;background:#1e3a5f22;border:1px solid #334155;border-radius:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;">
+          <!-- Emoji floating above -->
+          <div style="position:absolute;top:-18px;left:20%;font-size:16px;animation:none;">😮</div>
+          <div style="position:absolute;top:-14px;right:22%;font-size:14px;">🎉</div>
+          <div style="font-size:8px;color:#94a3b8;font-weight:700;">RESULT</div>
+          <div style="font-size:18px;font-weight:900;color:#3b82f6;">8</div>
+          <div style="display:flex;gap:4px;">
+            <div style="background:#3b82f620;border-radius:3px;padding:1px 5px;font-size:7px;color:#60a5fa;">Revote</div>
+            <div style="background:#3b82f620;border-radius:3px;padding:1px 5px;font-size:7px;color:#60a5fa;">Next →</div>
+          </div>
+        </div>
+        <!-- Stats panel below — in flow -->
+        <div style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:5px;">
+          <div style="font-size:7px;color:#94a3b8;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Vote Distribution</div>
+          <div style="display:flex;align-items:flex-end;gap:3px;height:22px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f630;border-radius:2px 2px 0 0;height:7px;"></div><div style="font-size:5px;color:#64748b;">3</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f6;border-radius:2px 2px 0 0;height:18px;"></div><div style="font-size:5px;color:#60a5fa;font-weight:700;">5</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f680;border-radius:2px 2px 0 0;height:12px;"></div><div style="font-size:5px;color:#64748b;">8</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f640;border-radius:2px 2px 0 0;height:6px;"></div><div style="font-size:5px;color:#64748b;">13</div></div>
+          </div>
+          <div style="display:flex;gap:3px;">
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px 4px;text-align:center;font-size:6px;color:#60a5fa;">min 3</div>
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px 4px;text-align:center;font-size:6px;color:#60a5fa;">max 13</div>
+            <div style="flex:1;background:#f59e0b20;border-radius:3px;padding:2px 4px;text-align:center;font-size:6px;color:#f59e0b;">⚠ High spread</div>
+          </div>
+        </div>
+        <div style="font-size:7px;color:#22c55e;">✓ Emojis fly freely above table — no conflict</div>
+      </div>
+
+      <div style="height:1px;background:#1e293b;margin:0 12px;"></div>
+
+      <!-- Mobile view -->
+      <div style="padding:10px 12px 6px;font-size:9px;color:#64748b;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Mobile — scroll to see stats</div>
+      <div style="background:#0f172a;padding:10px 12px;display:flex;justify-content:center;">
+        <!-- Phone frame -->
+        <div style="width:110px;border:2px solid #334155;border-radius:14px;overflow:hidden;background:#0f172a;">
+          <div style="background:#1e293b;padding:3px;text-align:center;font-size:6px;color:#64748b;">12:41</div>
+          <div style="padding:6px;display:flex;flex-direction:column;align-items:center;gap:5px;">
+            <div style="width:90%;height:44px;background:#1e3a5f22;border:1px solid #334155;border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;">
+              <div style="position:absolute;top:-12px;left:15%;font-size:11px;">😮</div>
+              <div style="font-size:6px;color:#94a3b8;font-weight:700;">RESULT</div>
+              <div style="font-size:14px;font-weight:900;color:#3b82f6;">8</div>
+            </div>
+            <!-- Stats panel visible below after scrolling -->
+            <div style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:5px;">
+              <div style="font-size:5px;color:#94a3b8;font-weight:700;margin-bottom:3px;">DISTRIBUTION</div>
+              <div style="display:flex;align-items:flex-end;gap:2px;height:14px;">
+                <div style="flex:1;background:#3b82f630;border-radius:1px 1px 0 0;height:5px;"></div>
+                <div style="flex:1;background:#3b82f6;border-radius:1px 1px 0 0;height:12px;"></div>
+                <div style="flex:1;background:#3b82f680;border-radius:1px 1px 0 0;height:8px;"></div>
+                <div style="flex:1;background:#3b82f640;border-radius:1px 1px 0 0;height:4px;"></div>
+              </div>
+            </div>
+            <div style="font-size:5px;color:#64748b;text-align:center;">↑ scroll up to see cards</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:6px 12px 10px;font-size:7px;color:#f59e0b;">⚠ Requires scrolling on small phones — table + stats may not fit one screen</div>
+    </div>
+  </div>
+
+  <!-- Option B2: Bottom sheet drawer -->
+  <div class="mockup" style="flex:1;">
+    <div class="mockup-header">B2 — Bottom sheet drawer (pull-up)</div>
+    <div class="mockup-body" style="padding:0;">
+
+      <!-- Desktop view -->
+      <div style="padding:10px 12px 6px;font-size:9px;color:#64748b;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Desktop</div>
+      <div style="background:#0f172a;padding:10px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;">
+        <!-- Table -->
+        <div style="width:85%;height:64px;background:#1e3a5f22;border:1px solid #334155;border-radius:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;">
+          <div style="font-size:8px;color:#94a3b8;font-weight:700;">RESULT</div>
+          <div style="font-size:18px;font-weight:900;color:#3b82f6;">8</div>
+          <div style="display:flex;gap:4px;">
+            <div style="background:#3b82f620;border-radius:3px;padding:1px 5px;font-size:7px;color:#60a5fa;">Revote</div>
+            <div style="background:#3b82f620;border-radius:3px;padding:1px 5px;font-size:7px;color:#60a5fa;">Next →</div>
+          </div>
+        </div>
+        <!-- Emojis flying — UNDER the drawer -->
+        <div style="position:relative;width:100%;height:10px;">
+          <div style="position:absolute;left:20%;font-size:14px;">😮</div>
+          <div style="position:absolute;right:22%;font-size:12px;">🎉</div>
+        </div>
+        <!-- Drawer overlay -->
+        <div style="width:100%;background:#1e293b;border:1px solid #475569;border-radius:10px 10px 0 0;padding:8px;margin-top:4px;position:relative;z-index:10;">
+          <div style="width:24px;height:3px;background:#475569;border-radius:2px;margin:0 auto 6px;"></div>
+          <div style="font-size:7px;color:#94a3b8;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Vote Distribution</div>
+          <div style="display:flex;align-items:flex-end;gap:3px;height:20px;margin-bottom:4px;">
+            <div style="flex:1;background:#3b82f630;border-radius:2px 2px 0 0;height:7px;"></div>
+            <div style="flex:1;background:#3b82f6;border-radius:2px 2px 0 0;height:17px;"></div>
+            <div style="flex:1;background:#3b82f680;border-radius:2px 2px 0 0;height:11px;"></div>
+            <div style="flex:1;background:#3b82f640;border-radius:2px 2px 0 0;height:5px;"></div>
+          </div>
+          <div style="display:flex;gap:3px;">
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px 4px;text-align:center;font-size:6px;color:#60a5fa;">min 3</div>
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px 4px;text-align:center;font-size:6px;color:#60a5fa;">max 13</div>
+            <div style="flex:1;background:#f59e0b20;border-radius:3px;padding:2px 4px;text-align:center;font-size:6px;color:#f59e0b;">⚠ High spread</div>
+          </div>
+        </div>
+        <div style="font-size:7px;color:#ef4444;">✗ Drawer can overlap flying emojis near bottom of table</div>
+      </div>
+
+      <div style="height:1px;background:#1e293b;margin:0 12px;"></div>
+
+      <!-- Mobile view -->
+      <div style="padding:10px 12px 6px;font-size:9px;color:#64748b;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Mobile — drawer peeks from bottom</div>
+      <div style="background:#0f172a;padding:10px 12px;display:flex;justify-content:center;">
+        <div style="width:110px;border:2px solid #334155;border-radius:14px;overflow:hidden;background:#0f172a;position:relative;">
+          <div style="background:#1e293b;padding:3px;text-align:center;font-size:6px;color:#64748b;">12:41</div>
+          <div style="padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;">
+            <div style="width:90%;height:40px;background:#1e3a5f22;border:1px solid #334155;border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
+              <div style="font-size:6px;color:#94a3b8;font-weight:700;">RESULT</div>
+              <div style="font-size:14px;font-weight:900;color:#3b82f6;">8</div>
+            </div>
+            <!-- Emojis mid-screen -->
+            <div style="font-size:10px;align-self:flex-start;margin-left:10px;">🎉</div>
+            <!-- Bottom sheet peek -->
+            <div style="width:calc(100% + 12px);margin:0 -6px;background:#1e293b;border-top:1px solid #475569;border-radius:8px 8px 0 0;padding:5px 6px;margin-top:auto;">
+              <div style="width:16px;height:2px;background:#475569;border-radius:2px;margin:0 auto 4px;"></div>
+              <div style="font-size:5px;color:#94a3b8;font-weight:700;margin-bottom:3px;">DISTRIBUTION</div>
+              <div style="display:flex;align-items:flex-end;gap:2px;height:12px;">
+                <div style="flex:1;background:#3b82f630;border-radius:1px 1px 0 0;height:4px;"></div>
+                <div style="flex:1;background:#3b82f6;border-radius:1px 1px 0 0;height:10px;"></div>
+                <div style="flex:1;background:#3b82f680;border-radius:1px 1px 0 0;height:7px;"></div>
+                <div style="flex:1;background:#3b82f640;border-radius:1px 1px 0 0;height:3px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:6px 12px 10px;font-size:7px;color:#22c55e;">✓ Native mobile feel, no scrolling needed — pull up for more detail</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:16px;background:#1e293b22;border:1px solid #334155;border-radius:8px;padding:12px;">
+  <p class="label">Recommendation</p>
+  <p style="margin-top:4px;font-size:13px;color:#94a3b8;">
+    <strong style="color:#e2e8f0;">B1 (inline, in document flow)</strong> is simpler and avoids all z-index/emoji conflicts — emojis animate above the table, stats sit calmly below. On mobile, the stats section is just a scroll away.
+    A drawer adds native-feel on mobile but introduces overlay complexity and potential emoji conflicts that need careful z-index management.
+    <br><br>
+    <strong style="color:#e2e8f0;">Hybrid idea:</strong> Inline panel that collapses to a single "View Stats ▲" toggle bar by default — tap to expand. No drawer, no z-index issues, works perfectly on mobile.
+  </p>
+</div>

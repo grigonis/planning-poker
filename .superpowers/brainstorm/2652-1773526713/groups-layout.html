@@ -1,0 +1,158 @@
+<h2>Groups mode — how to show stats in the drawer?</h2>
+<p class="subtitle">When groups are enabled, each group voted separately. Pick how you'd like the drawer to present this.</p>
+
+<div class="cards">
+
+  <!-- Option A: Tabs -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px;background:#0f172a;border-radius:8px;">
+      <!-- Drawer mockup with tabs -->
+      <div style="background:#1e293b;border-radius:10px 10px 0 0;border:1px solid #334155;overflow:hidden;">
+        <div style="width:32px;height:3px;background:#475569;border-radius:2px;margin:6px auto 0;"></div>
+        <!-- Tab bar -->
+        <div style="display:flex;border-bottom:1px solid #334155;margin-top:4px;">
+          <div style="padding:5px 10px;font-size:7px;font-weight:700;color:#3b82f6;border-bottom:2px solid #3b82f6;">All</div>
+          <div style="padding:5px 10px;font-size:7px;color:#64748b;display:flex;align-items:center;gap:3px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#ef4444;"></div> Backend
+          </div>
+          <div style="padding:5px 10px;font-size:7px;color:#64748b;display:flex;align-items:center;gap:3px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;"></div> Frontend
+          </div>
+        </div>
+        <!-- Content for active tab (All) -->
+        <div style="padding:8px;">
+          <div style="font-size:6px;color:#94a3b8;font-weight:700;letter-spacing:1px;margin-bottom:4px;">DISTRIBUTION</div>
+          <div style="display:flex;align-items:flex-end;gap:3px;height:24px;margin-bottom:5px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f630;border-radius:2px 2px 0 0;height:6px;"></div><div style="font-size:5px;color:#64748b;">3</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f6;border-radius:2px 2px 0 0;height:20px;"></div><div style="font-size:5px;color:#60a5fa;font-weight:700;">5</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f680;border-radius:2px 2px 0 0;height:13px;"></div><div style="font-size:5px;color:#64748b;">8</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;"><div style="width:100%;background:#3b82f640;border-radius:2px 2px 0 0;height:7px;"></div><div style="font-size:5px;color:#64748b;">13</div></div>
+          </div>
+          <div style="display:flex;gap:3px;margin-bottom:5px;">
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px;text-align:center;font-size:6px;color:#60a5fa;">min 3</div>
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px;text-align:center;font-size:6px;color:#60a5fa;">med 5</div>
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px;text-align:center;font-size:6px;color:#60a5fa;">max 13</div>
+          </div>
+          <!-- Voter list -->
+          <div style="font-size:6px;color:#94a3b8;font-weight:700;letter-spacing:1px;margin-bottom:3px;">VOTERS</div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:6px;color:#e2e8f0;">Alice</span><span style="background:#3b82f620;border-radius:3px;padding:1px 4px;font-size:6px;color:#60a5fa;">5</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:6px;color:#e2e8f0;">Bob</span><span style="background:#3b82f620;border-radius:3px;padding:1px 4px;font-size:6px;color:#60a5fa;">8</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:6px;color:#e2e8f0;">Carol</span><span style="background:#3b82f620;border-radius:3px;padding:1px 4px;font-size:6px;color:#60a5fa;">5</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Tabs (All / per group)</h3>
+      <p>Switch between an "All" view and individual group tabs. Clean, focused — one group at a time. Best for 3+ groups.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Stacked sections -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px;background:#0f172a;border-radius:8px;">
+      <div style="background:#1e293b;border-radius:10px 10px 0 0;border:1px solid #334155;overflow:hidden;">
+        <div style="width:32px;height:3px;background:#475569;border-radius:2px;margin:6px auto 4px;"></div>
+        <div style="padding:6px 8px;display:flex;flex-direction:column;gap:6px;">
+
+          <!-- Group 1 section -->
+          <div style="border:1px solid #ef444430;border-radius:6px;padding:5px;background:#ef444408;">
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:#ef4444;"></div>
+              <span style="font-size:6px;font-weight:700;color:#ef4444;">BACKEND</span>
+              <span style="margin-left:auto;font-size:8px;font-weight:900;color:#ef4444;">5</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:2px;height:14px;margin-bottom:3px;">
+              <div style="flex:1;background:#ef444440;border-radius:1px 1px 0 0;height:12px;"></div>
+              <div style="flex:1;background:#ef4444;border-radius:1px 1px 0 0;height:12px;"></div>
+              <div style="flex:1;background:#ef444430;border-radius:1px 1px 0 0;height:6px;"></div>
+              <div style="flex:1;background:#ef444420;border-radius:1px 1px 0 0;height:3px;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:1px;">
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:5px;color:#94a3b8;">Alice</span><span style="font-size:5px;color:#ef4444;">5</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:5px;color:#94a3b8;">Bob</span><span style="font-size:5px;color:#ef4444;">5</span></div>
+            </div>
+          </div>
+
+          <!-- Group 2 section -->
+          <div style="border:1px solid #22c55e30;border-radius:6px;padding:5px;background:#22c55e08;">
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;"></div>
+              <span style="font-size:6px;font-weight:700;color:#22c55e;">FRONTEND</span>
+              <span style="margin-left:auto;font-size:8px;font-weight:900;color:#22c55e;">8</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:2px;height:14px;margin-bottom:3px;">
+              <div style="flex:1;background:#22c55e20;border-radius:1px 1px 0 0;height:4px;"></div>
+              <div style="flex:1;background:#22c55e40;border-radius:1px 1px 0 0;height:8px;"></div>
+              <div style="flex:1;background:#22c55e;border-radius:1px 1px 0 0;height:12px;"></div>
+              <div style="flex:1;background:#22c55e40;border-radius:1px 1px 0 0;height:7px;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:1px;">
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:5px;color:#94a3b8;">Carol</span><span style="font-size:5px;color:#22c55e;">8</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:5px;color:#94a3b8;">Dave</span><span style="font-size:5px;color:#22c55e;">13</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Stacked group sections</h3>
+      <p>Each group gets its own color-coded block with histogram + voter list. See all groups at once by scrolling. Great for 2 groups.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Combined with group color coding -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px;background:#0f172a;border-radius:8px;">
+      <div style="background:#1e293b;border-radius:10px 10px 0 0;border:1px solid #334155;overflow:hidden;">
+        <div style="width:32px;height:3px;background:#475569;border-radius:2px;margin:6px auto 4px;"></div>
+        <div style="padding:6px 8px;display:flex;flex-direction:column;gap:5px;">
+          <div style="font-size:6px;color:#94a3b8;font-weight:700;letter-spacing:1px;">DISTRIBUTION — ALL VOTERS</div>
+          <!-- Stacked bar histogram with group colors -->
+          <div style="display:flex;align-items:flex-end;gap:3px;height:26px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;">
+              <div style="width:100%;border-radius:2px 2px 0 0;height:10px;background:#ef4444;"></div>
+              <div style="font-size:5px;color:#64748b;">3</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;">
+              <div style="width:100%;border-radius:2px 2px 0 0;height:22px;display:flex;flex-direction:column;">
+                <div style="flex:1;background:#ef4444;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;background:#22c55e;"></div>
+              </div>
+              <div style="font-size:5px;color:#60a5fa;font-weight:700;">5</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;">
+              <div style="width:100%;border-radius:2px 2px 0 0;height:14px;background:#22c55e;"></div>
+              <div style="font-size:5px;color:#64748b;">8</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;">
+              <div style="width:100%;border-radius:2px 2px 0 0;height:7px;background:#22c55e;"></div>
+              <div style="font-size:5px;color:#64748b;">13</div>
+            </div>
+          </div>
+          <!-- min/med/max -->
+          <div style="display:flex;gap:3px;">
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px;text-align:center;font-size:6px;color:#60a5fa;">min 3</div>
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px;text-align:center;font-size:6px;color:#60a5fa;">med 5</div>
+            <div style="flex:1;background:#0f172a;border-radius:3px;padding:2px;text-align:center;font-size:6px;color:#60a5fa;">max 13</div>
+          </div>
+          <!-- Voter list with group color dots -->
+          <div style="font-size:6px;color:#94a3b8;font-weight:700;letter-spacing:1px;">VOTERS</div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="display:flex;align-items:center;gap:3px;"><div style="width:5px;height:5px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div><span style="font-size:6px;color:#e2e8f0;flex:1;">Alice</span><span style="font-size:6px;color:#60a5fa;background:#3b82f620;border-radius:3px;padding:1px 4px;">5</span></div>
+            <div style="display:flex;align-items:center;gap:3px;"><div style="width:5px;height:5px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div><span style="font-size:6px;color:#e2e8f0;flex:1;">Bob</span><span style="font-size:6px;color:#60a5fa;background:#3b82f620;border-radius:3px;padding:1px 4px;">5</span></div>
+            <div style="display:flex;align-items:center;gap:3px;"><div style="width:5px;height:5px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div><span style="font-size:6px;color:#e2e8f0;flex:1;">Carol</span><span style="font-size:6px;color:#60a5fa;background:#3b82f620;border-radius:3px;padding:1px 4px;">8</span></div>
+            <div style="display:flex;align-items:center;gap:3px;"><div style="width:5px;height:5px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div><span style="font-size:6px;color:#e2e8f0;flex:1;">Dave</span><span style="font-size:6px;color:#60a5fa;background:#3b82f620;border-radius:3px;padding:1px 4px;">13</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Single view, group color-coded</h3>
+      <p>One unified histogram with stacked group colors per bar. Voter list has colored group dots. No switching, no sections — compact.</p>
+    </div>
+  </div>
+
+</div>
